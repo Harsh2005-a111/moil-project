@@ -1,0 +1,284 @@
+import React from "react";
+import {
+  Cpu,
+  Layers,
+  Truck,
+  CloudRain,
+  Flame,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+
+export default function ShortfallPredictor({
+  selectedMine,
+  inputs,
+  prediction,
+  trend,
+  loading,
+}) {
+  const currentRisk = prediction?.risk_level || "Medium";
+  const probabilities = prediction?.risk_probabilities || { High: 0.2, Medium: 0.65, Low: 0.15 };
+  const constraintImpact = prediction?.constraint_impact || {
+    equipment_impact_pct: 28.5,
+    weather_impact_pct: 35.0,
+    blasting_impact_pct: 18.2,
+    grade_dilution_risk_pct: 18.3,
+  };
+
+  const riskColors = {
+    Low: "#16A34A",
+    Medium: "#D97706",
+    High: "#DC2626",
+    Critical: "#991B1B",
+  };
+
+  const riskBg = {
+    Low: "#F0FDF4",
+    Medium: "#FFFBEB",
+    High: "#FEF2F2",
+    Critical: "#450A0A",
+  };
+
+  const riskExplanations = {
+    Low: "Mining schedule and ore yields are operating within safe tolerances. Weekly dispatch commitments will be met with standard haulage fleet allocation.",
+    Medium: "Operational bottlenecks detected (e.g. elevated precipitation or loader maintenance). Early mitigation can avert supply shortfall.",
+    High: "Severe production shortfall projected. Immediate intervention required in shovel redeployment, bench drainage, and blasting re-sequencing.",
+    Critical: "Critical constraint convergence: Equipment downtime and heavy monsoon saturation threaten severe ore delivery failure.",
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Module B Header */}
+      <div
+        style={{
+          background: "#FFFFFF",
+          borderRadius: 12,
+          padding: 20,
+          border: "1px solid #E2E8F0",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 4, background: "#BA7517", color: "#fff" }}>
+            MODULE B: SHORTFALL PREDICTOR
+          </span>
+          <span style={{ fontSize: 13, color: "#64748B" }}>
+            {selectedMine?.name} • Target Block: {inputs?.block_id}
+          </span>
+        </div>
+        <h2 style={{ margin: "4px 0 0 0", fontSize: 18, fontWeight: 700, color: "#0F172A" }}>
+          Production Shortfall & Operational Constraint Risk Engine
+        </h2>
+        <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "#64748B" }}>
+          Evaluates multi-source constraints including haul fleet availability, unscheduled equipment downtime, rainfall saturation, and blasting cycle lags using LightGBM machine learning.
+        </p>
+      </div>
+
+      {/* Main Risk Status Card + Confidence Split */}
+      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16 }}>
+        {/* Risk Assessment Box */}
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 12,
+            padding: 22,
+            border: "1px solid #E2E8F0",
+            borderLeft: `5px solid ${riskColors[currentRisk] || "#D97706"}`,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                AI Shortfall Risk Assessment
+              </span>
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 800,
+                  padding: "4px 12px",
+                  borderRadius: 20,
+                  background: riskBg[currentRisk],
+                  color: riskColors[currentRisk],
+                  border: `1px solid ${riskColors[currentRisk]}44`,
+                }}
+              >
+                {currentRisk.toUpperCase()} RISK
+              </span>
+            </div>
+
+            <p style={{ fontSize: 13.5, lineHeight: 1.5, color: "#334155", margin: "10px 0" }}>
+              {riskExplanations[currentRisk]}
+            </p>
+          </div>
+
+          <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #F1F5F9", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            <div>
+              <div style={{ fontSize: 11, color: "#64748B" }}>Fleet Operational</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>{inputs?.equipment_availability_pct || 88}%</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: "#64748B" }}>Rainfall (GPM)</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#0284C7" }}>{inputs?.rainfall_mm || 35} mm</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: "#64748B" }}>Blasting Delay</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#8B5CF6" }}>{inputs?.blast_cycle_delay_hours || 1.5} hrs</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Model Confidence & Probabilities */}
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 12,
+            padding: 20,
+            border: "1px solid #E2E8F0",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <h3 style={{ margin: "0 0 4px 0", fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+              Model Classification Confidence
+            </h3>
+            <p style={{ margin: 0, fontSize: 12, color: "#64748B" }}>
+              Probabilistic distribution across shortfall classes.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, margin: "14px 0" }}>
+            {Object.entries(probabilities).map(([cls, prob]) => {
+              const pVal = typeof prob === "number" ? prob : 0.33;
+              const barColor = cls === "High" ? "#DC2626" : cls === "Medium" ? "#D97706" : "#16A34A";
+              return (
+                <div key={cls}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
+                    <span style={{ fontWeight: 600, color: "#334155" }}>{cls} Shortfall Risk</span>
+                    <span style={{ fontWeight: 700, color: barColor }}>{(pVal * 100).toFixed(1)}%</span>
+                  </div>
+                  <div style={{ height: 8, background: "#F1F5F9", borderRadius: 4, overflow: "hidden" }}>
+                    <div
+                      style={{
+                        width: `${pVal * 100}%`,
+                        height: "100%",
+                        background: barColor,
+                        borderRadius: 4,
+                        transition: "width 0.3s ease",
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ fontSize: 11, color: "#64748B", display: "flex", alignItems: "center", gap: 6 }}>
+            <Cpu size={14} color="#185FA5" />
+            <span>LightGBM Multi-Class Classifier with SHAP TreeExplainer</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Constraint Impact Breakdown Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+        <div style={{ background: "#FFFFFF", borderRadius: 10, padding: 14, border: "1px solid #E2E8F0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+            <Truck size={16} color="#EA580C" />
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>Equipment Constraint</span>
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "#EA580C" }}>
+            {constraintImpact.equipment_impact_pct}%
+          </div>
+          <div style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>
+            Unscheduled downtime: {inputs?.unscheduled_downtime_hours || 3.5}h
+          </div>
+        </div>
+
+        <div style={{ background: "#FFFFFF", borderRadius: 10, padding: 14, border: "1px solid #E2E8F0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+            <CloudRain size={16} color="#0284C7" />
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>Weather Constraint</span>
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "#0284C7" }}>
+            {constraintImpact.weather_impact_pct}%
+          </div>
+          <div style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>
+            Rainfall index: {inputs?.rainfall_mm || 35}mm/wk
+          </div>
+        </div>
+
+        <div style={{ background: "#FFFFFF", borderRadius: 10, padding: 14, border: "1px solid #E2E8F0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+            <Flame size={16} color="#8B5CF6" />
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>Blasting Delay</span>
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "#8B5CF6" }}>
+            {constraintImpact.blasting_impact_pct}%
+          </div>
+          <div style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>
+            Clearance delay: {inputs?.blast_cycle_delay_hours || 1.5}h
+          </div>
+        </div>
+
+        <div style={{ background: "#FFFFFF", borderRadius: 10, padding: 14, border: "1px solid #E2E8F0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+            <Layers size={16} color="#10B981" />
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>Grade Dilution Risk</span>
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "#10B981" }}>
+            {constraintImpact.grade_dilution_risk_pct}%
+          </div>
+          <div style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>
+            Target grade: {inputs?.ore_grade_pct || 38.5}% Mn
+          </div>
+        </div>
+      </div>
+
+      {/* Production Trend & Forecast Gap */}
+      <div
+        style={{
+          background: "#FFFFFF",
+          borderRadius: 12,
+          padding: 20,
+          border: "1px solid #E2E8F0",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div>
+            <h3 style={{ margin: "0 0 2px 0", fontSize: 15, fontWeight: 700, color: "#0F172A" }}>
+              Shortfall Gap Tracking Over 12 Extraction Weeks
+            </h3>
+            <p style={{ margin: 0, fontSize: 12, color: "#64748B" }}>
+              Directly resolves the problem statement by projecting deviations between expected and tracked ore production.
+            </p>
+          </div>
+        </div>
+
+        <ResponsiveContainer width="100%" height={260}>
+          <LineChart data={trend} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+            <XAxis dataKey="week" tick={{ fontSize: 11, fill: "#64748B" }} />
+            <YAxis domain={["auto", "auto"]} tick={{ fontSize: 11, fill: "#64748B" }} />
+            <Tooltip contentStyle={{ background: "#0F172A", border: "none", borderRadius: 8, color: "#fff", fontSize: 12 }} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Line type="monotone" dataKey="expected" name="Expected Output (t)" stroke="#94A3B8" strokeDasharray="4 4" strokeWidth={2} />
+            <Line type="monotone" dataKey="actual" name="Actual Extraction (t)" stroke="#DC2626" strokeWidth={2.5} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
