@@ -24,16 +24,24 @@ export default function App() {
   const [apiOnline, setApiOnline] = useState(true);
   const [trend, setTrend] = useState([]);
 
-  // Fetch live mines on initial mount
+  // Fetch live mines & custom saved regions on initial mount
   useEffect(() => {
-    fetch(`${API_BASE}/api/mines`)
-      .then((r) => {
-        if (!r.ok) throw new Error("API error");
-        return r.json();
-      })
-      .then((d) => {
-        if (d.mines && d.mines.length > 0) {
-          const merged = d.mines.map((apiMine) => {
+    // 1. Load any locally stored custom regions
+    let localCustom = [];
+    try {
+      localCustom = JSON.parse(localStorage.getItem("MOIL_CUSTOM_REGIONS") || "[]");
+    } catch (e) {
+      console.warn("Could not read local regions:", e);
+    }
+
+    Promise.all([
+      fetch(`${API_BASE}/api/mines`).then((r) => (r.ok ? r.json() : { mines: [] })).catch(() => ({ mines: [] })),
+      fetch(`${API_BASE}/api/regions`).then((r) => (r.ok ? r.json() : { regions: [] })).catch(() => ({ regions: [] })),
+    ])
+      .then(([minesData, regionsData]) => {
+        let baseMines = MOIL_MINES;
+        if (minesData.mines && minesData.mines.length > 0) {
+          baseMines = minesData.mines.map((apiMine) => {
             const match = MOIL_MINES.find((m) => m.mine_id === apiMine.mine_id);
             return {
               ...match,
@@ -60,14 +68,66 @@ export default function App() {
               },
             };
           });
-          setMines(merged);
-          setSelectedMine(merged[0]);
-          setInputs(merged[0].inputs);
         }
+
+        // Format backend custom regions
+        const apiCustom = (regionsData.regions || []).map((r) => ({
+          mine_id: `SAT-${(r.region_name || "Zone").replace(/[^a-zA-Z0-9]/g, "").slice(0, 4)}`,
+          name: r.region_name,
+          state: "Custom / Satellite Prospect",
+          district: "Exploration Zone",
+          lat: r.latitude || 21.80,
+          lon: r.longitude || 80.15,
+          lease_area_ha: Math.round((r.estimated_reserves_kt || 1000) * 0.18),
+          annual_capacity_mt: Number(((r.estimated_reserves_kt || 1000) / 4000.0).toFixed(2)),
+          primary_rock: r.host_lithology || "Braunite",
+          avg_grade_pct: r.estimated_grade_pct || 40.0,
+          avg_rainfall_mm: (r.rainfall_mm_weekly || 35.0) * 3.0,
+          fleet_size: 16,
+          type: "Custom Lease",
+          predicted_reserves_kt: r.estimated_reserves_kt || 1200,
+          inputs: {
+            block_id: `BLK-${r.region_name.slice(0, 3).toUpperCase()}-01`,
+            x: 180,
+            y: 320,
+            z: r.elevation_m || 75,
+            rock_type: r.host_lithology?.includes("Braunite") ? "Braunite" : "Magnetite",
+            ore_grade_pct: r.estimated_grade_pct || 40.0,
+            tonnage: (r.estimated_reserves_kt || 1200) * 1000.0,
+            ore_value_per_tonne: 280.0,
+            mining_cost: 45.0,
+            processing_cost: 29.0,
+            waste_flag: 0,
+            equipment_availability_pct: 88.0,
+            unscheduled_downtime_hours: 3.5,
+            blast_cycle_delay_hours: 1.5,
+            rainfall_mm: r.rainfall_mm_weekly || 38.0,
+            soil_moisture: r.soil_moisture || 0.28,
+            ndvi: r.ndvi || 0.35,
+            land_temp_c: r.land_surface_temp_c || 33.5,
+          },
+        }));
+
+        // Merge and deduplicate by region name
+        const combinedCustom = [...apiCustom, ...localCustom];
+        const uniqueCustom = [];
+        const seenNames = new Set(baseMines.map((m) => m.name.toLowerCase()));
+
+        for (const c of combinedCustom) {
+          if (!seenNames.has(c.name.toLowerCase())) {
+            seenNames.add(c.name.toLowerCase());
+            uniqueCustom.push(c);
+          }
+        }
+
+        const fullRoster = [...uniqueCustom, ...baseMines];
+        setMines(fullRoster);
+        setSelectedMine(fullRoster[0]);
+        setInputs(fullRoster[0].inputs);
         setApiOnline(true);
       })
       .catch((err) => {
-        console.error("Using offline fallback mines:", err);
+        console.error("Error initializing roster:", err);
         setApiOnline(false);
       });
   }, []);
@@ -145,9 +205,20 @@ export default function App() {
   };
 
   const handleAddCustomRegion = (newMine) => {
-    setMines((prev) => [newMine, ...prev]);
+    setMines((prev) => {
+      const filtered = prev.filter((m) => m.name.toLowerCase() !== newMine.name.toLowerCase());
+      const updated = [newMine, ...filtered];
+      try {
+        localStorage.setItem("MOIL_CUSTOM_REGIONS", JSON.stringify(updated.filter((m) => m.type === "Custom Lease" || m.type === "Satellite Prospect")));
+      } catch (e) {
+        console.warn("Could not save to localStorage:", e);
+      }
+      return updated;
+    });
     setSelectedMine(newMine);
-    setInputs(newMine.inputs);
+    if (newMine.inputs) {
+      setInputs(newMine.inputs);
+    }
     setActiveSection("reserves");
   };
 

@@ -1,0 +1,36 @@
+mine_id,name,latitude,longitude,source,deposit_type
+MN_001,Balaghat Mine,21.8167,80.1833,MOIL_Official,Underground
+MN_002,Ukwa Mine,21.9500,80.0500,MOIL_Official,Underground
+MN_003,Gumgaon Mine,21.0500,79.1000,MOIL_Official,Open_Cast
+MN_004,Kandri Mine,21.2000,79.3000,MOIL_Official,Open_Cast
+MN_005,Munsar Mine,21.1500,79.2500,MOIL_Official,Underground
+MN_006,Chikla Mine,21.1000,79.1500,MOIL_Official,Underground
+MN_007,Sitapatore Mine,21.1200,79.2000,MOIL_Official,Underground
+MN_008,Tirodi Mine,21.6000,79.7000,MOIL_Official,Open_Cast
+MN_009,Parsoda Mine,21.1800,79.2800,MOIL_Official,Open_Cast
+MN_010,Beldongri Mine,21.1600,79.2600,MOIL_Official,Underground
+MN_011,Dongri Buzurg,21.1350,79.2150,MOIL_Official,Underground
+MN_012,Sausar North Block,21.6400,78.7800,GSI_Survey,Gondite_Series
+MN_013,Sausar South Block,21.5800,78.7200,GSI_Survey,Gondite_Series
+MN_014,Chorbaoli Deposit,21.7200,79.3500,GSI_Survey,Braunite_Series
+MN_015,Mansar Lease Zone,21.5000,79.0200,GSI_Survey,Mansar_Formation
+MN_016,Ramrama Deposit,21.4500,79.1500,GSI_Survey,Gondite_Series
+MN_017,Bhagwanpura Block,21.8500,80.0000,GSI_Survey,Braunite_Series
+MN_018,Junewani Deposit,21.7800,79.9200,GSI_Survey,Gondite_Series
+MN_019,Kheri Formation,21.9000,80.2500,GSI_Survey,Gondite_Series
+MN_020,Warora Belt Node,20.2300,79.0100,GSI_Survey,Braunite_Series
+MN_021,Bonai Deposit,22.0200,84.9500,GSI_Survey,Gondite_Series
+MN_022,Barajamda Block,22.1000,85.1500,GSI_Survey,Braunite_Series
+MN_023,Keonjhar Belt,21.6200,85.5800,GSI_Survey,Gondite_Series
+MN_024,Sandur Mn Belt,15.1000,76.5500,GSI_Survey,Gondite_Series
+MN_025,Hospet Deposit,15.2700,76.3900,GSI_Survey,Braunite_Series
+MN_026,Vizag Mn Zone,18.1200,83.2000,GSI_Survey,Gondite_Series
+MN_027,Srikakulam Block,18.3000,83.8900,GSI_Survey,Gondite_Series
+MN_028,Shivrajpur Belt,22.4200,73.1800,GSI_Survey,Gondite_Series
+MN_029,Nandgaon Deposit,21.3800,80.4800,GSI_Survey,Braunite_Series
+MN_030,Lohangi Block,21.5200,79.5600,GSI_Survey,Gondite_Series
+MN_031,Bramhapuri Zone,20.6000,79.8600,GSI_Survey,Gondite_Series
+MN_032,Nagbhir Belt,20.5500,79.5100,GSI_Survey,Gondite_Series
+MN_033,Yavatmal Deposit,20.4000,78.1200,GSI_Survey,Braunite_Series
+MN_034,Betul Block MP,21.9200,77.9000,GSI_Survey,Gondite_Series
+MN_035,Chhindwara Node,22.0500,78.9300,GSI_Survey,Gondite_Series

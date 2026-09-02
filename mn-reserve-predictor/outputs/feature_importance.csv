@@ -1,0 +1,10 @@
+Feature,Importance,Std
+Emag2 Anomaly Nt,0.2648148148148148,0.054022044984499334
+Swir B11 Absorption,0.03333333333333336,0.02592592592592593
+Swir B12 Absorption,0.022222222222222254,0.018144368465060606
+Ndvi,0.0,0.0
+Land Surface Temp C,0.0,0.0
+Rainfall Mm Weekly,0.0,0.0
+Soil Moisture,0.0,0.0
+Elevation M,0.0,0.0
+Rock Type Enc,0.0,0.0

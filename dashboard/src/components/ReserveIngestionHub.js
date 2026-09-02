@@ -14,6 +14,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { PRESET_SCENARIOS, SAMPLE_CSV_CONTENT } from "../data/moilData";
+import SatelliteScanner from "./SatelliteScanner";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -28,7 +29,7 @@ export default function ReserveIngestionHub({
   onAddNewRegion,
   loading,
 }) {
-  const [activeTab, setActiveTab] = useState("prospector"); // "prospector", "operations", "heatmap", "upload"
+  const [activeTab, setActiveTab] = useState("scanner"); // "scanner", "prospector", "operations", "heatmap", "upload"
   const [depthSlice, setDepthSlice] = useState("all");
   const [cutoffGrade, setCutoffGrade] = useState(30.0);
   const [reservesData, setReservesData] = useState(null);
@@ -41,6 +42,44 @@ export default function ReserveIngestionHub({
   const [landTemp, setLandTemp] = useState(inputs?.land_temp_c || 33.5);
   const [rainfallMm, setRainfallMm] = useState(inputs?.rainfall_mm || 38.0);
   const [soilMoisture, setSoilMoisture] = useState(inputs?.soil_moisture || 0.28);
+
+  const handleApplyExtractedParameters = (params) => {
+    if (params.rainfall_mm !== undefined) {
+      setRainfallMm(params.rainfall_mm);
+      onChangeInput("rainfall_mm", params.rainfall_mm);
+    }
+    if (params.soil_moisture !== undefined) {
+      setSoilMoisture(params.soil_moisture);
+      onChangeInput("soil_moisture", params.soil_moisture);
+    }
+    if (params.ndvi !== undefined) {
+      setNdvi(params.ndvi);
+      onChangeInput("ndvi", params.ndvi);
+    }
+    if (params.land_temp_c !== undefined) {
+      setLandTemp(params.land_temp_c);
+      onChangeInput("land_temp_c", params.land_temp_c);
+    }
+    if (params.rock_type !== undefined) {
+      const lith = params.rock_type.includes("Braunite") ? "Gondite / Braunite Series" : params.rock_type;
+      setHostLithology(lith);
+      onChangeInput("rock_type", params.rock_type.split(" / ")[0]);
+    }
+    if (params.ore_grade_pct !== undefined) {
+      setSyncTargetGrade(params.ore_grade_pct);
+      onChangeInput("ore_grade_pct", params.ore_grade_pct);
+    }
+    if (params.swir_b11_absorption !== undefined) {
+      setSwirAbsorption(params.swir_b11_absorption);
+    }
+    if (params.emag2_anomaly_nt !== undefined) {
+      setEmagAnomaly(params.emag2_anomaly_nt);
+    }
+    if (params.elevation_m !== undefined) {
+      onChangeInput("z", params.elevation_m);
+    }
+    setActiveTab("prospector");
+  };
 
   // Optional Ground Survey
   const [includeGroundSurvey, setIncludeGroundSurvey] = useState(false);
@@ -460,11 +499,34 @@ export default function ReserveIngestionHub({
       </div>
 
       {/* Tab Navigation Strip */}
-      <div style={{ display: "flex", gap: 4, background: "#FFFFFF", padding: 4, borderRadius: 10, border: "1px solid #E2E8F0" }}>
+      <div style={{ display: "flex", gap: 4, background: "#FFFFFF", padding: 4, borderRadius: 10, border: "1px solid #E2E8F0", flexWrap: "wrap" }}>
+        <button
+          onClick={() => setActiveTab("scanner")}
+          style={{
+            padding: "8px 14px",
+            border: "none",
+            borderRadius: 7,
+            background: activeTab === "scanner" ? "#0284C7" : "transparent",
+            color: activeTab === "scanner" ? "#FFFFFF" : "#0369A1",
+            fontSize: 12.5,
+            fontWeight: 800,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            boxShadow: activeTab === "scanner" ? "0 2px 6px rgba(2,132,199,0.25)" : "none",
+          }}
+        >
+          <Sparkles size={14} />
+          <span>🛰️ Satellite Image AI Analyzer</span>
+        </button>
+
         <button
           onClick={() => setActiveTab("prospector")}
           style={{
             flex: 1,
+            minWidth: 180,
             padding: "8px 12px",
             border: "none",
             borderRadius: 7,
@@ -487,6 +549,7 @@ export default function ReserveIngestionHub({
           onClick={() => setActiveTab("operations")}
           style={{
             flex: 1,
+            minWidth: 160,
             padding: "8px 12px",
             border: "none",
             borderRadius: 7,
@@ -509,6 +572,7 @@ export default function ReserveIngestionHub({
           onClick={() => setActiveTab("heatmap")}
           style={{
             flex: 1,
+            minWidth: 180,
             padding: "8px 12px",
             border: "none",
             borderRadius: 7,
@@ -524,7 +588,7 @@ export default function ReserveIngestionHub({
           }}
         >
           <Compass size={14} />
-          <span>3. 2D/3D Reserve Heatmap & Depth Slices</span>
+          <span>3. 2D/3D Reserve Heatmap & Slices</span>
         </button>
 
         <button
@@ -544,9 +608,21 @@ export default function ReserveIngestionHub({
           }}
         >
           <FileSpreadsheet size={14} />
-          <span>Batch Upload</span>
+          <span>Batch CSV</span>
         </button>
       </div>
+
+      {/* Tab 0: Satellite Image AI Scanner */}
+      {activeTab === "scanner" && (
+        <SatelliteScanner
+          selectedMine={selectedMine}
+          inputs={inputs}
+          onChangeInput={onChangeInput}
+          onAddNewRegion={onAddNewRegion}
+          onApplyExtractedParameters={handleApplyExtractedParameters}
+          API_BASE={API_BASE}
+        />
+      )}
 
       {/* Tab 1: Satellite Indicators (Sliders) */}
       {activeTab === "prospector" && (

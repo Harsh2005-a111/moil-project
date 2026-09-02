@@ -39,6 +39,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from app.routers.satellite import router as satellite_router
+app.include_router(satellite_router)
+
 MODEL_PATH = Path(__file__).parent / "model" / "shortfall_model.pkl"
 ENCODERS_PATH = Path(__file__).parent / "model" / "encoders.pkl"
 LABELS_PATH = Path(__file__).parent / "model" / "label_names.pkl"
