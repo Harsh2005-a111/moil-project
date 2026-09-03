@@ -13,6 +13,8 @@ import {
   Droplets,
   Compass,
   Zap,
+  Globe2,
+  Key,
 } from "lucide-react";
 
 export default function SatelliteScanner({
@@ -23,6 +25,7 @@ export default function SatelliteScanner({
   onApplyExtractedParameters,
   API_BASE,
 }) {
+  const [activeMode, setActiveMode] = useState("coordinates"); // "coordinates" or "upload"
   const [file, setFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -33,11 +36,24 @@ export default function SatelliteScanner({
   const [savingRegion, setSavingRegion] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
 
-  // Default coordinate values
+  // Coordinate inputs
   const [customLat, setCustomLat] = useState(selectedMine?.lat || 21.8167);
   const [customLon, setCustomLon] = useState(selectedMine?.lon || 80.1833);
 
+  // Optional Copernicus Credentials
+  const [showCreds, setShowCreds] = useState(false);
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+
   const fileInputRef = useRef(null);
+
+  const handleSyncSelectedMineCoords = () => {
+    if (selectedMine) {
+      setCustomLat(selectedMine.lat || 21.8167);
+      setCustomLon(selectedMine.lon || 80.1833);
+      setSaveRegionName(`${selectedMine.name} Sector Extension`);
+    }
+  };
 
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
@@ -48,14 +64,12 @@ export default function SatelliteScanner({
     setSuccessMsg(null);
     setAnalysisResult(null);
 
-    // Read preview
     const reader = new FileReader();
     reader.onload = (ev) => {
       setImagePreview(ev.target.result);
     };
     reader.readAsDataURL(selected);
 
-    // Default name
     const cleanName = selected.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
     setSaveRegionName(
       cleanName.length > 3
@@ -64,31 +78,48 @@ export default function SatelliteScanner({
     );
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const dropped = e.dataTransfer.files[0];
-      setFile(dropped);
-      setErrorMsg(null);
-      setSuccessMsg(null);
-      setAnalysisResult(null);
+  // Run Copernicus Live Fetch via Backend
+  const handleFetchFromCopernicus = async () => {
+    setAnalyzing(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
 
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setImagePreview(ev.target.result);
+    try {
+      const payload = {
+        latitude: parseFloat(customLat) || 21.8167,
+        longitude: parseFloat(customLon) || 80.1833,
+        client_id: clientId.trim() || null,
+        client_secret: clientSecret.trim() || null,
+        region_name: saveRegionName.trim() || `Copernicus-${customLat}_${customLon}`,
       };
-      reader.readAsDataURL(dropped);
 
-      const cleanName = dropped.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-      setSaveRegionName(
-        cleanName.length > 3
-          ? `${cleanName.charAt(0).toUpperCase() + cleanName.slice(1)} Sector`
-          : `Satellite Block ${Math.floor(100 + Math.random() * 900)}`
+      const res = await fetch(`${API_BASE}/api/satellite/fetch-copernicus`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.detail || `Server returned ${res.status}`);
+      }
+
+      const data = await res.json();
+      setAnalysisResult(data);
+      setImagePreview(data.images?.raw_preview);
+      setSuccessMsg(
+        `✓ Sentinel-2 scene fetched via ${data.data_source}! Multi-spectral bands (B02, B03, B04, B08, B11, B12) extracted & ML reserve model evaluated.`
       );
+    } catch (err) {
+      console.error("Copernicus error:", err);
+      setErrorMsg(`Copernicus execution failed: ${err.message}`);
+    } finally {
+      setAnalyzing(false);
     }
   };
 
-  const handleAnalyze = async () => {
+  // Run Uploaded File Analysis
+  const handleAnalyzeUpload = async () => {
     if (!file) {
       setErrorMsg("Please select or drop a satellite image first.");
       return;
@@ -120,7 +151,7 @@ export default function SatelliteScanner({
       const data = await res.json();
       setAnalysisResult(data);
       setSuccessMsg(
-        "Satellite image analyzed successfully! Spectral and operational indicators extracted."
+        "✓ Satellite bands analyzed successfully! Multi-spectral indicators & ML reserves calculated."
       );
     } catch (err) {
       console.error("Analysis error:", err);
@@ -147,11 +178,12 @@ export default function SatelliteScanner({
         swir_b12_absorption: feat.swir_b12_absorption,
         emag2_anomaly_nt: feat.emag2_anomaly_nt,
         elevation_m: feat.elevation_m,
+        total_available_reserves_kt: pred.total_available_reserves_kt,
       });
     }
 
     setSuccessMsg(
-      "All satellite parameters, temperature, rainfall, and grade have been auto-filled into your portal sliders and operational constraints!"
+      "✓ Auto-filled! All satellite indicators, rainfall, LST, soil moisture, and grade parameters are now populated in your portal sliders."
     );
   };
 
@@ -178,20 +210,20 @@ export default function SatelliteScanner({
         elevation_m: feat.elevation_m,
         manganese_probability_pct: pred.manganese_probability_pct,
         estimated_grade_pct: pred.estimated_grade_pct,
-        estimated_reserves_kt: pred.estimated_reserves_kt,
+        total_available_reserves_kt: pred.total_available_reserves_kt,
+        viable_extractable_tonnage_kt: pred.viable_extractable_tonnage_kt,
+        extraction_recovery_pct: pred.extraction_recovery_pct,
         unfc_classification: pred.unfc_classification,
         image_preview: analysisResult.images?.heatmap_overlay || imagePreview,
-        notes: `AI Predicted Mn reserve with ${pred.manganese_probability_pct}% confidence.`,
+        notes: `Copernicus Sentinel-2 prospect. Total available: ${pred.total_available_reserves_kt} kt. Grade: ${pred.estimated_grade_pct}% Mn.`,
       };
 
       // 1. Post to backend
-      const res = await fetch(`${API_BASE}/api/regions`, {
+      await fetch(`${API_BASE}/api/regions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      const resData = await res.json().catch(() => ({}));
 
       // 2. Build new Mine object for frontend state
       const newMineObj = {
@@ -201,22 +233,22 @@ export default function SatelliteScanner({
         district: "Satellite Exploration Sector",
         lat: parseFloat(customLat) || 21.8167,
         lon: parseFloat(customLon) || 80.1833,
-        lease_area_ha: Math.round(pred.estimated_reserves_kt * 0.18),
-        annual_capacity_mt: Number((pred.estimated_reserves_kt / 1000.0 / 4.0).toFixed(2)),
+        lease_area_ha: Math.round(pred.total_available_reserves_kt * 0.16),
+        annual_capacity_mt: Number((pred.viable_extractable_tonnage_kt / 4000.0).toFixed(2)),
         primary_rock: feat.host_lithology || "Braunite",
         avg_grade_pct: pred.estimated_grade_pct,
         avg_rainfall_mm: feat.rainfall_mm_weekly * 3.0,
         fleet_size: 18,
         type: "Satellite Prospect",
-        predicted_reserves_kt: pred.estimated_reserves_kt,
+        predicted_reserves_kt: pred.total_available_reserves_kt,
         inputs: {
           block_id: `BLK-${regionTitle.slice(0, 3).toUpperCase()}-01`,
           x: 180,
           y: 320,
-          z: 75,
+          z: feat.elevation_m || 75,
           rock_type: feat.host_lithology?.includes("Braunite") ? "Braunite" : "Magnetite",
           ore_grade_pct: pred.estimated_grade_pct,
-          tonnage: pred.estimated_reserves_kt * 1000.0,
+          tonnage: pred.total_available_reserves_kt * 1000.0,
           ore_value_per_tonne: 280.0,
           mining_cost: 45.0,
           processing_cost: 29.0,
@@ -231,7 +263,7 @@ export default function SatelliteScanner({
         },
       };
 
-      // 3. Save to localStorage backup
+      // 3. Save to localStorage
       try {
         const local = JSON.parse(localStorage.getItem("MOIL_CUSTOM_REGIONS") || "[]");
         const updated = [newMineObj, ...local.filter((r) => r.name !== regionTitle)];
@@ -240,13 +272,13 @@ export default function SatelliteScanner({
         console.warn("localStorage write error:", e);
       }
 
-      // 4. Trigger App.js region addition
+      // 4. Update App.js
       if (onAddNewRegion) {
         onAddNewRegion(newMineObj);
       }
 
       setSuccessMsg(
-        `🎉 Successfully saved "${regionTitle}" permanently! It is now added to the region roster and selected as your active mine with ${pred.estimated_reserves_kt.toLocaleString()} kt estimated reserves.`
+        `🎉 Successfully saved "${regionTitle}" permanently! Added to the region roster with ${pred.total_available_reserves_kt.toLocaleString()} kt Total Available Reserves.`
       );
     } catch (err) {
       console.error("Error saving region:", err);
@@ -295,24 +327,24 @@ export default function SatelliteScanner({
                 color: "#FFFFFF",
               }}
             >
-              SPACE/SATELLITE AI VISION
+              COPERNICUS SENTINEL-2 INTEGRATION
             </span>
             <span style={{ fontSize: 13, color: "#BAE6FD", fontWeight: 600 }}>
-              Copernicus Sentinel-2 & Multi-Spectral Sensor Ingestion
+              Live Space/Satellite Data Ingestion (6 Bands: B02, B03, B04, B08, B11, B12)
             </span>
           </div>
           <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>
-            🛰️ Satellite Image AI Analyzer & Auto-Detection Engine
+            🛰️ Space/Satellite Manganese Reserve Predictor
           </h3>
-          <p style={{ margin: "4px 0 0 0", fontSize: 12.5, color: "#E0F2FE", maxWidth: 640 }}>
-            Upload raw satellite imagery (Sentinel-2 GeoTIFF, JPG, PNG). The AI model scans for
-            Manganese spectral anomalies (SWIR, NDVI stress, thermal inertia, moisture), auto-fills
-            all portal parameters, and calculates future reserves.
+          <p style={{ margin: "4px 0 0 0", fontSize: 12.5, color: "#E0F2FE", maxWidth: 680 }}>
+            Executes Sentinel-2 multi-spectral querying directly from latitude and longitude. The
+            extracted bands automatically compute tabular indicators (SWIR, NDVI, LST, Soil Moisture)
+            and feed the ML model to predict Total In-Situ Reserves and In-Situ Ore Grade.
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: 8 }}>
-          {analysisResult && (
+        {analysisResult && (
+          <div style={{ display: "flex", gap: 8 }}>
             <button
               onClick={handleAutoFillSliders}
               style={{
@@ -333,8 +365,55 @@ export default function SatelliteScanner({
               <Sliders size={14} />
               <span>Auto-Fill Sliders & Inputs</span>
             </button>
-          )}
-        </div>
+          </div>
+        )}
+      </div>
+
+      {/* Mode Switcher Strip: Direct Lat/Lon vs File Upload */}
+      <div style={{ display: "flex", gap: 6, background: "#FFFFFF", padding: 4, borderRadius: 8, border: "1px solid #E2E8F0" }}>
+        <button
+          onClick={() => setActiveMode("coordinates")}
+          style={{
+            flex: 1,
+            padding: "8px 12px",
+            border: "none",
+            borderRadius: 6,
+            background: activeMode === "coordinates" ? "#0284C7" : "transparent",
+            color: activeMode === "coordinates" ? "#FFFFFF" : "#64748B",
+            fontSize: 12.5,
+            fontWeight: 700,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          <Globe2 size={14} />
+          <span>Option 1: Query by Latitude & Longitude (Copernicus Backend)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveMode("upload")}
+          style={{
+            flex: 1,
+            padding: "8px 12px",
+            border: "none",
+            borderRadius: 6,
+            background: activeMode === "upload" ? "#0284C7" : "transparent",
+            color: activeMode === "upload" ? "#FFFFFF" : "#64748B",
+            fontSize: 12.5,
+            fontWeight: 700,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          <UploadCloud size={14} />
+          <span>Option 2: Upload Local Satellite Scene / GeoTIFF</span>
+        </button>
       </div>
 
       {/* Notifications */}
@@ -378,9 +457,9 @@ export default function SatelliteScanner({
         </div>
       )}
 
-      {/* Two Column Layout: Left Upload/Preview, Right AI Output */}
+      {/* Two Column Layout: Left Query/Controls, Right Analysis Output */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1.15fr", gap: 16 }}>
-        {/* Left Card: Upload Zone & Preview */}
+        {/* Left Card */}
         <div
           style={{
             background: "#FFFFFF",
@@ -392,144 +471,230 @@ export default function SatelliteScanner({
             gap: 14,
           }}
         >
-          <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
-            1. Upload Satellite Tile / Sentinel-2 Scene
-          </h4>
+          {activeMode === "coordinates" ? (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+                  1. Location Coordinates for Copernicus Live Retrieval
+                </h4>
+                <button
+                  onClick={handleSyncSelectedMineCoords}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: "#0284C7",
+                    background: "#F0F9FF",
+                    border: "1px solid #BAE6FD",
+                    padding: "3px 8px",
+                    borderRadius: 4,
+                    cursor: "pointer",
+                  }}
+                >
+                  Use {selectedMine?.name || "Balaghat"} Coords
+                </button>
+              </div>
 
-          {/* Drag and Drop Zone */}
-          <div
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            style={{
-              border: "2px dashed #93C5FD",
-              borderRadius: 10,
-              padding: "24px 16px",
-              background: "#F0F9FF",
-              textAlign: "center",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/*,.tif,.tiff"
-              style={{ display: "none" }}
-            />
-            <UploadCloud size={36} color="#0284C7" style={{ margin: "0 auto 8px auto" }} />
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0369A1" }}>
-              {file ? file.name : "Click to Browse or Drag Satellite Imagery Here"}
-            </div>
-            <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 4 }}>
-              Supports Sentinel-2 GeoTIFF, JPG, PNG (5km x 5km scene resolution)
-            </div>
-          </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
+                    LATITUDE (°N)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={customLat}
+                    onChange={(e) => setCustomLat(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "7px 10px",
+                      borderRadius: 6,
+                      border: "1px solid #CBD5E1",
+                      fontSize: 12.5,
+                      marginTop: 3,
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
+                    LONGITUDE (°E)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={customLon}
+                    onChange={(e) => setCustomLon(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "7px 10px",
+                      borderRadius: 6,
+                      border: "1px solid #CBD5E1",
+                      fontSize: 12.5,
+                      marginTop: 3,
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+              </div>
 
-          {/* Location & Metadata Coordinates */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
-                LATITUDE (N)
-              </label>
-              <input
-                type="number"
-                step="0.0001"
-                value={customLat}
-                onChange={(e) => setCustomLat(e.target.value)}
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
+                  PROPOSED LEASE / EXPLORATION BLOCK NAME
+                </label>
+                <input
+                  type="text"
+                  value={saveRegionName}
+                  onChange={(e) => setSaveRegionName(e.target.value)}
+                  placeholder="e.g. Balaghat North Exploration Sector"
+                  style={{
+                    width: "100%",
+                    padding: "7px 10px",
+                    borderRadius: 6,
+                    border: "1px solid #CBD5E1",
+                    fontSize: 12.5,
+                    marginTop: 3,
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              {/* Optional Copernicus Credentials Toggle */}
+              <div>
+                <button
+                  onClick={() => setShowCreds(!showCreds)}
+                  style={{
+                    fontSize: 11.5,
+                    color: "#64748B",
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  <Key size={12} />
+                  <span>{showCreds ? "Hide" : "Optional:"} Copernicus CDSE Client Credentials</span>
+                </button>
+
+                {showCreds && (
+                  <div style={{ marginTop: 8, padding: 10, background: "#F8FAFC", borderRadius: 6, border: "1px solid #E2E8F0", display: "flex", flexDirection: "column", gap: 6 }}>
+                    <input
+                      type="text"
+                      placeholder="Copernicus Client ID"
+                      value={clientId}
+                      onChange={(e) => setClientId(e.target.value)}
+                      style={{ padding: "5px 8px", fontSize: 12, borderRadius: 4, border: "1px solid #CBD5E1" }}
+                    />
+                    <input
+                      type="password"
+                      placeholder="Copernicus Client Secret"
+                      value={clientSecret}
+                      onChange={(e) => setClientSecret(e.target.value)}
+                      style={{ padding: "5px 8px", fontSize: 12, borderRadius: 4, border: "1px solid #CBD5E1" }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={handleFetchFromCopernicus}
+                disabled={analyzing}
                 style={{
-                  width: "100%",
-                  padding: "6px 10px",
-                  borderRadius: 6,
-                  border: "1px solid #CBD5E1",
-                  fontSize: 12.5,
-                  marginTop: 3,
-                  boxSizing: "border-box",
+                  padding: "10px 16px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: "#0284C7",
+                  color: "#FFFFFF",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: analyzing ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  boxShadow: "0 2px 8px rgba(2,132,199,0.3)",
                 }}
-              />
-            </div>
-            <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
-                LONGITUDE (E)
-              </label>
-              <input
-                type="number"
-                step="0.0001"
-                value={customLon}
-                onChange={(e) => setCustomLon(e.target.value)}
+              >
+                {analyzing ? (
+                  <>
+                    <div className="spin-animation">⚡</div>
+                    <span>Fetching Sentinel-2 Scene & Extracting Bands...</span>
+                  </>
+                ) : (
+                  <>
+                    <Satellite size={16} />
+                    <span>🚀 Fetch Sentinel-2 Live Scene & Extract Bands</span>
+                  </>
+                )}
+              </button>
+            </>
+          ) : (
+            <>
+              <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+                1. Upload Local Satellite Scene (.tif, .jpg, .png)
+              </h4>
+
+              <div
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (e.dataTransfer.files?.[0]) handleFileChange({ target: { files: e.dataTransfer.files } });
+                }}
+                onClick={() => fileInputRef.current?.click()}
                 style={{
-                  width: "100%",
-                  padding: "6px 10px",
-                  borderRadius: 6,
-                  border: "1px solid #CBD5E1",
-                  fontSize: 12.5,
-                  marginTop: 3,
-                  boxSizing: "border-box",
+                  border: "2px dashed #93C5FD",
+                  borderRadius: 10,
+                  padding: "24px 16px",
+                  background: "#F0F9FF",
+                  textAlign: "center",
+                  cursor: "pointer",
                 }}
-              />
-            </div>
-          </div>
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*,.tif,.tiff"
+                  style={{ display: "none" }}
+                />
+                <UploadCloud size={36} color="#0284C7" style={{ margin: "0 auto 8px auto" }} />
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0369A1" }}>
+                  {file ? file.name : "Click to Browse or Drag Satellite Imagery Here"}
+                </div>
+                <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 4 }}>
+                  Supports Sentinel-2 GeoTIFF, JPG, PNG (5km x 5km scene)
+                </div>
+              </div>
 
-          <div>
-            <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
-              PROPOSED REGION / SECTOR NAME
-            </label>
-            <input
-              type="text"
-              value={saveRegionName}
-              onChange={(e) => setSaveRegionName(e.target.value)}
-              placeholder="e.g. Balaghat North Extension Block"
-              style={{
-                width: "100%",
-                padding: "7px 10px",
-                borderRadius: 6,
-                border: "1px solid #CBD5E1",
-                fontSize: 12.5,
-                marginTop: 3,
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
-
-          {/* Action Button */}
-          <button
-            onClick={handleAnalyze}
-            disabled={!file || analyzing}
-            style={{
-              padding: "10px 16px",
-              borderRadius: 8,
-              border: "none",
-              background: !file ? "#94A3B8" : "#0284C7",
-              color: "#FFFFFF",
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: !file || analyzing ? "not-allowed" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              boxShadow: file ? "0 2px 8px rgba(2,132,199,0.3)" : "none",
-            }}
-          >
-            {analyzing ? (
-              <>
-                <div className="spin-animation">⚡</div>
-                <span>Scanning Satellite Spectral Bands...</span>
-              </>
-            ) : (
-              <>
-                <Satellite size={16} />
-                <span>Run AI Satellite Prospecting Scan</span>
-              </>
-            )}
-          </button>
+              <button
+                onClick={handleAnalyzeUpload}
+                disabled={!file || analyzing}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: !file ? "#94A3B8" : "#0284C7",
+                  color: "#FFFFFF",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: !file || analyzing ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+              >
+                {analyzing ? "Analyzing Bands..." : "Run Band Analysis"}
+              </button>
+            </>
+          )}
 
           {/* Preview Viewport */}
           {(imagePreview || analysisResult) && (
             <div
               style={{
-                marginTop: 4,
                 border: "1px solid #E2E8F0",
                 borderRadius: 8,
                 padding: 10,
@@ -545,7 +710,7 @@ export default function SatelliteScanner({
                 }}
               >
                 <span style={{ fontSize: 11.5, fontWeight: 700, color: "#94A3B8" }}>
-                  {analysisResult ? "AI SPECTRAL OVERLAY" : "RAW SATELLITE TILE"}
+                  {analysisResult ? "SENTINEL-2 RGB SCENE (B04, B03, B02)" : "IMAGE VIEWPORT"}
                 </span>
                 {analysisResult && (
                   <label
@@ -563,16 +728,15 @@ export default function SatelliteScanner({
                       checked={showOverlay}
                       onChange={(e) => setShowOverlay(e.target.checked)}
                     />
-                    <span>Show Mn Anomaly Heatmap</span>
+                    <span>Show Mn Anomaly Overlay</span>
                   </label>
                 )}
               </div>
 
               <div
                 style={{
-                  position: "relative",
                   width: "100%",
-                  height: 240,
+                  height: 230,
                   borderRadius: 6,
                   overflow: "hidden",
                   background: "#000",
@@ -587,7 +751,7 @@ export default function SatelliteScanner({
                       ? analysisResult.images?.heatmap_overlay
                       : imagePreview
                   }
-                  alt="Satellite View"
+                  alt="Sentinel Scene"
                   style={{
                     maxWidth: "100%",
                     maxHeight: "100%",
@@ -595,31 +759,9 @@ export default function SatelliteScanner({
                   }}
                 />
               </div>
-
-              {analysisResult && (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginTop: 8,
-                    fontSize: 11,
-                    color: "#94A3B8",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: 2, background: "#10B981" }} />
-                    <span style={{ color: "#E2E8F0" }}>High Mn Geochemical Signature</span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: 2, background: "#F59E0B" }} />
-                    <span style={{ color: "#E2E8F0" }}>Moderate Anomaly</span>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
-          {/* Discard / Reset */}
           {(file || analysisResult) && (
             <button
               onClick={handleDiscard}
@@ -639,12 +781,12 @@ export default function SatelliteScanner({
               }}
             >
               <Trash2 size={13} color="#EF4444" />
-              <span>Discard Image & Reset Scanner</span>
+              <span>Discard Scene & Reset Scanner</span>
             </button>
           )}
         </div>
 
-        {/* Right Card: Extracted Features & AI Prediction Results */}
+        {/* Right Card: Extracted Multi-Spectral Indicators & ML Reserves */}
         <div
           style={{
             background: "#FFFFFF",
@@ -658,7 +800,7 @@ export default function SatelliteScanner({
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
-              2. Auto-Detected Indicators & Manganese Estimation
+              2. Extracted Bands & ML Reserve Estimation
             </h4>
             {analysisResult && (
               <span
@@ -689,7 +831,7 @@ export default function SatelliteScanner({
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                minHeight: 340,
+                minHeight: 350,
                 background: "#F8FAFC",
                 borderRadius: 10,
                 border: "1px dashed #CBD5E1",
@@ -700,39 +842,19 @@ export default function SatelliteScanner({
             >
               <Satellite size={44} color="#94A3B8" style={{ marginBottom: 12 }} />
               <div style={{ fontSize: 14, fontWeight: 700, color: "#334155" }}>
-                Awaiting Satellite Image Analysis
+                Awaiting Satellite Band Ingestion
               </div>
               <div style={{ fontSize: 12, maxWidth: 360, marginTop: 4 }}>
-                Upload an image on the left and run the scan. The system will automatically detect
-                temperature, rainfall, vegetation index, SWIR absorption, and calculate extractable
-                manganese reserves.
+                Enter coordinates on the left and click <strong>"Fetch Sentinel-2 Live Scene"</strong>.
+                The system will retrieve the 6 bands, compute tabular features (SWIR, NDVI, LST, Soil Moisture),
+                and run the ML model to estimate Total Available Reserves and Grade.
               </div>
             </div>
           ) : (
             <>
-              {/* Summary Prediction KPI Cards */}
+              {/* Summary KPIs */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                {/* Probability Card */}
-                <div
-                  style={{
-                    background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
-                    padding: "14px 16px",
-                    borderRadius: 10,
-                    color: "#FFFFFF",
-                  }}
-                >
-                  <div style={{ fontSize: 11, color: "#94A3B8", fontWeight: 700 }}>
-                    MN RESERVE PROBABILITY
-                  </div>
-                  <div style={{ fontSize: 26, fontWeight: 800, color: "#38BDF8", marginTop: 2 }}>
-                    {analysisResult.prediction.manganese_probability_pct}%
-                  </div>
-                  <div style={{ fontSize: 11.5, color: "#CBD5E1", marginTop: 2 }}>
-                    Confidence: <strong>{analysisResult.prediction.confidence}</strong>
-                  </div>
-                </div>
-
-                {/* Reserves & Grade Card */}
+                {/* Total Available Reserves */}
                 <div
                   style={{
                     background: "linear-gradient(135deg, #064E3B 0%, #065F46 100%)",
@@ -742,22 +864,42 @@ export default function SatelliteScanner({
                   }}
                 >
                   <div style={{ fontSize: 11, color: "#A7F3D0", fontWeight: 700 }}>
-                    ESTIMATED EXTRACTABLE ORE
+                    TOTAL AVAILABLE MN RESERVES
                   </div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: "#FFFFFF", marginTop: 2 }}>
-                    {analysisResult.prediction.estimated_reserves_kt?.toLocaleString()} kt
+                    {analysisResult.prediction.total_available_reserves_kt?.toLocaleString()} kt
                   </div>
                   <div style={{ fontSize: 11.5, color: "#D1FAE5", marginTop: 2 }}>
-                    Predicted Grade:{" "}
-                    <strong>{analysisResult.prediction.estimated_grade_pct}% Mn</strong>
+                    Economically Viable:{" "}
+                    <strong>{analysisResult.prediction.viable_extractable_tonnage_kt?.toLocaleString()} kt ({analysisResult.prediction.extraction_recovery_pct}%)</strong>
+                  </div>
+                </div>
+
+                {/* Predicted Grade & Confidence */}
+                <div
+                  style={{
+                    background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+                    padding: "14px 16px",
+                    borderRadius: 10,
+                    color: "#FFFFFF",
+                  }}
+                >
+                  <div style={{ fontSize: 11, color: "#94A3B8", fontWeight: 700 }}>
+                    PREDICTED IN-SITU GRADE
+                  </div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: "#38BDF8", marginTop: 2 }}>
+                    {analysisResult.prediction.estimated_grade_pct}% Mn
+                  </div>
+                  <div style={{ fontSize: 11.5, color: "#CBD5E1", marginTop: 2 }}>
+                    ML Probability: <strong>{analysisResult.prediction.manganese_probability_pct}% ({analysisResult.prediction.confidence})</strong>
                   </div>
                 </div>
               </div>
 
-              {/* UNFC Classification Banner */}
+              {/* UNFC Classification */}
               <div
                 style={{
-                  padding: "10px 14px",
+                  padding: "8px 12px",
                   borderRadius: 8,
                   background: "#EFF6FF",
                   border: "1px solid #BFDBFE",
@@ -769,45 +911,50 @@ export default function SatelliteScanner({
                 }}
               >
                 <span>
-                  <strong>UNFC Classification:</strong>{" "}
-                  {analysisResult.prediction.unfc_classification}
+                  <strong>UNFC:</strong> {analysisResult.prediction.unfc_classification}
                 </span>
                 <span style={{ fontSize: 11, background: "#DBEAFE", padding: "2px 6px", borderRadius: 4, fontWeight: 700 }}>
                   GSI Compliant
                 </span>
               </div>
 
-              {/* Grid of Auto-Detected Geophysical Parameters */}
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#334155", marginTop: 2 }}>
-                📡 Automatically Detected Features (Auto-Fill Ready)
+              {/* Extracted Tabular Geophysical Parameters */}
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>
+                📡 Extracted Multi-Spectral Indicators (Auto-Fill Ready)
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 8,
-                    background: "#F8FAFC",
-                    border: "1px solid #E2E8F0",
-                  }}
-                >
+                <div style={{ padding: "8px 12px", borderRadius: 8, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#64748B" }}>
+                    <Zap size={13} color="#D97706" />
+                    <span>SWIR B11 / B12 (Absorption)</span>
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>
+                    {analysisResult.extracted_features.swir_b11_absorption} / {analysisResult.extracted_features.swir_b12_absorption}
+                  </div>
+                </div>
+
+                <div style={{ padding: "8px 12px", borderRadius: 8, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#64748B" }}>
+                    <Layers size={13} color="#8B5CF6" />
+                    <span>NDVI Vegetation Index (B08/B04)</span>
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>
+                    {analysisResult.extracted_features.ndvi}
+                  </div>
+                </div>
+
+                <div style={{ padding: "8px 12px", borderRadius: 8, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#64748B" }}>
                     <CloudRain size={13} color="#0284C7" />
                     <span>Rainfall Index</span>
                   </div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>
-                    {analysisResult.extracted_features.rainfall_mm_weekly} mm/week
+                    {analysisResult.extracted_features.rainfall_mm_weekly} mm/wk
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 8,
-                    background: "#F8FAFC",
-                    border: "1px solid #E2E8F0",
-                  }}
-                >
+                <div style={{ padding: "8px 12px", borderRadius: 8, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#64748B" }}>
                     <Thermometer size={13} color="#EF4444" />
                     <span>Land Surface Temp (LST)</span>
@@ -817,14 +964,7 @@ export default function SatelliteScanner({
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 8,
-                    background: "#F8FAFC",
-                    border: "1px solid #E2E8F0",
-                  }}
-                >
+                <div style={{ padding: "8px 12px", borderRadius: 8, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#64748B" }}>
                     <Droplets size={13} color="#059669" />
                     <span>Soil Moisture Index</span>
@@ -834,52 +974,10 @@ export default function SatelliteScanner({
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 8,
-                    background: "#F8FAFC",
-                    border: "1px solid #E2E8F0",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#64748B" }}>
-                    <Layers size={13} color="#8B5CF6" />
-                    <span>NDVI Vegetation Index</span>
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>
-                    {analysisResult.extracted_features.ndvi}
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 8,
-                    background: "#F8FAFC",
-                    border: "1px solid #E2E8F0",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#64748B" }}>
-                    <Zap size={13} color="#D97706" />
-                    <span>SWIR B11 / B12 Absorption</span>
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>
-                    {analysisResult.extracted_features.swir_b11_absorption} /{" "}
-                    {analysisResult.extracted_features.swir_b12_absorption}
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 8,
-                    background: "#F8FAFC",
-                    border: "1px solid #E2E8F0",
-                  }}
-                >
+                <div style={{ padding: "8px 12px", borderRadius: 8, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#64748B" }}>
                     <Compass size={13} color="#2563EB" />
-                    <span>Magnetic Anomaly (EMAG2)</span>
+                    <span>EMAG2 Magnetic Anomaly</span>
                   </div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>
                     {analysisResult.extracted_features.emag2_anomaly_nt} nT
@@ -887,8 +985,8 @@ export default function SatelliteScanner({
                 </div>
               </div>
 
-              {/* Two Primary Action Buttons: Auto Fill & Save as Region */}
-              <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
+              {/* Action Buttons */}
+              <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
                 <button
                   onClick={handleAutoFillSliders}
                   style={{
@@ -908,7 +1006,7 @@ export default function SatelliteScanner({
                   }}
                 >
                   <Sliders size={15} color="#10B981" />
-                  <span>Auto-Fill Sliders & Inputs</span>
+                  <span>Auto-Fill Sliders & Constraints</span>
                 </button>
 
                 <button
@@ -932,7 +1030,7 @@ export default function SatelliteScanner({
                   }}
                 >
                   <BookmarkPlus size={15} />
-                  <span>{savingRegion ? "Saving to MOIL Database..." : "💾 Save as Permanent Region"}</span>
+                  <span>{savingRegion ? "Saving to Database..." : "💾 Save as Permanent Region"}</span>
                 </button>
               </div>
             </>
