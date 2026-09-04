@@ -93,11 +93,22 @@ export default function SatelliteScanner({
         region_name: saveRegionName.trim() || `Copernicus-${customLat}_${customLon}`,
       };
 
-      const res = await fetch(`${API_BASE}/api/satellite/fetch-copernicus`, {
+      const endpoint = `${API_BASE || ""}/api/satellite/fetch-copernicus`;
+      let res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      // If backend was sleeping / cold-starting on free tier, retry once
+      if (!res.ok && (res.status === 502 || res.status === 503 || res.status === 504)) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
@@ -112,7 +123,7 @@ export default function SatelliteScanner({
       );
     } catch (err) {
       console.error("Copernicus error:", err);
-      setErrorMsg(`Copernicus execution failed: ${err.message}`);
+      setErrorMsg(`Copernicus execution failed: ${err.message}. If the backend was sleeping, please retry in 5 seconds.`);
     } finally {
       setAnalyzing(false);
     }
