@@ -643,9 +643,70 @@ export default function SatelliteScanner({
             </>
           ) : (
             <>
-              <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
-                1. Upload Local Satellite Scene (.tif, .jpg, .png)
-              </h4>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+                  1. Upload Local Satellite Scene (.tif, .jpg, .png)
+                </h4>
+                <button
+                  onClick={handleSyncSelectedMineCoords}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: "#0284C7",
+                    background: "#F0F9FF",
+                    border: "1px solid #BAE6FD",
+                    padding: "3px 8px",
+                    borderRadius: 4,
+                    cursor: "pointer",
+                  }}
+                >
+                  Use {selectedMine?.name || "Balaghat"} Coords
+                </button>
+              </div>
+
+              {/* Coordinates for Uploaded Scene */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
+                    SCENE LATITUDE (°N)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={customLat}
+                    onChange={(e) => setCustomLat(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "7px 10px",
+                      borderRadius: 6,
+                      border: "1px solid #CBD5E1",
+                      fontSize: 12.5,
+                      marginTop: 3,
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
+                    SCENE LONGITUDE (°E)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={customLon}
+                    onChange={(e) => setCustomLon(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "7px 10px",
+                      borderRadius: 6,
+                      border: "1px solid #CBD5E1",
+                      fontSize: 12.5,
+                      marginTop: 3,
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+              </div>
 
               <div
                 onDragOver={(e) => e.preventDefault()}
@@ -675,7 +736,7 @@ export default function SatelliteScanner({
                   {file ? file.name : "Click to Browse or Drag Satellite Imagery Here"}
                 </div>
                 <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 4 }}>
-                  Supports Sentinel-2 GeoTIFF, JPG, PNG (5km x 5km scene)
+                  Supports Sentinel-2 GeoTIFF, JPG, PNG (True Color or Multi-Spectral)
                 </div>
               </div>
 
@@ -695,9 +756,20 @@ export default function SatelliteScanner({
                   alignItems: "center",
                   justifyContent: "center",
                   gap: 8,
+                  boxShadow: file ? "0 2px 8px rgba(2,132,199,0.3)" : "none",
                 }}
               >
-                {analyzing ? "Analyzing Bands..." : "Run Band Analysis"}
+                {analyzing ? (
+                  <>
+                    <div className="spin-animation">⚡</div>
+                    <span>Analyzing Multi-Spectral Scene & Extracting Bands...</span>
+                  </>
+                ) : (
+                  <>
+                    <Satellite size={16} />
+                    <span>🚀 Analyze Uploaded Scene & Predict Reserves</span>
+                  </>
+                )}
               </button>
             </>
           )}
