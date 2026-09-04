@@ -643,69 +643,13 @@ export default function SatelliteScanner({
             </>
           ) : (
             <>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+              <div>
+                <h4 style={{ margin: "0 0 4px 0", fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
                   1. Upload Local Satellite Scene (.tif, .jpg, .png)
                 </h4>
-                <button
-                  onClick={handleSyncSelectedMineCoords}
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "#0284C7",
-                    background: "#F0F9FF",
-                    border: "1px solid #BAE6FD",
-                    padding: "3px 8px",
-                    borderRadius: 4,
-                    cursor: "pointer",
-                  }}
-                >
-                  Use {selectedMine?.name || "Balaghat"} Coords
-                </button>
-              </div>
-
-              {/* Coordinates for Uploaded Scene */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
-                    SCENE LATITUDE (°N)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={customLat}
-                    onChange={(e) => setCustomLat(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "7px 10px",
-                      borderRadius: 6,
-                      border: "1px solid #CBD5E1",
-                      fontSize: 12.5,
-                      marginTop: 3,
-                      boxSizing: "border-box",
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
-                    SCENE LONGITUDE (°E)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={customLon}
-                    onChange={(e) => setCustomLon(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "7px 10px",
-                      borderRadius: 6,
-                      border: "1px solid #CBD5E1",
-                      fontSize: 12.5,
-                      marginTop: 3,
-                      boxSizing: "border-box",
-                    }}
-                  />
-                </div>
+                <p style={{ margin: 0, fontSize: 12, color: "#64748B" }}>
+                  Upload any Sentinel-2 scene tile or multi-spectral GeoTIFF. The AI will automatically analyze the spectral bands and compute in-situ Manganese reserves.
+                </p>
               </div>
 
               <div
@@ -718,7 +662,7 @@ export default function SatelliteScanner({
                 style={{
                   border: "2px dashed #93C5FD",
                   borderRadius: 10,
-                  padding: "24px 16px",
+                  padding: "28px 16px",
                   background: "#F0F9FF",
                   textAlign: "center",
                   cursor: "pointer",
@@ -731,12 +675,12 @@ export default function SatelliteScanner({
                   accept="image/*,.tif,.tiff"
                   style={{ display: "none" }}
                 />
-                <UploadCloud size={36} color="#0284C7" style={{ margin: "0 auto 8px auto" }} />
+                <UploadCloud size={38} color="#0284C7" style={{ margin: "0 auto 8px auto" }} />
                 <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0369A1" }}>
                   {file ? file.name : "Click to Browse or Drag Satellite Imagery Here"}
                 </div>
                 <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 4 }}>
-                  Supports Sentinel-2 GeoTIFF, JPG, PNG (True Color or Multi-Spectral)
+                  Supports Sentinel-2 GeoTIFF, JPG, PNG (5km × 5km scene)
                 </div>
               </div>
 
