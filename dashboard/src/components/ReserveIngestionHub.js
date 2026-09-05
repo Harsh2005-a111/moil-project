@@ -46,28 +46,22 @@ export default function ReserveIngestionHub({
   const handleApplyExtractedParameters = (params) => {
     if (params.rainfall_mm !== undefined) {
       setRainfallMm(params.rainfall_mm);
-      onChangeInput("rainfall_mm", params.rainfall_mm);
     }
     if (params.soil_moisture !== undefined) {
       setSoilMoisture(params.soil_moisture);
-      onChangeInput("soil_moisture", params.soil_moisture);
     }
     if (params.ndvi !== undefined) {
       setNdvi(params.ndvi);
-      onChangeInput("ndvi", params.ndvi);
     }
     if (params.land_temp_c !== undefined) {
       setLandTemp(params.land_temp_c);
-      onChangeInput("land_temp_c", params.land_temp_c);
     }
     if (params.rock_type !== undefined) {
       const lith = params.rock_type.includes("Braunite") ? "Gondite / Braunite Series" : params.rock_type;
       setHostLithology(lith);
-      onChangeInput("rock_type", params.rock_type.split(" / ")[0]);
     }
     if (params.ore_grade_pct !== undefined) {
       setSyncTargetGrade(params.ore_grade_pct);
-      onChangeInput("ore_grade_pct", params.ore_grade_pct);
     }
     if (params.swir_b11_absorption !== undefined) {
       setSwirAbsorption(params.swir_b11_absorption);
@@ -75,10 +69,51 @@ export default function ReserveIngestionHub({
     if (params.emag2_anomaly_nt !== undefined) {
       setEmagAnomaly(params.emag2_anomaly_nt);
     }
-    if (params.elevation_m !== undefined) {
-      onChangeInput("z", params.elevation_m);
+
+    const isBarren = Boolean(params.is_barren);
+    const rain = parseFloat(params.rainfall_mm) || 38.0;
+    const soil = parseFloat(params.soil_moisture) || 0.28;
+    const grade = isBarren ? 0.0 : (parseFloat(params.ore_grade_pct) || 40.0);
+    const tonnageKt = isBarren ? 0.0 : (parseFloat(params.total_available_reserves_kt) || 1200.0);
+    const tonnage = tonnageKt * 1000.0;
+    const rock = params.rock_type || "Braunite";
+    const elev = parseFloat(params.elevation_m) || 120.0;
+
+    // Synchronize operational sliders, blasting delays, and fleet capacity if NOT barren
+    if (!isBarren && onChangeInput) {
+      const blastDelay = Number((1.2 + (rain > 50 ? (rain - 50) * 0.05 : 0) + (rock.includes("Braunite") ? 0.5 : 0.1)).toFixed(1));
+      const downtime = Number((2.0 + (rain > 40 ? (rain - 40) * 0.06 : 0) + (soil > 0.35 ? 1.2 : 0.4)).toFixed(1));
+      const equipAvail = Math.max(65.0, Math.min(94.0, Number((92.0 - (rain > 50 ? (rain - 50) * 0.25 : 0) - (soil > 0.35 ? 4.0 : 0)).toFixed(1))));
+      const miningCost = Number((42.0 + (elev > 250 ? 5.0 : 0) + (rock.includes("Braunite") ? 4.0 : 0)).toFixed(1));
+      const procCost = Number((26.0 + (grade < 40 ? 5.0 : 0)).toFixed(1));
+
+      onChangeInput("rainfall_mm", rain);
+      onChangeInput("soil_moisture", soil);
+      if (params.ndvi !== undefined) onChangeInput("ndvi", params.ndvi);
+      if (params.land_temp_c !== undefined) onChangeInput("land_temp_c", params.land_temp_c);
+      onChangeInput("rock_type", rock.split(" / ")[0]);
+      onChangeInput("ore_grade_pct", grade);
+      onChangeInput("tonnage", tonnage);
+      onChangeInput("z", elev);
+      onChangeInput("blast_cycle_delay_hours", blastDelay);
+      onChangeInput("unscheduled_downtime_hours", downtime);
+      onChangeInput("equipment_availability_pct", equipAvail);
+      onChangeInput("mining_cost", miningCost);
+      onChangeInput("processing_cost", procCost);
+      onChangeInput("waste_flag", 0);
     }
-    setActiveTab("prospector");
+
+    // Always synchronize 2D/3D heatmap & depth slices to correspond to this evaluated scene!
+    fetchReserves({
+      is_barren: isBarren,
+      expected_grade_pct: grade,
+      expected_tonnage_kt: tonnageKt,
+      region_name: params.region_name || selectedMine?.name || "Evaluated Satellite Scene",
+      rainfall_mm: rain,
+      soil_moisture: soil,
+      ndvi: params.ndvi,
+      land_temp_c: params.land_temp_c,
+    });
   };
 
   // Optional Ground Survey
@@ -115,20 +150,41 @@ export default function ReserveIngestionHub({
     runProspector();
   }, [selectedMine, hostLithology, swirAbsorption, emagAnomaly, ndvi, landTemp, rainfallMm, soilMoisture, includeGroundSurvey, ipChargeability, resistivity]);
 
-  const fetchReserves = () => {
+  const fetchReserves = (overrideParams = {}) => {
+    const isBarren = overrideParams.is_barren !== undefined
+      ? overrideParams.is_barren
+      : (selectedMine?.waste_flag === 1 || selectedMine?.type?.includes("Barren"));
+
+    const expGrade = overrideParams.expected_grade_pct !== undefined
+      ? overrideParams.expected_grade_pct
+      : (selectedMine?.avg_grade_pct !== undefined ? selectedMine.avg_grade_pct : (isBarren ? 0.0 : null));
+
+    const expTonnage = overrideParams.expected_tonnage_kt !== undefined
+      ? overrideParams.expected_tonnage_kt
+      : (selectedMine?.predicted_reserves_kt !== undefined ? selectedMine.predicted_reserves_kt : (isBarren ? 0.0 : null));
+
+    const regName = overrideParams.region_name || selectedMine?.name || "MOIL Survey Sector";
+    const rain = overrideParams.rainfall_mm !== undefined ? overrideParams.rainfall_mm : (parseFloat(rainfallMm) || 38.0);
+    const soil = overrideParams.soil_moisture !== undefined ? overrideParams.soil_moisture : (parseFloat(soilMoisture) || 0.28);
+    const curNdvi = overrideParams.ndvi !== undefined ? overrideParams.ndvi : (parseFloat(ndvi) || 0.35);
+    const temp = overrideParams.land_temp_c !== undefined ? overrideParams.land_temp_c : (parseFloat(landTemp) || 33.5);
+
     fetch(`${API_BASE}/api/reserves/estimate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        region_name: selectedMine?.name || "Balaghat Formation",
+        region_name: regName,
         x_range: [0, 500],
         y_range: [0, 500],
         depth_m: depthSlice === "surface" ? 25.0 : depthSlice === "mid" ? 60.0 : depthSlice === "deep" ? 110.0 : 85.0,
         ore_grade_cutoff: parseFloat(cutoffGrade) || 30.0,
-        rainfall_mm: parseFloat(rainfallMm),
-        soil_moisture: parseFloat(soilMoisture),
-        ndvi: parseFloat(ndvi),
-        land_temp_c: parseFloat(landTemp),
+        rainfall_mm: rain,
+        soil_moisture: soil,
+        ndvi: curNdvi,
+        land_temp_c: temp,
+        is_barren: isBarren,
+        expected_grade_pct: expGrade,
+        expected_tonnage_kt: expTonnage,
       }),
     })
       .then((r) => r.json())
@@ -340,6 +396,7 @@ export default function ReserveIngestionHub({
     document.body.removeChild(link);
   };
 
+  const safeInputs = inputs || {};
   const grid = reservesData?.probability_grid || [];
   const depthSlices = reservesData?.depth_slices || [];
 
@@ -866,7 +923,7 @@ export default function ReserveIngestionHub({
                 </label>
                 <input
                   type="number"
-                  value={inputs.tonnage}
+                  value={safeInputs.tonnage ?? ""}
                   onChange={(e) => onChangeInput("tonnage", parseFloat(e.target.value) || 0)}
                   style={inputStyle}
                 />
@@ -878,7 +935,7 @@ export default function ReserveIngestionHub({
                 </label>
                 <input
                   type="number"
-                  value={inputs.ore_value_per_tonne}
+                  value={safeInputs.ore_value_per_tonne ?? ""}
                   onChange={(e) => onChangeInput("ore_value_per_tonne", parseFloat(e.target.value) || 0)}
                   style={inputStyle}
                 />
@@ -890,7 +947,7 @@ export default function ReserveIngestionHub({
                 </label>
                 <input
                   type="number"
-                  value={inputs.mining_cost}
+                  value={safeInputs.mining_cost ?? ""}
                   onChange={(e) => onChangeInput("mining_cost", parseFloat(e.target.value) || 0)}
                   style={inputStyle}
                 />
@@ -902,7 +959,7 @@ export default function ReserveIngestionHub({
                 </label>
                 <input
                   type="number"
-                  value={inputs.processing_cost}
+                  value={safeInputs.processing_cost ?? ""}
                   onChange={(e) => onChangeInput("processing_cost", parseFloat(e.target.value) || 0)}
                   style={inputStyle}
                 />
@@ -926,7 +983,7 @@ export default function ReserveIngestionHub({
                 </label>
                 <input
                   type="number"
-                  value={inputs.equipment_availability_pct}
+                  value={safeInputs.equipment_availability_pct ?? ""}
                   onChange={(e) => onChangeInput("equipment_availability_pct", parseFloat(e.target.value) || 0)}
                   style={inputStyle}
                 />
@@ -939,7 +996,7 @@ export default function ReserveIngestionHub({
                 <input
                   type="number"
                   step="0.5"
-                  value={inputs.unscheduled_downtime_hours}
+                  value={safeInputs.unscheduled_downtime_hours ?? ""}
                   onChange={(e) => onChangeInput("unscheduled_downtime_hours", parseFloat(e.target.value) || 0)}
                   style={inputStyle}
                 />
@@ -952,7 +1009,7 @@ export default function ReserveIngestionHub({
                 <input
                   type="number"
                   step="0.5"
-                  value={inputs.blast_cycle_delay_hours}
+                  value={safeInputs.blast_cycle_delay_hours ?? ""}
                   onChange={(e) => onChangeInput("blast_cycle_delay_hours", parseFloat(e.target.value) || 0)}
                   style={inputStyle}
                 />
@@ -963,7 +1020,7 @@ export default function ReserveIngestionHub({
                   Waste Flag
                 </label>
                 <select
-                  value={inputs.waste_flag}
+                  value={safeInputs.waste_flag ?? 0}
                   onChange={(e) => onChangeInput("waste_flag", parseInt(e.target.value) || 0)}
                   style={inputStyle}
                 >

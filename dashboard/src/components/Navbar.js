@@ -123,7 +123,12 @@ export default function Navbar({
           <select
             value={selectedMine?.mine_id || ""}
             onChange={(e) => {
-              const m = mines.find((x) => x.mine_id === e.target.value);
+              const val = e.target.value;
+              if (!val) {
+                onSelectMine(null);
+                return;
+              }
+              const m = mines.find((x) => x.mine_id === val);
               if (m) onSelectMine(m);
             }}
             style={{
@@ -131,16 +136,17 @@ export default function Navbar({
               borderRadius: 8,
               border: "1px solid #CBD5E1",
               background: "#F8FAFC",
-              color: "#0F172A",
+              color: selectedMine ? "#0F172A" : "#64748B",
               fontSize: 13,
               fontWeight: 600,
               cursor: "pointer",
               outline: "none",
             }}
           >
+            <option value="">-- Select MOIL Lease or Exploration Sector --</option>
             {mines.map((m) => (
               <option key={m.mine_id} value={m.mine_id}>
-                {m.name} ({m.state})
+                {m.name} ({m.state || m.district})
               </option>
             ))}
           </select>

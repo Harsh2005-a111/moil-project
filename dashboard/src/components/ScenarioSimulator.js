@@ -48,15 +48,33 @@ export default function ScenarioSimulator({ selectedMine, inputs }) {
   };
 
   useEffect(() => {
-    runSimulation();
+    if (selectedMine) {
+      runSimulation();
+    }
   }, [rainSurge, equipmentDrop, blastingDelay, gradeVariation, selectedMine]);
 
   const resetSliders = () => {
     setRainSurge(0);
     setEquipmentDrop(0);
-    setBlastingDelay(0);
+    setBlastingDelay(1.0);
     setGradeVariation(0);
   };
+
+  if (!selectedMine) {
+    return (
+      <div style={{ background: "#FFFFFF", borderRadius: 14, padding: "50px 24px", border: "1px solid #E2E8F0", textAlign: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <div style={{ display: "inline-flex", padding: 14, borderRadius: "50%", background: "#EFF6FF", marginBottom: 16 }}>
+          <RotateCcw size={36} color="#185FA5" />
+        </div>
+        <h3 style={{ margin: "0 0 8px 0", fontSize: 18, fontWeight: 700, color: "#0F172A" }}>
+          No MOIL Region Selected
+        </h3>
+        <p style={{ margin: "0 auto", fontSize: 13, color: "#64748B", maxWidth: 520, lineHeight: 1.6 }}>
+          Select a MOIL Lease from the top dropdown to run interactive what-if constraint stress testing across monsoon surges, equipment failure, and blasting delays.
+        </p>
+      </div>
+    );
+  }
 
   const chartData = [
     { name: "Target Quota", tonnes: simResults?.base_target_tonnes || 14000, fill: "#94A3B8" },

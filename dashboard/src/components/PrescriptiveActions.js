@@ -38,6 +38,22 @@ export default function PrescriptiveActions({
     "Y": "Lateral Northing Boundary",
   };
 
+  if (!selectedMine) {
+    return (
+      <div style={{ background: "#FFFFFF", borderRadius: 14, padding: "50px 24px", border: "1px solid #E2E8F0", textAlign: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <div style={{ display: "inline-flex", padding: 14, borderRadius: "50%", background: "#EFF6FF", marginBottom: 16 }}>
+          <CheckCircle2 size={36} color="#185FA5" />
+        </div>
+        <h3 style={{ margin: "0 0 8px 0", fontSize: 18, fontWeight: 700, color: "#0F172A" }}>
+          No MOIL Region Selected
+        </h3>
+        <p style={{ margin: "0 auto", fontSize: 13, color: "#64748B", maxWidth: 520, lineHeight: 1.6 }}>
+          Select a MOIL Lease or exploration sector from the top dropdown to generate AI prescriptive mitigation recommendations, SHAP root cause drivers, and operational dispatch playbooks.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Module C Header */}

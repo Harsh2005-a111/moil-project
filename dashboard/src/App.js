@@ -17,8 +17,8 @@ export default function App() {
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const isSidebarExpanded = isSidebarPinned || isSidebarHovered;
   const [mines, setMines] = useState(MOIL_MINES);
-  const [selectedMine, setSelectedMine] = useState(MOIL_MINES[0]);
-  const [inputs, setInputs] = useState(MOIL_MINES[0].inputs);
+  const [selectedMine, setSelectedMine] = useState(null);
+  const [inputs, setInputs] = useState(null);
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
   const [apiOnline, setApiOnline] = useState(true);
@@ -122,8 +122,7 @@ export default function App() {
 
         const fullRoster = [...uniqueCustom, ...baseMines];
         setMines(fullRoster);
-        setSelectedMine(fullRoster[0]);
-        setInputs(fullRoster[0].inputs);
+        // Do not auto-select any mine on initial load: Keep dropdown clean & empty until selected
         setApiOnline(true);
       })
       .catch((err) => {
@@ -138,7 +137,10 @@ export default function App() {
   }, [selectedMine]);
 
   const runEvaluation = () => {
-    if (!inputs) return;
+    if (!inputs || !selectedMine) {
+      setPrediction(null);
+      return;
+    }
     setLoading(true);
 
     const payload = {
@@ -199,8 +201,11 @@ export default function App() {
 
   const handleSelectMine = (mine) => {
     setSelectedMine(mine);
-    if (mine.inputs) {
+    if (mine && mine.inputs) {
       setInputs(mine.inputs);
+    } else {
+      setInputs(null);
+      setPrediction(null);
     }
   };
 

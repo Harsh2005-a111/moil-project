@@ -116,6 +116,27 @@ export default function DashboardKPIs({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {!selectedMine && (
+        <div
+          style={{
+            background: "#EFF6FF",
+            border: "1px solid #BFDBFE",
+            borderRadius: 10,
+            padding: "14px 18px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            color: "#1E40AF",
+            fontSize: 13,
+            fontWeight: 500,
+          }}
+        >
+          <span>
+            📍 <strong>National Overview Mode:</strong> No individual lease is currently selected in the top dropdown. Select a mine from above or click <strong>Inspect Lease</strong> in the cluster table below to load specific operational telemetry.
+          </span>
+        </div>
+      )}
+
       {/* Top Banner with SIH Executive Scope */}
       <div
         style={{
@@ -137,7 +158,7 @@ export default function DashboardKPIs({
               MOIL EXECUTIVE COCKPIT
             </span>
             <span style={{ fontSize: 12, color: "#94A3B8" }}>
-              Active Lease: <strong style={{ color: "#F8FAFC" }}>{selectedMine?.name}</strong> ({selectedMine?.state})
+              Active Lease: <strong style={{ color: "#F8FAFC" }}>{selectedMine ? selectedMine.name : "None Selected (All Clusters Overview)"}</strong> {selectedMine ? `(${selectedMine.state})` : ""}
             </span>
           </div>
           <h2 style={{ margin: "0 0 6px 0", fontSize: 22, fontWeight: 700 }}>

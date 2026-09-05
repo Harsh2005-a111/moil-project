@@ -121,6 +121,48 @@ export default function SatelliteScanner({
       setSuccessMsg(
         `✓ Sentinel-2 scene fetched via ${data.data_source}! Multi-spectral bands (B02, B03, B04, B08, B11, B12) extracted & ML reserve model evaluated.`
       );
+
+      // Auto-synchronize evaluated scene with portal
+      const pred = data.prediction || {};
+      const feat = data.extracted_features || {};
+      const isBarrenZone =
+        pred.total_available_reserves_kt === 0 ||
+        pred.manganese_probability_pct < 50 ||
+        pred.decision?.includes("BARREN") ||
+        pred.decision?.includes("STERILIZED");
+
+      if (onApplyExtractedParameters) {
+        if (isBarrenZone) {
+          // Sync heatmap to 0 reserves / barren blue without auto-filling extraction sliders
+          onApplyExtractedParameters({
+            is_barren: true,
+            region_name: saveRegionName.trim() || `Copernicus-${customLat}_${customLon}`,
+            ore_grade_pct: 0.0,
+            total_available_reserves_kt: 0.0,
+            rainfall_mm: feat.rainfall_mm_weekly,
+            soil_moisture: feat.soil_moisture,
+            ndvi: feat.ndvi,
+            land_temp_c: feat.land_surface_temp_c,
+          });
+        } else {
+          // Fully synchronize sliders, delays, fleet, and heatmap
+          onApplyExtractedParameters({
+            is_barren: false,
+            region_name: saveRegionName.trim() || `Copernicus-${customLat}_${customLon}`,
+            rainfall_mm: feat.rainfall_mm_weekly,
+            soil_moisture: feat.soil_moisture,
+            ndvi: feat.ndvi,
+            land_temp_c: feat.land_surface_temp_c,
+            rock_type: feat.host_lithology || "Braunite",
+            ore_grade_pct: pred.estimated_grade_pct,
+            swir_b11_absorption: feat.swir_b11_absorption,
+            swir_b12_absorption: feat.swir_b12_absorption,
+            emag2_anomaly_nt: feat.emag2_anomaly_nt,
+            elevation_m: feat.elevation_m,
+            total_available_reserves_kt: pred.total_available_reserves_kt,
+          });
+        }
+      }
     } catch (err) {
       console.error("Copernicus error:", err);
       setErrorMsg(`Copernicus execution failed: ${err.message}. If the backend was sleeping, please retry in 5 seconds.`);
@@ -164,6 +206,46 @@ export default function SatelliteScanner({
       setSuccessMsg(
         "✓ Satellite bands analyzed successfully! Multi-spectral indicators & ML reserves calculated."
       );
+
+      // Auto-synchronize evaluated uploaded scene with portal
+      const pred = data.prediction || {};
+      const feat = data.extracted_features || {};
+      const isBarrenZone =
+        pred.total_available_reserves_kt === 0 ||
+        pred.manganese_probability_pct < 50 ||
+        pred.decision?.includes("BARREN") ||
+        pred.decision?.includes("STERILIZED");
+
+      if (onApplyExtractedParameters) {
+        if (isBarrenZone) {
+          onApplyExtractedParameters({
+            is_barren: true,
+            region_name: saveRegionName.trim() || "Uploaded Satellite Sector",
+            ore_grade_pct: 0.0,
+            total_available_reserves_kt: 0.0,
+            rainfall_mm: feat.rainfall_mm_weekly,
+            soil_moisture: feat.soil_moisture,
+            ndvi: feat.ndvi,
+            land_temp_c: feat.land_surface_temp_c,
+          });
+        } else {
+          onApplyExtractedParameters({
+            is_barren: false,
+            region_name: saveRegionName.trim() || "Uploaded Satellite Sector",
+            rainfall_mm: feat.rainfall_mm_weekly,
+            soil_moisture: feat.soil_moisture,
+            ndvi: feat.ndvi,
+            land_temp_c: feat.land_surface_temp_c,
+            rock_type: feat.host_lithology || "Braunite",
+            ore_grade_pct: pred.estimated_grade_pct,
+            swir_b11_absorption: feat.swir_b11_absorption,
+            swir_b12_absorption: feat.swir_b12_absorption,
+            emag2_anomaly_nt: feat.emag2_anomaly_nt,
+            elevation_m: feat.elevation_m,
+            total_available_reserves_kt: pred.total_available_reserves_kt,
+          });
+        }
+      }
     } catch (err) {
       console.error("Analysis error:", err);
       setErrorMsg(`Analysis failed: ${err.message}`);
@@ -219,18 +301,13 @@ export default function SatelliteScanner({
   const handleSaveAsRegion = async () => {
     if (!analysisResult) return;
     const regionTitle = saveRegionName.trim() || `Sat-Deposit-${Date.now().toString().slice(-4)}`;
-    const feat = analysisResult.extracted_features;
-    const pred = analysisResult.prediction;
-
-    if (
+    const feat = analysisResult.extracted_features || {};
+    const pred = analysisResult.prediction || {};
+    const isBarrenZone =
       pred.total_available_reserves_kt === 0 ||
       pred.manganese_probability_pct < 50 ||
       pred.decision?.includes("BARREN") ||
-      pred.decision?.includes("STERILIZED")
-    ) {
-      setErrorMsg("Cannot save: Non-mineralized or sterilized urban terrain cannot be registered as an active mining block.");
-      return;
-    }
+      pred.decision?.includes("STERILIZED");
 
     setSavingRegion(true);
     try {
@@ -238,23 +315,25 @@ export default function SatelliteScanner({
         region_name: regionTitle,
         latitude: parseFloat(customLat) || 21.8167,
         longitude: parseFloat(customLon) || 80.1833,
-        host_lithology: feat.host_lithology || "Gondite / Braunite Series",
-        swir_b11_absorption: feat.swir_b11_absorption,
-        swir_b12_absorption: feat.swir_b12_absorption,
-        ndvi: feat.ndvi,
-        land_surface_temp_c: feat.land_surface_temp_c,
-        rainfall_mm_weekly: feat.rainfall_mm_weekly,
-        soil_moisture: feat.soil_moisture,
-        emag2_anomaly_nt: feat.emag2_anomaly_nt,
-        elevation_m: feat.elevation_m,
-        manganese_probability_pct: pred.manganese_probability_pct,
-        estimated_grade_pct: pred.estimated_grade_pct,
-        total_available_reserves_kt: pred.total_available_reserves_kt,
-        viable_extractable_tonnage_kt: pred.viable_extractable_tonnage_kt,
-        extraction_recovery_pct: pred.extraction_recovery_pct,
-        unfc_classification: pred.unfc_classification,
+        host_lithology: feat.host_lithology || (isBarrenZone ? "Sterilized Country Rock / Alluvium" : "Gondite / Braunite Series"),
+        swir_b11_absorption: feat.swir_b11_absorption || 0.35,
+        swir_b12_absorption: feat.swir_b12_absorption || 0.38,
+        ndvi: feat.ndvi || 0.35,
+        land_surface_temp_c: feat.land_surface_temp_c || 32.0,
+        rainfall_mm_weekly: feat.rainfall_mm_weekly || 35.0,
+        soil_moisture: feat.soil_moisture || 0.25,
+        emag2_anomaly_nt: feat.emag2_anomaly_nt || 150,
+        elevation_m: feat.elevation_m || 200,
+        manganese_probability_pct: pred.manganese_probability_pct || 0.0,
+        estimated_grade_pct: isBarrenZone ? 0.0 : (pred.estimated_grade_pct || 0.0),
+        total_available_reserves_kt: isBarrenZone ? 0.0 : (pred.total_available_reserves_kt || 0.0),
+        viable_extractable_tonnage_kt: isBarrenZone ? 0.0 : (pred.viable_extractable_tonnage_kt || 0.0),
+        extraction_recovery_pct: isBarrenZone ? 0.0 : (pred.extraction_recovery_pct || 0.0),
+        unfc_classification: isBarrenZone ? "UNFC 777 (Sterilized / Non-Mineralized Ground)" : (pred.unfc_classification || "UNFC 333"),
         image_preview: analysisResult.images?.heatmap_overlay || imagePreview,
-        notes: `Copernicus Sentinel-2 prospect. Total available: ${pred.total_available_reserves_kt} kt. Grade: ${pred.estimated_grade_pct}% Mn.`,
+        notes: isBarrenZone
+          ? `Sterilized Non-Mineralized Land (UNFC 777). Mn Probability: ${pred.manganese_probability_pct}%. Cataloged in exploration registry to exclude from future mining concessions.`
+          : `Copernicus Sentinel-2 prospect. Total available: ${pred.total_available_reserves_kt} kt. Grade: ${pred.estimated_grade_pct}% Mn.`,
       };
 
       // 1. Post to backend
@@ -262,65 +341,58 @@ export default function SatelliteScanner({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      });
+      }).catch((e) => console.warn("Backend region save note:", e));
 
       // 2. Build new Mine object for frontend state
       const newMineObj = {
         mine_id: `SAT-${Date.now().toString().slice(-4)}`,
         name: regionTitle,
-        state: "Central India Mineral Belt",
-        district: "Satellite Exploration Sector",
+        state: isBarrenZone ? "Sterilized Non-Mining Sector" : "Central India Mineral Belt",
+        district: isBarrenZone ? "Non-Mineralized Ground (UNFC 777)" : "Satellite Exploration Sector",
         lat: parseFloat(customLat) || 21.8167,
         lon: parseFloat(customLon) || 80.1833,
-        lease_area_ha: Math.round(pred.total_available_reserves_kt * 0.16),
-        annual_capacity_mt: Number((pred.viable_extractable_tonnage_kt / 4000.0).toFixed(2)),
-        primary_rock: feat.host_lithology || "Braunite",
-        avg_grade_pct: pred.estimated_grade_pct,
-        avg_rainfall_mm: feat.rainfall_mm_weekly * 3.0,
-        fleet_size: 18,
-        type: "Satellite Prospect",
-        predicted_reserves_kt: pred.total_available_reserves_kt,
+        lease_area_ha: isBarrenZone ? 100.0 : Math.round(pred.total_available_reserves_kt * 0.16),
+        annual_capacity_mt: isBarrenZone ? 0.0 : Number((pred.viable_extractable_tonnage_kt / 4000.0).toFixed(2)),
+        primary_rock: payload.host_lithology,
+        avg_grade_pct: isBarrenZone ? 0.0 : pred.estimated_grade_pct,
+        avg_rainfall_mm: (feat.rainfall_mm_weekly || 35.0) * 3.0,
+        fleet_size: isBarrenZone ? 0 : 18,
+        type: isBarrenZone ? "Barren Survey Zone" : "Satellite Prospect",
+        predicted_reserves_kt: isBarrenZone ? 0.0 : pred.total_available_reserves_kt,
+        waste_flag: isBarrenZone ? 1 : 0,
         inputs: {
-          block_id: `BLK-${regionTitle.slice(0, 3).toUpperCase()}-01`,
+          block_id: `BLK-${regionTitle.replace(/[^a-zA-Z0-9]/g, "").slice(0, 3).toUpperCase()}-01`,
           x: 180,
           y: 320,
-          z: feat.elevation_m || 75,
-          rock_type: feat.host_lithology?.includes("Braunite") ? "Braunite" : "Magnetite",
-          ore_grade_pct: pred.estimated_grade_pct,
-          tonnage: pred.total_available_reserves_kt * 1000.0,
-          ore_value_per_tonne: 280.0,
+          z: feat.elevation_m || 200,
+          rock_type: isBarrenZone ? "Sterilized Country Rock" : (feat.host_lithology?.includes("Braunite") ? "Braunite" : "Magnetite"),
+          ore_grade_pct: isBarrenZone ? 0.0 : (pred.estimated_grade_pct || 0.0),
+          tonnage: isBarrenZone ? 0.0 : ((pred.total_available_reserves_kt || 1200) * 1000.0),
+          ore_value_per_tonne: isBarrenZone ? 0.0 : 280.0,
           mining_cost: 45.0,
           processing_cost: 29.0,
-          waste_flag: 0,
-          equipment_availability_pct: 88.0,
+          waste_flag: isBarrenZone ? 1 : 0,
+          equipment_availability_pct: isBarrenZone ? 0.0 : 88.0,
           unscheduled_downtime_hours: 3.5,
           blast_cycle_delay_hours: 1.5,
-          rainfall_mm: feat.rainfall_mm_weekly,
-          soil_moisture: feat.soil_moisture,
-          ndvi: feat.ndvi,
-          land_temp_c: feat.land_surface_temp_c,
+          rainfall_mm: feat.rainfall_mm_weekly || 38.0,
+          soil_moisture: feat.soil_moisture || 0.28,
+          ndvi: feat.ndvi || 0.35,
+          land_temp_c: feat.land_surface_temp_c || 33.5,
         },
       };
 
-      // 3. Save to localStorage
-      try {
-        const local = JSON.parse(localStorage.getItem("MOIL_CUSTOM_REGIONS") || "[]");
-        const updated = [newMineObj, ...local.filter((r) => r.name !== regionTitle)];
-        localStorage.setItem("MOIL_CUSTOM_REGIONS", JSON.stringify(updated));
-      } catch (e) {
-        console.warn("localStorage write error:", e);
-      }
-
-      // 4. Update App.js
       if (onAddNewRegion) {
         onAddNewRegion(newMineObj);
       }
 
       setSuccessMsg(
-        `🎉 Successfully saved "${regionTitle}" permanently! Added to the region roster with ${pred.total_available_reserves_kt.toLocaleString()} kt Total Available Reserves.`
+        isBarrenZone
+          ? `✓ Region "${regionTitle}" cataloged as Sterilized / Barren Zone (UNFC 777) to ensure it is excluded from mining allocations.`
+          : `✓ Region "${regionTitle}" registered successfully and added to your regional roster!`
       );
     } catch (err) {
-      console.error("Error saving region:", err);
+      console.error("Save region error:", err);
       setErrorMsg(`Failed to save region: ${err.message}`);
     } finally {
       setSavingRegion(false);
@@ -1289,11 +1361,11 @@ export default function SatelliteScanner({
                 </button>
 
                 <button
-                  onClick={isZeroOrBarren ? undefined : handleSaveAsRegion}
-                  disabled={savingRegion || isZeroOrBarren}
+                  onClick={handleSaveAsRegion}
+                  disabled={savingRegion}
                   title={
                     isZeroOrBarren
-                      ? "Cannot save: Non-mineralized or sterilized urban terrain cannot be registered as an active mining block."
+                      ? "Save this non-mineralized or urban region to the exploration registry to ensure it is excluded from future mining concessions (UNFC 777)."
                       : "Save this analyzed region permanently into MOIL roster"
                   }
                   style={{
@@ -1301,17 +1373,19 @@ export default function SatelliteScanner({
                     padding: "10px 14px",
                     borderRadius: 8,
                     border: "none",
-                    background: isZeroOrBarren ? "#CBD5E1" : "#185FA5",
-                    color: isZeroOrBarren ? "#64748B" : "#FFFFFF",
+                    background: isZeroOrBarren ? "#475569" : "#185FA5",
+                    color: "#FFFFFF",
                     fontSize: 12.5,
                     fontWeight: 700,
-                    cursor: savingRegion || isZeroOrBarren ? "not-allowed" : "pointer",
-                    opacity: isZeroOrBarren ? 0.5 : 1,
+                    cursor: savingRegion ? "not-allowed" : "pointer",
+                    opacity: savingRegion ? 0.7 : 1,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     gap: 6,
-                    boxShadow: isZeroOrBarren ? "none" : "0 2px 8px rgba(24,95,165,0.3)",
+                    boxShadow: isZeroOrBarren
+                      ? "0 2px 6px rgba(71,85,105,0.25)"
+                      : "0 2px 8px rgba(24,95,165,0.3)",
                   }}
                 >
                   <BookmarkPlus size={15} />
@@ -1319,7 +1393,7 @@ export default function SatelliteScanner({
                     {savingRegion
                       ? "Saving to Database..."
                       : isZeroOrBarren
-                      ? "Cannot Save (Barren Zone)"
+                      ? "💾 Save as Barren / Sterilized Zone (UNFC 777)"
                       : "💾 Save as Permanent Region"}
                   </span>
                 </button>

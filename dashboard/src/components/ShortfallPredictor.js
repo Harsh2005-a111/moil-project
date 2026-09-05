@@ -54,6 +54,22 @@ export default function ShortfallPredictor({
     Critical: "Critical constraint convergence: Equipment downtime and heavy monsoon saturation threaten severe ore delivery failure.",
   };
 
+  if (!selectedMine) {
+    return (
+      <div style={{ background: "#FFFFFF", borderRadius: 14, padding: "50px 24px", border: "1px solid #E2E8F0", textAlign: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <div style={{ display: "inline-flex", padding: 14, borderRadius: "50%", background: "#EFF6FF", marginBottom: 16 }}>
+          <Cpu size={36} color="#185FA5" />
+        </div>
+        <h3 style={{ margin: "0 0 8px 0", fontSize: 18, fontWeight: 700, color: "#0F172A" }}>
+          No MOIL Region or Exploration Sector Selected
+        </h3>
+        <p style={{ margin: "0 auto", fontSize: 13, color: "#64748B", maxWidth: 520, lineHeight: 1.6 }}>
+          Please select a MOIL Lease from the top dropdown or scan a region in Section 1 (Reserve Mapping) to evaluate machine learning shortfall probabilities and operational constraints.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Module B Header */}
