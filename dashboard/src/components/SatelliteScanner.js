@@ -834,14 +834,18 @@ export default function SatelliteScanner({
                 style={{
                   fontSize: 11,
                   fontWeight: 700,
-                  padding: "2px 8px",
+                  padding: "4px 10px",
                   borderRadius: 4,
                   background:
-                    analysisResult.prediction.manganese_probability_pct > 50
+                    analysisResult.prediction.decision?.includes("Greenfield")
+                      ? "#FEF3C7"
+                      : analysisResult.prediction.manganese_probability_pct > 50
                       ? "#DCFCE7"
                       : "#FEE2E2",
                   color:
-                    analysisResult.prediction.manganese_probability_pct > 50
+                    analysisResult.prediction.decision?.includes("Greenfield")
+                      ? "#B45309"
+                      : analysisResult.prediction.manganese_probability_pct > 50
                       ? "#15803D"
                       : "#B91C1C",
                 }}
@@ -872,9 +876,8 @@ export default function SatelliteScanner({
                 Awaiting Satellite Band Ingestion
               </div>
               <div style={{ fontSize: 12, maxWidth: 360, marginTop: 4 }}>
-                Enter coordinates on the left and click <strong>"Fetch Sentinel-2 Live Scene"</strong>.
-                The system will retrieve the 6 bands, compute tabular features (SWIR, NDVI, LST, Soil Moisture),
-                and run the ML model to estimate Total Available Reserves and Grade.
+                Enter coordinates on the left or drop an image and click <strong>"Predict Reserves"</strong>.
+                The system evaluates 6 spectral bands against GSI litho-stratigraphy and machine learning models.
               </div>
             </div>
           ) : (
@@ -882,31 +885,36 @@ export default function SatelliteScanner({
               {/* Summary KPIs */}
               {(() => {
                 const totalReservesKt =
-                  analysisResult.prediction.total_available_reserves_kt ??
-                  analysisResult.prediction.estimated_tonnage_kt ??
-                  analysisResult.prediction.predicted_tonnage_kt ??
-                  1280;
+                  analysisResult.prediction.total_available_reserves_kt !== undefined
+                    ? analysisResult.prediction.total_available_reserves_kt
+                    : 0;
 
                 const viableTonnageKt =
-                  analysisResult.prediction.viable_extractable_tonnage_kt ??
-                  (analysisResult.prediction.manganese_probability_pct
-                    ? Math.round(totalReservesKt * (analysisResult.prediction.manganese_probability_pct / 100) * 0.88)
-                    : Math.round(totalReservesKt * 0.78));
+                  analysisResult.prediction.viable_extractable_tonnage_kt !== undefined
+                    ? analysisResult.prediction.viable_extractable_tonnage_kt
+                    : 0;
 
                 const recoveryPct =
-                  analysisResult.prediction.extraction_recovery_pct ??
-                  ((viableTonnageKt / (totalReservesKt || 1)) * 100).toFixed(1);
+                  analysisResult.prediction.extraction_recovery_pct !== undefined
+                    ? analysisResult.prediction.extraction_recovery_pct
+                    : 0;
 
                 const estimatedGrade =
-                  analysisResult.prediction.estimated_grade_pct ??
-                  analysisResult.prediction.predicted_ore_grade_pct ??
-                  36.5;
+                  analysisResult.prediction.estimated_grade_pct !== undefined
+                    ? analysisResult.prediction.estimated_grade_pct
+                    : 0;
 
                 const probPct =
-                  analysisResult.prediction.manganese_probability_pct ??
-                  (analysisResult.prediction.probability
-                    ? Math.round(analysisResult.prediction.probability * 100)
-                    : 85);
+                  analysisResult.prediction.manganese_probability_pct !== undefined
+                    ? analysisResult.prediction.manganese_probability_pct
+                    : 0;
+
+                const isBarrenOrUrban =
+                  totalReservesKt === 0 ||
+                  analysisResult.prediction.decision?.includes("BARREN") ||
+                  analysisResult.prediction.decision?.includes("STERILIZED");
+
+                const isGreenfield = Boolean(analysisResult.prediction.is_greenfield);
 
                 const swirB11 = !isNaN(parseFloat(analysisResult.extracted_features?.swir_b11_absorption))
                   ? parseFloat(analysisResult.extracted_features.swir_b11_absorption).toFixed(3)
@@ -930,25 +938,70 @@ export default function SatelliteScanner({
                   ? parseFloat(analysisResult.extracted_features.emag2_anomaly_nt).toFixed(1)
                   : "341.8";
 
+                const handleDownloadDossier = () => {
+                  const reportData = {
+                    agency: "Ministry of Steel / Manganese Ore India Limited (MOIL)",
+                    system: "MOIL Unified AI Mining Intelligence Portal",
+                    timestamp: new Date().toISOString(),
+                    report_type: "GSI & UNFC Compliant Mineral Reserve Audit Dossier",
+                    location: {
+                      region_name: analysisResult.suggested_region_name,
+                      latitude: analysisResult.coordinates?.latitude,
+                      longitude: analysisResult.coordinates?.longitude,
+                      nearest_manganese_belt: analysisResult.prediction?.nearest_belt_name,
+                      distance_to_belt_km: analysisResult.prediction?.distance_to_nearest_belt_km,
+                    },
+                    evaluation: {
+                      decision: analysisResult.prediction?.decision,
+                      manganese_probability_pct: analysisResult.prediction?.manganese_probability_pct,
+                      unfc_classification: analysisResult.prediction?.unfc_classification,
+                      gsi_exploration_stage: analysisResult.prediction?.gsi_stage,
+                      total_available_reserves_kt: analysisResult.prediction?.total_available_reserves_kt,
+                      viable_extractable_tonnage_kt: analysisResult.prediction?.viable_extractable_tonnage_kt,
+                      estimated_grade_pct: analysisResult.prediction?.estimated_grade_pct,
+                      extraction_recovery_pct: analysisResult.prediction?.extraction_recovery_pct,
+                    },
+                    multi_spectral_indicators: analysisResult.extracted_features,
+                    geological_notes: analysisResult.prediction?.geo_notes,
+                    compliance: {
+                      statutory_standard: "UNFC 1997 / 2009 & Indian Bureau of Mines (MCDR 2017)",
+                      status: "Certified AI Exploration Screening",
+                    },
+                  };
+
+                  const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: "application/json" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `MOIL_GSI_UNFC_Dossier_${Date.now()}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                };
+
                 return (
                   <>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                       {/* Total Available Reserves */}
                       <div
                         style={{
-                          background: "linear-gradient(135deg, #064E3B 0%, #065F46 100%)",
+                          background: isBarrenOrUrban
+                            ? "linear-gradient(135deg, #475569 0%, #334155 100%)"
+                            : isGreenfield
+                            ? "linear-gradient(135deg, #78350F 0%, #92400E 100%)"
+                            : "linear-gradient(135deg, #064E3B 0%, #065F46 100%)",
                           padding: "14px 16px",
                           borderRadius: 10,
                           color: "#FFFFFF",
                         }}
                       >
-                        <div style={{ fontSize: 11, color: "#A7F3D0", fontWeight: 700 }}>
+                        <div style={{ fontSize: 11, color: isBarrenOrUrban ? "#CBD5E1" : isGreenfield ? "#FDE68A" : "#A7F3D0", fontWeight: 700 }}>
                           TOTAL AVAILABLE MN RESERVES
                         </div>
                         <div style={{ fontSize: 24, fontWeight: 800, color: "#FFFFFF", marginTop: 2 }}>
                           {Number(totalReservesKt).toLocaleString()} kt
                         </div>
-                        <div style={{ fontSize: 11.5, color: "#D1FAE5", marginTop: 2 }}>
+                        <div style={{ fontSize: 11.5, color: isBarrenOrUrban ? "#E2E8F0" : isGreenfield ? "#FEF3C7" : "#D1FAE5", marginTop: 2 }}>
                           Economically Viable:{" "}
                           <strong>
                             {Number(viableTonnageKt).toLocaleString()} kt ({recoveryPct}%)
@@ -968,38 +1021,74 @@ export default function SatelliteScanner({
                         <div style={{ fontSize: 11, color: "#94A3B8", fontWeight: 700 }}>
                           PREDICTED IN-SITU GRADE
                         </div>
-                        <div style={{ fontSize: 24, fontWeight: 800, color: "#38BDF8", marginTop: 2 }}>
+                        <div style={{ fontSize: 24, fontWeight: 800, color: isBarrenOrUrban ? "#94A3B8" : "#38BDF8", marginTop: 2 }}>
                           {estimatedGrade}% Mn
                         </div>
                         <div style={{ fontSize: 11.5, color: "#CBD5E1", marginTop: 2 }}>
                           ML Probability:{" "}
                           <strong>
-                            {probPct}% ({analysisResult.prediction.confidence || (probPct >= 75 ? "High" : "Moderate")})
+                            {probPct}% ({analysisResult.prediction.confidence || "Evaluated"})
                           </strong>
                         </div>
                       </div>
                     </div>
 
-                    {/* UNFC Classification */}
+                    {/* Geological & Stratigraphy Audit Alert */}
+                    {analysisResult.prediction.geo_notes && (
+                      <div
+                        style={{
+                          padding: "10px 14px",
+                          borderRadius: 8,
+                          background: isBarrenOrUrban ? "#FEF2F2" : isGreenfield ? "#FFFBEB" : "#F0FDF4",
+                          border: `1px solid ${isBarrenOrUrban ? "#FECACA" : isGreenfield ? "#FDE68A" : "#BBF7D0"}`,
+                          color: isBarrenOrUrban ? "#991B1B" : isGreenfield ? "#92400E" : "#166534",
+                          fontSize: 12,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        <strong>Geological Stratigraphy Audit:</strong> {analysisResult.prediction.geo_notes}
+                      </div>
+                    )}
+
+                    {/* UNFC Classification & Dossier Download */}
                     <div
                       style={{
                         padding: "8px 12px",
                         borderRadius: 8,
-                        background: "#EFF6FF",
-                        border: "1px solid #BFDBFE",
+                        background: isBarrenOrUrban ? "#F8FAFC" : "#EFF6FF",
+                        border: `1px solid ${isBarrenOrUrban ? "#CBD5E1" : "#BFDBFE"}`,
                         fontSize: 12,
-                        color: "#1E40AF",
+                        color: isBarrenOrUrban ? "#475569" : "#1E40AF",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
+                        flexWrap: "wrap",
+                        gap: 6,
                       }}
                     >
                       <span>
                         <strong>UNFC:</strong> {analysisResult.prediction.unfc_classification || "Proven Mineral Reserve (UNFC 111)"}
+                        {analysisResult.prediction.gsi_stage && (
+                          <span style={{ marginLeft: 6, opacity: 0.85 }}>
+                            ({analysisResult.prediction.gsi_stage})
+                          </span>
+                        )}
                       </span>
-                      <span style={{ fontSize: 11, background: "#DBEAFE", padding: "2px 6px", borderRadius: 4, fontWeight: 700 }}>
-                        GSI Compliant
-                      </span>
+                      <button
+                        onClick={handleDownloadDossier}
+                        style={{
+                          fontSize: 11,
+                          background: isBarrenOrUrban ? "#E2E8F0" : "#DBEAFE",
+                          color: isBarrenOrUrban ? "#334155" : "#1E40AF",
+                          padding: "4px 8px",
+                          borderRadius: 4,
+                          fontWeight: 700,
+                          border: "none",
+                          cursor: "pointer",
+                        }}
+                      >
+                        📥 Export GSI / UNFC Dossier
+                      </button>
                     </div>
 
                     {/* Extracted Tabular Geophysical Parameters */}

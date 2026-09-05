@@ -54,6 +54,66 @@ export default function DashboardKPIs({
     { name: "Grade Dilution", value: constraintImpact.grade_dilution_risk_pct, color: "#10B981" },
   ];
 
+  // Statutory Mine Life (LOM) and Monsoon Inundation Metrics
+  const annualCapacityMt = selectedMine?.annual_capacity_mt || 0.35;
+  const annualCapacityKt = annualCapacityMt * 1000;
+  const mineReservesKt = selectedMine?.predicted_reserves_kt || 1420;
+  const lomYears = (mineReservesKt / Math.max(10, annualCapacityKt)).toFixed(1);
+
+  const rainfallVal = selectedMine?.inputs?.rainfall_mm || 38.0;
+  const isMonsoonAlert = rainfallVal > 42.0;
+  const pumpingLoad = isMonsoonAlert ? "3,850 GPM (Active Alert)" : "1,200 GPM (Nominal)";
+
+  const handleDownloadIBMDossier = () => {
+    const report = {
+      regulatory_body: "Indian Bureau of Mines (IBM) / Ministry of Mines, Govt. of India",
+      reporting_entity: "Manganese Ore India Limited (MOIL)",
+      system: "MOIL Unified AI Mine Production & Risk Tracking Cockpit",
+      timestamp: new Date().toISOString(),
+      statutory_compliance: "Form F-1 (Annual Return) & UNFC 1997/2009 Mineral Audit",
+      lease_details: {
+        mine_name: selectedMine?.name || "Balaghat Mine",
+        state: selectedMine?.state || "Madhya Pradesh",
+        district: selectedMine?.district || "Balaghat",
+        lease_area_ha: selectedMine?.lease_area_ha || 180,
+        annual_capacity_mt: annualCapacityMt,
+        life_of_mine_years: Number(lomYears),
+      },
+      geological_reserves: {
+        total_in_situ_reserves_kt: mineReservesKt,
+        unfc_classification: "Proven Mineral Reserve (UNFC 111) / G1 Stage",
+        average_grade_pct_mn: selectedMine?.avg_grade_pct || 42.5,
+        primary_host_lithology: selectedMine?.primary_rock || "Gondite / Braunite Series",
+      },
+      operational_risk_summary: {
+        shortfall_risk_level: currentRisk,
+        weekly_output_gap_tonnes: gap,
+        fleet_availability_pct: "89.4%",
+        blasting_cycle_delay_hours: selectedMine?.inputs?.blast_cycle_delay_hours || 1.5,
+      },
+      monsoon_and_environment: {
+        weekly_rainfall_mm: rainfallVal,
+        inundation_hazard_status: isMonsoonAlert ? "High Inundation Hazard" : "Normal",
+        required_dewatering_capacity_gpm: pumpingLoad,
+        soil_saturation_index: selectedMine?.inputs?.soil_moisture || 0.22,
+        ndvi_canopy_index: selectedMine?.inputs?.ndvi || 0.35,
+      },
+      certification: {
+        certified_by: "MOIL Central Mine Planning & Dispatch Command",
+        digital_audit_hash: `MOIL-IBM-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+      },
+    };
+
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `IBM_Form_F1_UNFC_Dossier_${selectedMine?.name?.replace(/\s+/g, "_") || "MOIL"}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Top Banner with SIH Executive Scope */}
@@ -67,6 +127,8 @@ export default function DashboardKPIs({
           alignItems: "center",
           justifyContent: "space-between",
           boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+          flexWrap: "wrap",
+          gap: 14,
         }}
       >
         <div>
@@ -86,7 +148,22 @@ export default function DashboardKPIs({
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button
+            onClick={handleDownloadIBMDossier}
+            style={{
+              padding: "9px 16px",
+              borderRadius: 8,
+              border: "1px solid #38BDF8",
+              background: "rgba(56, 189, 248, 0.15)",
+              color: "#38BDF8",
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            📥 Export IBM Form F-1 Dossier
+          </button>
           <button
             onClick={() => onNavigateSection("ingestion")}
             style={{
@@ -182,7 +259,7 @@ export default function DashboardKPIs({
           </div>
         </div>
 
-        {/* KPI 3: Economically Viable Reserves */}
+        {/* KPI 3: Economically Viable Reserves & Life of Mine */}
         <div
           style={{
             background: "#FFFFFF",
@@ -195,20 +272,20 @@ export default function DashboardKPIs({
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
-              Viable Reserves (Mod A)
+              Viable Reserves & LOM
             </span>
             <Layers size={18} color="#0D9488" />
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
             <span style={{ fontSize: 24, fontWeight: 800, color: "#0D9488" }}>
-              1,420 kt
+              {mineReservesKt.toLocaleString()} kt
             </span>
             <span style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, background: "#CCFBF1", color: "#0F766E", fontWeight: 700 }}>
-              41.8% Mn
+              {selectedMine?.avg_grade_pct || 41.8}% Mn
             </span>
           </div>
           <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 4 }}>
-            82% Proven / Probable in active lease
+            Life of Mine (LOM): <strong style={{ color: "#0F766E" }}>{lomYears} Years</strong> (@ {annualCapacityMt} MT/yr)
           </div>
         </div>
 
@@ -242,33 +319,33 @@ export default function DashboardKPIs({
           </div>
         </div>
 
-        {/* KPI 5: Space/Satellite Climate Hazard */}
+        {/* KPI 5: Space/Satellite Climate & Monsoon Hazard */}
         <div
           style={{
             background: "#FFFFFF",
             borderRadius: 12,
             padding: 16,
             border: "1px solid #E2E8F0",
-            borderLeft: "4px solid #0284C7",
+            borderLeft: `4px solid ${isMonsoonAlert ? "#DC2626" : "#0284C7"}`,
             boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
-              Space/Satellite Index
+              Satellite Climate / Dewatering
             </span>
-            <CloudRain size={18} color="#0284C7" />
+            <CloudRain size={18} color={isMonsoonAlert ? "#DC2626" : "#0284C7"} />
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-            <span style={{ fontSize: 24, fontWeight: 800, color: "#0369A1" }}>
-              38 mm
+            <span style={{ fontSize: 24, fontWeight: 800, color: isMonsoonAlert ? "#DC2626" : "#0369A1" }}>
+              {rainfallVal} mm
             </span>
-            <span style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, background: "#E0F2FE", color: "#0369A1", fontWeight: 600 }}>
-              GPM Live
+            <span style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, background: isMonsoonAlert ? "#FEE2E2" : "#E0F2FE", color: isMonsoonAlert ? "#DC2626" : "#0369A1", fontWeight: 700 }}>
+              {isMonsoonAlert ? "Monsoon Alert" : "Normal Inundation"}
             </span>
           </div>
           <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 4 }}>
-            Soil Saturation: 0.26 (Low pit hazard)
+            Dewatering Pumps: <strong style={{ color: isMonsoonAlert ? "#B91C1C" : "#0369A1" }}>{pumpingLoad}</strong>
           </div>
         </div>
 
