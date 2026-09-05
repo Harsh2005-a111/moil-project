@@ -721,6 +721,34 @@ export default function SatelliteScanner({
                 </div>
               </div>
 
+              {/* ── Resolution & Coverage Guidance Note ── */}
+              <div
+                style={{
+                  background: "#FFFBEB",
+                  border: "1px solid #FDE68A",
+                  borderRadius: 8,
+                  padding: "10px 14px",
+                  fontSize: 11.5,
+                  color: "#92400E",
+                  lineHeight: 1.6,
+                }}
+              >
+                <div style={{ fontWeight: 700, marginBottom: 4, fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  📐 Recommended Image Specifications
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" }}>
+                  <span style={{ fontWeight: 600 }}>Spatial Coverage:</span>
+                  <span>~2 km × 2 km to 5 km × 5 km per scene</span>
+                  <span style={{ fontWeight: 600 }}>Resolution:</span>
+                  <span>10 m/pixel (Sentinel-2 native) to 30 m/pixel</span>
+                  <span style={{ fontWeight: 600 }}>Formats:</span>
+                  <span>GeoTIFF (.tif), JPEG (.jpg), PNG (.png)</span>
+                </div>
+                <div style={{ marginTop: 6, fontSize: 11, color: "#78350F", fontStyle: "italic" }}>
+                  💡 Tip: Upload a focused geological section (e.g., a specific ridge or terrain patch), not an entire city/district screenshot. Smaller, targeted tiles yield more accurate spectral analysis.
+                </div>
+              </div>
+
               <button
                 onClick={handleAnalyzeUpload}
                 disabled={!file || analyzing}
