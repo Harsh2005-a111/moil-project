@@ -5,7 +5,9 @@ import {
   Truck,
   CloudRain,
   Flame,
+  AlertOctagon,
 } from "lucide-react";
+import SmelterLogisticsCard from "./SmelterLogisticsCard";
 import {
   LineChart,
   Line,
@@ -26,6 +28,7 @@ export default function ShortfallPredictor({
 }) {
   const currentRisk = prediction?.risk_level || "Medium";
   const probabilities = prediction?.risk_probabilities || { High: 0.2, Medium: 0.65, Low: 0.15 };
+  const mlShortfall = prediction?.ml_shortfall;
   const constraintImpact = prediction?.constraint_impact || {
     equipment_impact_pct: 28.5,
     weather_impact_pct: 35.0,
@@ -97,6 +100,59 @@ export default function ShortfallPredictor({
           Evaluates multi-source constraints including haul fleet availability, unscheduled equipment downtime, rainfall saturation, and blasting cycle lags using LightGBM machine learning.
         </p>
       </div>
+
+      {/* Real-time Trained ML Regressor Bottleneck Banner */}
+      {mlShortfall && (
+        <div
+          style={{
+            background: mlShortfall.risk_level === "HIGH" ? "#FEF2F2" : mlShortfall.risk_level === "MEDIUM" ? "#FFFBEB" : "#F0FDF4",
+            border: `1px solid ${mlShortfall.risk_level === "HIGH" ? "#FCA5A5" : mlShortfall.risk_level === "MEDIUM" ? "#FDE68A" : "#86EFAC"}`,
+            borderRadius: 10,
+            padding: "14px 18px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 12,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <AlertOctagon size={20} color={mlShortfall.risk_color} />
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: mlShortfall.risk_color, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                PRIMARY OPERATIONAL BOTTLENECK (ML ATTRIBUTION)
+              </div>
+              <strong style={{ fontSize: 13.5, color: "#0F172A" }}>
+                {mlShortfall.primary_bottleneck}
+              </strong>
+              <div style={{ fontSize: 11.5, color: "#475569", marginTop: 2 }}>
+                🎯 <strong>Dynamic Bench Dispatch:</strong> {mlShortfall.bench_dispatch_sequence}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 12, textAlign: "right" }}>
+            <div style={{ background: "#FFFFFF", padding: "6px 12px", borderRadius: 8, border: "1px solid #E2E8F0" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748B" }}>ML DEFICIT</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: mlShortfall.risk_color }}>
+                {mlShortfall.predicted_shortfall_tonnes} t
+              </div>
+            </div>
+            <div style={{ background: "#FFFFFF", padding: "6px 12px", borderRadius: 8, border: "1px solid #E2E8F0" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748B" }}>REVENUE AT RISK</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#DC2626" }}>
+                ₹{mlShortfall.financial_loss_inr_lakhs} L
+              </div>
+            </div>
+            <div style={{ background: "#FFFFFF", padding: "6px 12px", borderRadius: 8, border: "1px solid #E2E8F0" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748B" }}>STRIPPING RATIO</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#0D9488" }}>
+                {mlShortfall.effective_stripping_ratio} W:O
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Risk Status Card + Confidence Split */}
       <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16 }}>
@@ -263,6 +319,52 @@ export default function ShortfallPredictor({
         </div>
       </div>
 
+      {/* Trained ML Feature Attribution (HistGradientBoostingRegressor) */}
+      {mlShortfall && mlShortfall.feature_attributions && mlShortfall.feature_attributions.length > 0 && (
+        <div style={{ background: "#FFFFFF", borderRadius: 12, padding: 20, border: "1px solid #E2E8F0" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Cpu size={16} color="#185FA5" />
+                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+                  Non-Linear Constraint Feature Attribution (Trained Regressor)
+                </h3>
+              </div>
+              <p style={{ margin: "2px 0 0 0", fontSize: 11.5, color: "#64748B" }}>
+                Exact tonnage deficit breakdown derived from tree-based gradient attribution across operational shifts
+              </p>
+            </div>
+
+            {mlShortfall.model_validation && (
+              <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 6, background: "#EFF6FF", color: "#1E40AF" }}>
+                R² = {mlShortfall.model_validation.r2_score} | MAE = {mlShortfall.model_validation.mae_tonnes} t ({mlShortfall.model_validation.training_records} Shifts)
+              </span>
+            )}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 10 }}>
+            {mlShortfall.feature_attributions.map((item, idx) => (
+              <div key={idx} style={{ background: "#F8FAFC", borderRadius: 8, padding: 12, border: "1px solid #E2E8F0" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 600, marginBottom: 4 }}>
+                  <span>{item.label}</span>
+                  <strong style={{ color: "#DC2626" }}>-{item.impact_tonnes} t ({item.pct_contribution}%)</strong>
+                </div>
+                <div style={{ width: "100%", height: 6, background: "#E2E8F0", borderRadius: 3, overflow: "hidden" }}>
+                  <div
+                    style={{
+                      height: "100%",
+                      width: `${Math.min(100, item.pct_contribution)}%`,
+                      background: "linear-gradient(90deg, #F59E0B, #DC2626)",
+                      borderRadius: 3,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Production Trend & Forecast Gap */}
       <div
         style={{
@@ -295,6 +397,9 @@ export default function ShortfallPredictor({
           </LineChart>
         </ResponsiveContainer>
       </div>
+
+      {/* Pit-to-Smelter Freight Logistics & Net Smelter Return */}
+      <SmelterLogisticsCard selectedMine={selectedMine} inputs={inputs} />
     </div>
   );
 }

@@ -12,9 +12,11 @@ import {
   Database,
   Satellite,
   ArrowRight,
+  Layers,
 } from "lucide-react";
 import { PRESET_SCENARIOS, SAMPLE_CSV_CONTENT } from "../data/moilData";
 import SatelliteScanner from "./SatelliteScanner";
+import BoreholeCoreViewer from "./BoreholeCoreViewer";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -649,6 +651,29 @@ export default function ReserveIngestionHub({
         </button>
 
         <button
+          onClick={() => setActiveTab("boreholes")}
+          style={{
+            flex: 1,
+            minWidth: 190,
+            padding: "8px 12px",
+            border: "none",
+            borderRadius: 7,
+            background: activeTab === "boreholes" ? "#7E22CE" : "transparent",
+            color: activeTab === "boreholes" ? "#FFFFFF" : "#64748B",
+            fontSize: 12.5,
+            fontWeight: 700,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          <Layers size={14} />
+          <span>4. Subsurface Boreholes & Core Logs</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab("upload")}
           style={{
             padding: "8px 14px",
@@ -1108,7 +1133,21 @@ export default function ReserveIngestionHub({
         </div>
       )}
 
-      {/* Tab 4: Batch Upload */}
+      {/* Tab 4: Subsurface Borehole & Drill Logs */}
+      {activeTab === "boreholes" && (
+        <BoreholeCoreViewer
+          selectedMine={selectedMine}
+          surfacePredictedGrade={prospectResults?.predicted_ore_grade_pct || inputs?.ore_grade_pct || 38.5}
+          onApplyBoreholeAssay={(compGrade, rock) => {
+            onChangeInput("ore_grade_pct", compGrade);
+            if (rock) onChangeInput("rock_type", rock.split(" / ")[0]);
+            onSubmitEvaluation();
+          }}
+          API_BASE={API_BASE}
+        />
+      )}
+
+      {/* Tab 5: Batch Upload */}
       {activeTab === "upload" && (
         <div style={{ background: "#FFFFFF", borderRadius: 12, padding: 22, border: "1px solid #E2E8F0" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
