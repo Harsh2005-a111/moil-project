@@ -1,11 +1,8 @@
 import React, { useState } from "react";
 import {
   RefreshCw,
-  Satellite,
-  Cpu,
   MapPin,
   PlusCircle,
-  AlertCircle,
 } from "lucide-react";
 
 export default function Navbar({
@@ -94,29 +91,15 @@ export default function Navbar({
         boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
       }}
     >
-      {/* Title & Tagline */}
+      {/* Title */}
       <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#0F172A" }}>
-            {currentMeta.title}
-          </h2>
-          <span
-            style={{
-              fontSize: 11,
-              padding: "2px 8px",
-              borderRadius: 6,
-              background: "#F1F5F9",
-              color: "#475569",
-              fontWeight: 500,
-            }}
-          >
-            {currentMeta.tag}
-          </span>
-        </div>
+        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#0F172A" }}>
+          {currentMeta.title}
+        </h2>
       </div>
 
-      {/* Controls & Badges */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+      {/* Controls */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {/* Mine / Region Dropdown */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <MapPin size={16} color="#185FA5" />
@@ -171,45 +154,6 @@ export default function Navbar({
             <PlusCircle size={14} color="#0D9488" />
             <span>New Region</span>
           </button>
-        </div>
-
-        {/* Satellite Sync Badge */}
-        <div
-          title="Satellite Sentinel-2 & GPM Data Sync Active"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "5px 10px",
-            borderRadius: 20,
-            background: "#ECFDF5",
-            border: "1px solid #A7F3D0",
-            color: "#065F46",
-            fontSize: 11.5,
-            fontWeight: 600,
-          }}
-        >
-          <Satellite size={13} color="#059669" />
-          <span>Space Data Synced</span>
-        </div>
-
-        {/* API Status Pill */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "5px 10px",
-            borderRadius: 20,
-            background: apiOnline ? "#EFF6FF" : "#FEF2F2",
-            border: `1px solid ${apiOnline ? "#BFDBFE" : "#FECACA"}`,
-            color: apiOnline ? "#1E40AF" : "#991B1B",
-            fontSize: 11.5,
-            fontWeight: 600,
-          }}
-        >
-          {apiOnline ? <Cpu size={13} color="#2563EB" /> : <AlertCircle size={13} color="#DC2626" />}
-          <span>{apiOnline ? "FastAPI Online" : "API Offline"}</span>
         </div>
 
         {/* Re-calculate / Refresh Button */}

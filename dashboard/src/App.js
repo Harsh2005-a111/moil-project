@@ -6,6 +6,7 @@ import ReserveIngestionHub from "./components/ReserveIngestionHub";
 import ShortfallPredictor from "./components/ShortfallPredictor";
 import PrescriptiveActions from "./components/PrescriptiveActions";
 import ScenarioSimulator from "./components/ScenarioSimulator";
+import GlobalKPIBar from "./components/GlobalKPIBar";
 import { MOIL_MINES } from "./data/moilData";
 import "./App.css";
 
@@ -131,10 +132,18 @@ export default function App() {
       });
   }, []);
 
-  // Run ML Prediction whenever selectedMine or inputs change
+  // Run ML Prediction whenever selectedMine or inputs change (with debounce)
   useEffect(() => {
-    runEvaluation();
-  }, [selectedMine]);
+    if (!selectedMine || !inputs) {
+      setPrediction(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      runEvaluation();
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMine, inputs]);
 
   const runEvaluation = () => {
     if (!inputs || !selectedMine) {
@@ -276,11 +285,20 @@ export default function App() {
         />
 
         {/* Section Viewport Router */}
-        <main style={{ padding: "24px 28px", flex: 1 }}>
+        <main style={{ padding: "20px 24px", flex: 1, display: "flex", flexDirection: "column", gap: 18 }}>
+          {/* Universal Real-Time KPI Bar across all modules */}
+          <GlobalKPIBar
+            selectedMine={selectedMine}
+            inputs={inputs}
+            prediction={prediction}
+            trend={trend}
+          />
+
           {activeSection === "kpis" && (
             <DashboardKPIs
               mines={mines}
               selectedMine={selectedMine}
+              inputs={inputs}
               prediction={prediction}
               trend={trend}
               onSelectMine={handleSelectMine}
