@@ -175,7 +175,7 @@ export default function SatelliteScanner({
   const isZeroOrBarren =
     !analysisResult ||
     analysisResult.prediction?.total_available_reserves_kt === 0 ||
-    analysisResult.prediction?.manganese_probability_pct === 0 ||
+    analysisResult.prediction?.manganese_probability_pct < 50 ||
     analysisResult.prediction?.decision?.includes("BARREN") ||
     analysisResult.prediction?.decision?.includes("STERILIZED");
 
@@ -185,11 +185,11 @@ export default function SatelliteScanner({
 
     if (
       pred.total_available_reserves_kt === 0 ||
-      pred.manganese_probability_pct === 0 ||
+      pred.manganese_probability_pct < 50 ||
       pred.decision?.includes("BARREN") ||
       pred.decision?.includes("STERILIZED")
     ) {
-      setErrorMsg("Cannot auto-fill sliders: Region is barren/sterilized urban terrain with 0% Manganese.");
+      setErrorMsg("Cannot auto-fill sliders: Ground classified as Barren Country Rock or Urban Terrain (Reserves: 0.0 kt).");
       return;
     }
 
@@ -224,7 +224,7 @@ export default function SatelliteScanner({
 
     if (
       pred.total_available_reserves_kt === 0 ||
-      pred.manganese_probability_pct === 0 ||
+      pred.manganese_probability_pct < 50 ||
       pred.decision?.includes("BARREN") ||
       pred.decision?.includes("STERILIZED")
     ) {
@@ -904,15 +904,19 @@ export default function SatelliteScanner({
                   background:
                     analysisResult.prediction.decision?.includes("Greenfield")
                       ? "#FEF3C7"
-                      : analysisResult.prediction.manganese_probability_pct > 50
+                      : analysisResult.prediction.manganese_probability_pct >= 70
                       ? "#DCFCE7"
-                      : "#FEE2E2",
+                      : analysisResult.prediction.manganese_probability_pct >= 50
+                      ? "#DBEAFE"
+                      : "#F1F5F9",
                   color:
                     analysisResult.prediction.decision?.includes("Greenfield")
                       ? "#B45309"
-                      : analysisResult.prediction.manganese_probability_pct > 50
+                      : analysisResult.prediction.manganese_probability_pct >= 70
                       ? "#15803D"
-                      : "#B91C1C",
+                      : analysisResult.prediction.manganese_probability_pct >= 50
+                      ? "#1D4ED8"
+                      : "#475569",
                 }}
               >
                 {analysisResult.prediction.decision}
@@ -976,6 +980,7 @@ export default function SatelliteScanner({
 
                 const isBarrenOrUrban =
                   totalReservesKt === 0 ||
+                  probPct < 50 ||
                   analysisResult.prediction.decision?.includes("BARREN") ||
                   analysisResult.prediction.decision?.includes("STERILIZED");
 
