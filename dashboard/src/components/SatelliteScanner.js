@@ -172,10 +172,28 @@ export default function SatelliteScanner({
     }
   };
 
+  const isZeroOrBarren =
+    !analysisResult ||
+    analysisResult.prediction?.total_available_reserves_kt === 0 ||
+    analysisResult.prediction?.manganese_probability_pct === 0 ||
+    analysisResult.prediction?.decision?.includes("BARREN") ||
+    analysisResult.prediction?.decision?.includes("STERILIZED");
+
   const handleAutoFillSliders = () => {
     if (!analysisResult || !analysisResult.extracted_features) return;
-    const feat = analysisResult.extracted_features;
     const pred = analysisResult.prediction;
+
+    if (
+      pred.total_available_reserves_kt === 0 ||
+      pred.manganese_probability_pct === 0 ||
+      pred.decision?.includes("BARREN") ||
+      pred.decision?.includes("STERILIZED")
+    ) {
+      setErrorMsg("Cannot auto-fill sliders: Region is barren/sterilized urban terrain with 0% Manganese.");
+      return;
+    }
+
+    const feat = analysisResult.extracted_features;
 
     if (onApplyExtractedParameters) {
       onApplyExtractedParameters({
@@ -203,6 +221,16 @@ export default function SatelliteScanner({
     const regionTitle = saveRegionName.trim() || `Sat-Deposit-${Date.now().toString().slice(-4)}`;
     const feat = analysisResult.extracted_features;
     const pred = analysisResult.prediction;
+
+    if (
+      pred.total_available_reserves_kt === 0 ||
+      pred.manganese_probability_pct === 0 ||
+      pred.decision?.includes("BARREN") ||
+      pred.decision?.includes("STERILIZED")
+    ) {
+      setErrorMsg("Cannot save: Non-mineralized or sterilized urban terrain cannot be registered as an active mining block.");
+      return;
+    }
 
     setSavingRegion(true);
     try {
@@ -357,24 +385,33 @@ export default function SatelliteScanner({
         {analysisResult && (
           <div style={{ display: "flex", gap: 8 }}>
             <button
-              onClick={handleAutoFillSliders}
+              onClick={isZeroOrBarren ? undefined : handleAutoFillSliders}
+              disabled={isZeroOrBarren}
+              title={
+                isZeroOrBarren
+                  ? "Auto-fill disabled: Zero Manganese reserves detected in this urban/barren region."
+                  : "Auto-fill all sliders and operational inputs with extracted satellite parameters"
+              }
               style={{
                 padding: "8px 14px",
                 borderRadius: 8,
-                border: "none",
-                background: "#10B981",
-                color: "#FFFFFF",
+                border: isZeroOrBarren ? "1px solid rgba(255,255,255,0.2)" : "none",
+                background: isZeroOrBarren ? "rgba(148, 163, 184, 0.25)" : "#10B981",
+                color: isZeroOrBarren ? "#CBD5E1" : "#FFFFFF",
                 fontSize: 12.5,
                 fontWeight: 700,
-                cursor: "pointer",
+                cursor: isZeroOrBarren ? "not-allowed" : "pointer",
+                opacity: isZeroOrBarren ? 0.45 : 1,
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
-                boxShadow: "0 2px 6px rgba(16,185,129,0.3)",
+                boxShadow: isZeroOrBarren ? "none" : "0 2px 6px rgba(16,185,129,0.3)",
               }}
             >
               <Sliders size={14} />
-              <span>Auto-Fill Sliders & Inputs</span>
+              <span>
+                {isZeroOrBarren ? "Auto-Fill Disabled (0% Mn)" : "Auto-Fill Sliders & Inputs"}
+              </span>
             </button>
           </div>
         )}
@@ -1164,49 +1201,70 @@ export default function SatelliteScanner({
               {/* Action Buttons */}
               <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
                 <button
-                  onClick={handleAutoFillSliders}
+                  onClick={isZeroOrBarren ? undefined : handleAutoFillSliders}
+                  disabled={isZeroOrBarren}
+                  title={
+                    isZeroOrBarren
+                      ? "Auto-fill disabled: Zero Manganese reserves detected in this urban/barren region."
+                      : "Populate extracted indicators to portal sliders"
+                  }
                   style={{
                     flex: 1,
                     padding: "10px 14px",
                     borderRadius: 8,
-                    border: "1px solid #10B981",
-                    background: "#ECFDF5",
-                    color: "#065F46",
+                    border: isZeroOrBarren ? "1px solid #E2E8F0" : "1px solid #10B981",
+                    background: isZeroOrBarren ? "#F1F5F9" : "#ECFDF5",
+                    color: isZeroOrBarren ? "#94A3B8" : "#065F46",
                     fontSize: 12.5,
                     fontWeight: 700,
-                    cursor: "pointer",
+                    cursor: isZeroOrBarren ? "not-allowed" : "pointer",
+                    opacity: isZeroOrBarren ? 0.45 : 1,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     gap: 6,
                   }}
                 >
-                  <Sliders size={15} color="#10B981" />
-                  <span>Auto-Fill Sliders & Constraints</span>
+                  <Sliders size={15} color={isZeroOrBarren ? "#94A3B8" : "#10B981"} />
+                  <span>
+                    {isZeroOrBarren ? "Auto-Fill Unavailable (0% Mn)" : "Auto-Fill Sliders & Constraints"}
+                  </span>
                 </button>
 
                 <button
-                  onClick={handleSaveAsRegion}
-                  disabled={savingRegion}
+                  onClick={isZeroOrBarren ? undefined : handleSaveAsRegion}
+                  disabled={savingRegion || isZeroOrBarren}
+                  title={
+                    isZeroOrBarren
+                      ? "Cannot save: Non-mineralized or sterilized urban terrain cannot be registered as an active mining block."
+                      : "Save this analyzed region permanently into MOIL roster"
+                  }
                   style={{
                     flex: 1.2,
                     padding: "10px 14px",
                     borderRadius: 8,
                     border: "none",
-                    background: "#185FA5",
-                    color: "#FFFFFF",
+                    background: isZeroOrBarren ? "#CBD5E1" : "#185FA5",
+                    color: isZeroOrBarren ? "#64748B" : "#FFFFFF",
                     fontSize: 12.5,
                     fontWeight: 700,
-                    cursor: savingRegion ? "not-allowed" : "pointer",
+                    cursor: savingRegion || isZeroOrBarren ? "not-allowed" : "pointer",
+                    opacity: isZeroOrBarren ? 0.5 : 1,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     gap: 6,
-                    boxShadow: "0 2px 8px rgba(24,95,165,0.3)",
+                    boxShadow: isZeroOrBarren ? "none" : "0 2px 8px rgba(24,95,165,0.3)",
                   }}
                 >
                   <BookmarkPlus size={15} />
-                  <span>{savingRegion ? "Saving to Database..." : "💾 Save as Permanent Region"}</span>
+                  <span>
+                    {savingRegion
+                      ? "Saving to Database..."
+                      : isZeroOrBarren
+                      ? "Cannot Save (Barren Zone)"
+                      : "💾 Save as Permanent Region"}
+                  </span>
                 </button>
               </div>
             </>
