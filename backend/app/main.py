@@ -22,7 +22,6 @@ from typing import Optional, List, Dict, Any
 import numpy as np
 import pandas as pd
 import joblib
-import shap
 from pathlib import Path
 import random
 
@@ -49,18 +48,16 @@ LABELS_PATH = Path(__file__).parent / "model" / "label_names.pkl"
 model = None
 encoders = None
 label_names = None
-explainer = None
 
 
 @app.on_event("startup")
 def load_artifacts():
     """Load the trained LightGBM model + encoders."""
-    global model, encoders, label_names, explainer
+    global model, encoders, label_names
     try:
         model = joblib.load(MODEL_PATH)
         encoders = joblib.load(ENCODERS_PATH)
         label_names = joblib.load(LABELS_PATH)
-        explainer = shap.TreeExplainer(model)
         print("Model artifacts loaded successfully.")
     except Exception as e:
         print(f"Artifact loading note: {e}. Running with intelligent fallback engine.")
@@ -411,23 +408,13 @@ def predict_shortfall(features: FullMineInputs):
             pred_idx = int(np.argmax(proba))
             risk_level = label_names[pred_idx] if label_names else ["Low", "Medium", "High"][pred_idx]
 
-            shap_values = explainer.shap_values(row)
-            if isinstance(shap_values, list):
-                shap_row = np.asarray(shap_values[pred_idx])[0]
-            elif isinstance(shap_values, np.ndarray):
-                if shap_values.ndim == 3:
-                    if shap_values.shape[0] == 1 and shap_values.shape[2] == len(label_names):
-                        shap_row = shap_values[0, :, pred_idx]
-                    elif shap_values.shape[0] == len(label_names):
-                        shap_row = shap_values[pred_idx, 0, :]
-                    else:
-                        shap_row = shap_values[0, :, pred_idx]
-                elif shap_values.ndim == 2:
-                    shap_row = shap_values[0]
-                else:
-                    shap_row = shap_values.flatten()
-            else:
-                shap_row = np.asarray(shap_values).flatten()
+            # Native LightGBM feature contribution calculation (fast, lightweight, 100% C-native, no SIGSEGV)
+            try:
+                contrib = model.predict(row, pred_contrib=True)
+                n_feats = len(model.feature_name())
+                shap_row = contrib[0, pred_idx * (n_feats + 1) : pred_idx * (n_feats + 1) + n_feats]
+            except Exception:
+                shap_row = np.zeros(len(row.columns))
 
             shap_row = np.asarray(shap_row).flatten()
             recs = recommend_actions(shap_row, row.columns.tolist())
