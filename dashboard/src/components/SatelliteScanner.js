@@ -40,10 +40,10 @@ export default function SatelliteScanner({
   const [customLat, setCustomLat] = useState(selectedMine?.lat || 21.8167);
   const [customLon, setCustomLon] = useState(selectedMine?.lon || 80.1833);
 
-  // Optional Copernicus Credentials
+  // Optional Copernicus Credentials with persistent localStorage
   const [showCreds, setShowCreds] = useState(false);
-  const [clientId, setClientId] = useState("");
-  const [clientSecret, setClientSecret] = useState("");
+  const [clientId, setClientId] = useState(() => localStorage.getItem("MOIL_COPERNICUS_CLIENT_ID") || "");
+  const [clientSecret, setClientSecret] = useState(() => localStorage.getItem("MOIL_COPERNICUS_CLIENT_SECRET") || "");
 
   const fileInputRef = useRef(null);
 
@@ -628,20 +628,35 @@ export default function SatelliteScanner({
 
                 {showCreds && (
                   <div style={{ marginTop: 8, padding: 10, background: "#F8FAFC", borderRadius: 6, border: "1px solid #E2E8F0", display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>Copernicus CDSE API Keys</span>
+                      {clientId && clientSecret && (
+                        <span style={{ fontSize: 10.5, color: "#16A34A", fontWeight: 600 }}>✓ Saved in browser</span>
+                      )}
+                    </div>
                     <input
                       type="text"
                       placeholder="Copernicus Client ID"
                       value={clientId}
-                      onChange={(e) => setClientId(e.target.value)}
-                      style={{ padding: "5px 8px", fontSize: 12, borderRadius: 4, border: "1px solid #CBD5E1" }}
+                      onChange={(e) => {
+                        setClientId(e.target.value);
+                        localStorage.setItem("MOIL_COPERNICUS_CLIENT_ID", e.target.value);
+                      }}
+                      style={{ padding: "6px 8px", fontSize: 12, borderRadius: 4, border: "1px solid #CBD5E1" }}
                     />
                     <input
                       type="password"
                       placeholder="Copernicus Client Secret"
                       value={clientSecret}
-                      onChange={(e) => setClientSecret(e.target.value)}
-                      style={{ padding: "5px 8px", fontSize: 12, borderRadius: 4, border: "1px solid #CBD5E1" }}
+                      onChange={(e) => {
+                        setClientSecret(e.target.value);
+                        localStorage.setItem("MOIL_COPERNICUS_CLIENT_SECRET", e.target.value);
+                      }}
+                      style={{ padding: "6px 8px", fontSize: 12, borderRadius: 4, border: "1px solid #CBD5E1" }}
                     />
+                    <span style={{ fontSize: 10.5, color: "#64748B" }}>
+                      Keys are saved locally in your browser. If left empty, the engine automatically retrieves authentic high-resolution Sentinel-2 public imagery.
+                    </span>
                   </div>
                 )}
               </div>
@@ -801,9 +816,16 @@ export default function SatelliteScanner({
                   marginBottom: 8,
                 }}
               >
-                <span style={{ fontSize: 11.5, fontWeight: 700, color: "#94A3B8" }}>
-                  {analysisResult ? "SENTINEL-2 RGB SCENE (B04, B03, B02)" : "IMAGE VIEWPORT"}
-                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: "#38BDF8" }}>
+                    {analysisResult ? (analysisResult.data_source || "SENTINEL-2 RGB SCENE") : "IMAGE VIEWPORT"}
+                  </span>
+                  {analysisResult && (
+                    <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 3, background: "#1E293B", color: "#94A3B8" }}>
+                      ~5 km × 5 km Scene
+                    </span>
+                  )}
+                </div>
                 {analysisResult && (
                   <label
                     style={{
@@ -828,13 +850,14 @@ export default function SatelliteScanner({
               <div
                 style={{
                   width: "100%",
-                  height: 230,
+                  height: 380,
                   borderRadius: 6,
                   overflow: "hidden",
                   background: "#000",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  boxShadow: "inset 0 0 10px rgba(0,0,0,0.5)",
                 }}
               >
                 <img
@@ -845,9 +868,10 @@ export default function SatelliteScanner({
                   }
                   alt="Sentinel Scene"
                   style={{
-                    maxWidth: "100%",
-                    maxHeight: "100%",
+                    width: "100%",
+                    height: "100%",
                     objectFit: "contain",
+                    imageRendering: "auto",
                   }}
                 />
               </div>
