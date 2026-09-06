@@ -37,6 +37,17 @@ export default function ReserveIngestionHub({
   const [cutoffGrade, setCutoffGrade] = useState(30.0);
   const [reservesData, setReservesData] = useState(null);
 
+  const safeInputs = inputs || {};
+  const isTerrainBarren = Boolean(
+    safeInputs.is_barren ||
+    safeInputs.waste_flag === 1 ||
+    selectedMine?.waste_flag === 1 ||
+    selectedMine?.type?.includes("Barren") ||
+    selectedMine?.type?.includes("Sterilized") ||
+    selectedMine?.name?.toLowerCase().includes("connaught") ||
+    (safeInputs.tonnage === 0 && safeInputs.ore_grade_pct === 0)
+  );
+
   // Satellite-First Indicator State
   const [hostLithology, setHostLithology] = useState(inputs?.rock_type || "Gondite / Braunite Series");
   const [swirAbsorption, setSwirAbsorption] = useState(0.74);
@@ -82,28 +93,47 @@ export default function ReserveIngestionHub({
     const rock = params.rock_type || "Braunite";
     const elev = parseFloat(params.elevation_m) || 120.0;
 
-    // Synchronize operational sliders, blasting delays, and fleet capacity if NOT barren
-    if (!isBarren && onChangeInput) {
-      const blastDelay = Number((1.2 + (rain > 50 ? (rain - 50) * 0.05 : 0) + (rock.includes("Braunite") ? 0.5 : 0.1)).toFixed(1));
-      const downtime = Number((2.0 + (rain > 40 ? (rain - 40) * 0.06 : 0) + (soil > 0.35 ? 1.2 : 0.4)).toFixed(1));
-      const equipAvail = Math.max(65.0, Math.min(94.0, Number((92.0 - (rain > 50 ? (rain - 50) * 0.25 : 0) - (soil > 0.35 ? 4.0 : 0)).toFixed(1))));
-      const miningCost = Number((42.0 + (elev > 250 ? 5.0 : 0) + (rock.includes("Braunite") ? 4.0 : 0)).toFixed(1));
-      const procCost = Number((26.0 + (grade < 40 ? 5.0 : 0)).toFixed(1));
+    // Synchronize operational sliders, blasting delays, and fleet capacity
+    if (onChangeInput) {
+      if (isBarren) {
+        onChangeInput("is_barren", true);
+        onChangeInput("waste_flag", 1);
+        onChangeInput("ore_grade_pct", 0.0);
+        onChangeInput("tonnage", 0.0);
+        onChangeInput("ore_value_per_tonne", 0.0);
+        onChangeInput("mining_cost", 0.0);
+        onChangeInput("processing_cost", 0.0);
+        onChangeInput("equipment_availability_pct", 0.0);
+        onChangeInput("unscheduled_downtime_hours", 0.0);
+        onChangeInput("blast_cycle_delay_hours", 0.0);
+        onChangeInput("rainfall_mm", rain);
+        onChangeInput("soil_moisture", soil);
+        if (params.ndvi !== undefined) onChangeInput("ndvi", params.ndvi);
+        if (params.land_temp_c !== undefined) onChangeInput("land_temp_c", params.land_temp_c);
+        onChangeInput("rock_type", "Sterilized Country Rock / Urban Settlement");
+      } else {
+        onChangeInput("is_barren", false);
+        onChangeInput("waste_flag", 0);
+        const blastDelay = Number((1.2 + (rain > 50 ? (rain - 50) * 0.05 : 0) + (rock.includes("Braunite") ? 0.5 : 0.1)).toFixed(1));
+        const downtime = Number((2.0 + (rain > 40 ? (rain - 40) * 0.06 : 0) + (soil > 0.35 ? 1.2 : 0.4)).toFixed(1));
+        const equipAvail = Math.max(65.0, Math.min(94.0, Number((92.0 - (rain > 50 ? (rain - 50) * 0.25 : 0) - (soil > 0.35 ? 4.0 : 0)).toFixed(1))));
+        const miningCost = Number((42.0 + (elev > 250 ? 5.0 : 0) + (rock.includes("Braunite") ? 4.0 : 0)).toFixed(1));
+        const procCost = Number((26.0 + (grade < 40 ? 5.0 : 0)).toFixed(1));
 
-      onChangeInput("rainfall_mm", rain);
-      onChangeInput("soil_moisture", soil);
-      if (params.ndvi !== undefined) onChangeInput("ndvi", params.ndvi);
-      if (params.land_temp_c !== undefined) onChangeInput("land_temp_c", params.land_temp_c);
-      onChangeInput("rock_type", rock.split(" / ")[0]);
-      onChangeInput("ore_grade_pct", grade);
-      onChangeInput("tonnage", tonnage);
-      onChangeInput("z", elev);
-      onChangeInput("blast_cycle_delay_hours", blastDelay);
-      onChangeInput("unscheduled_downtime_hours", downtime);
-      onChangeInput("equipment_availability_pct", equipAvail);
-      onChangeInput("mining_cost", miningCost);
-      onChangeInput("processing_cost", procCost);
-      onChangeInput("waste_flag", 0);
+        onChangeInput("rainfall_mm", rain);
+        onChangeInput("soil_moisture", soil);
+        if (params.ndvi !== undefined) onChangeInput("ndvi", params.ndvi);
+        if (params.land_temp_c !== undefined) onChangeInput("land_temp_c", params.land_temp_c);
+        onChangeInput("rock_type", rock.split(" / ")[0]);
+        onChangeInput("ore_grade_pct", grade);
+        onChangeInput("tonnage", tonnage);
+        onChangeInput("z", elev);
+        onChangeInput("blast_cycle_delay_hours", blastDelay);
+        onChangeInput("unscheduled_downtime_hours", downtime);
+        onChangeInput("equipment_availability_pct", equipAvail);
+        onChangeInput("mining_cost", miningCost);
+        onChangeInput("processing_cost", procCost);
+      }
     }
 
     // Always synchronize 2D/3D heatmap & depth slices to correspond to this evaluated scene!
@@ -1038,131 +1068,293 @@ export default function ReserveIngestionHub({
 
       {/* Tab 2: Operational Constraints */}
       {activeTab === "operations" && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          {/* Production & Economics */}
-          <div style={{ background: "#FFFFFF", borderRadius: 12, padding: 18, border: "1px solid #E2E8F0", borderTop: "3px solid #185FA5" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <TrendingUp size={16} color="#185FA5" />
-              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
-                1. Production Targets & Economics
-              </h3>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <div>
-                <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
-                  Weekly Extraction Target (t)
-                </label>
-                <input
-                  type="number"
-                  value={safeInputs.tonnage ?? ""}
-                  onChange={(e) => onChangeInput("tonnage", parseFloat(e.target.value) || 0)}
-                  style={inputStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
-                  Ore Realization Value (₹/t)
-                </label>
-                <input
-                  type="number"
-                  value={safeInputs.ore_value_per_tonne ?? ""}
-                  onChange={(e) => onChangeInput("ore_value_per_tonne", parseFloat(e.target.value) || 0)}
-                  style={inputStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
-                  Mining Unit Cost (₹/t)
-                </label>
-                <input
-                  type="number"
-                  value={safeInputs.mining_cost ?? ""}
-                  onChange={(e) => onChangeInput("mining_cost", parseFloat(e.target.value) || 0)}
-                  style={inputStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
-                  Processing / Beneficiation Cost (₹/t)
-                </label>
-                <input
-                  type="number"
-                  value={safeInputs.processing_cost ?? ""}
-                  onChange={(e) => onChangeInput("processing_cost", parseFloat(e.target.value) || 0)}
-                  style={inputStyle}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Equipment & Blasting Constraints */}
-          <div style={{ background: "#FFFFFF", borderRadius: 12, padding: 18, border: "1px solid #E2E8F0", borderTop: "3px solid #BA7517" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <Truck size={16} color="#BA7517" />
-              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
-                2. Equipment & Blasting Constraints
-              </h3>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <div>
-                <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
-                  Fleet Availability (%)
-                </label>
-                <input
-                  type="number"
-                  value={safeInputs.equipment_availability_pct ?? ""}
-                  onChange={(e) => onChangeInput("equipment_availability_pct", parseFloat(e.target.value) || 0)}
-                  style={inputStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
-                  Unscheduled Breakdown (hrs/wk)
-                </label>
-                <input
-                  type="number"
-                  step="0.5"
-                  value={safeInputs.unscheduled_downtime_hours ?? ""}
-                  onChange={(e) => onChangeInput("unscheduled_downtime_hours", parseFloat(e.target.value) || 0)}
-                  style={inputStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
-                  Blasting Safety Delay (hrs)
-                </label>
-                <input
-                  type="number"
-                  step="0.5"
-                  value={safeInputs.blast_cycle_delay_hours ?? ""}
-                  onChange={(e) => onChangeInput("blast_cycle_delay_hours", parseFloat(e.target.value) || 0)}
-                  style={inputStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
-                  Waste Flag
-                </label>
-                <select
-                  value={safeInputs.waste_flag ?? 0}
-                  onChange={(e) => onChangeInput("waste_flag", parseInt(e.target.value) || 0)}
-                  style={inputStyle}
+        isTerrainBarren ? (
+          <div
+            style={{
+              background: "#FFFFFF",
+              borderRadius: 14,
+              padding: 24,
+              border: "1px solid #CBD5E1",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 18,
+            }}
+          >
+            {/* Header Banner */}
+            <div
+              style={{
+                background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+                borderRadius: 10,
+                padding: "16px 20px",
+                color: "#FFFFFF",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 12,
+                borderLeft: "5px solid #EAB308",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: 10,
+                    background: "rgba(234, 179, 8, 0.18)",
+                    border: "1px solid rgba(234, 179, 8, 0.4)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 20,
+                  }}
                 >
-                  <option value={0}>0 - Economically Viable Ore</option>
-                  <option value={1}>1 - Barren Overburden</option>
-                </select>
+                  🚫
+                </div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+                    <span
+                      style={{
+                        fontSize: 10.5,
+                        fontWeight: 800,
+                        letterSpacing: "0.06em",
+                        background: "#EAB308",
+                        color: "#0F172A",
+                        padding: "2px 8px",
+                        borderRadius: 4,
+                      }}
+                    >
+                      STATUTORY EXCLUSION
+                    </span>
+                    <span style={{ fontSize: 12, color: "#94A3B8" }}>
+                      UNFC 777 • Sterilized Non-Mineralized Ground / Municipal Habitat
+                    </span>
+                  </div>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#FFFFFF" }}>
+                    Non-Mining Terrain: Operational Constraints Inactive
+                  </h3>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  if (onChangeInput) {
+                    onChangeInput("is_barren", false);
+                    onChangeInput("waste_flag", 0);
+                    onChangeInput("tonnage", 120000.0);
+                    onChangeInput("ore_grade_pct", 38.5);
+                  }
+                }}
+                className="flowing-btn"
+                style={{
+                  padding: "7px 14px",
+                  background: "rgba(255, 255, 255, 0.1)",
+                  color: "#E2E8F0",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  fontSize: 12,
+                }}
+              >
+                Override & Enable Manual Input
+              </button>
+            </div>
+
+            {/* Statutory Metrics Grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
+              <div style={{ background: "#F8FAFC", borderRadius: 10, padding: 14, border: "1px solid #E2E8F0" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                  Extraction Target
+                </span>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#0F172A", marginTop: 4 }}>
+                  0.0 t/wk
+                </div>
+                <span style={{ fontSize: 11.5, color: "#059669", fontWeight: 600 }}>
+                  ✓ Zero Procurement Mandate
+                </span>
+              </div>
+
+              <div style={{ background: "#F8FAFC", borderRadius: 10, padding: 14, border: "1px solid #E2E8F0" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                  Blasting Safety Delays
+                </span>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#64748B", marginTop: 4 }}>
+                  N/A (Exempt)
+                </div>
+                <span style={{ fontSize: 11.5, color: "#64748B" }}>
+                  Blasting prohibited in municipal buffer
+                </span>
+              </div>
+
+              <div style={{ background: "#F8FAFC", borderRadius: 10, padding: 14, border: "1px solid #E2E8F0" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                  Pit Dewatering & Haul Fleet
+                </span>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#64748B", marginTop: 4 }}>
+                  0 Fleet Assigned
+                </div>
+                <span style={{ fontSize: 11.5, color: "#64748B" }}>
+                  No open-cast pit excavation active
+                </span>
+              </div>
+
+              <div style={{ background: "#F8FAFC", borderRadius: 10, padding: 14, border: "1px solid #E2E8F0" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                  Ore Realization Value
+                </span>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#0F172A", marginTop: 4 }}>
+                  ₹0 / t
+                </div>
+                <span style={{ fontSize: 11.5, color: "#64748B" }}>
+                  Zero extractable manganese content
+                </span>
+              </div>
+            </div>
+
+            {/* Explainable AI Statutory Directive */}
+            <div
+              style={{
+                background: "#FEFCE8",
+                borderRadius: 10,
+                padding: "14px 18px",
+                border: "1px solid #FEF08A",
+                fontSize: 12.5,
+                color: "#713F12",
+                lineHeight: 1.6,
+              }}
+            >
+              🏛️ <strong>Statutory Regulatory Notice (MMDR Act & DGMS Guidelines):</strong>
+              <p style={{ margin: "4px 0 0 0" }}>
+                Under Section 4 of the <em>Mines and Minerals (Development and Regulation) Act, 1957</em> and DGMS safety protocols, urban habitations (e.g. Connaught Place, built-up cities) and sterile non-mineralized country rock are legally barred from mining concessions. Because there is no extraction pit or ore body, operational bottlenecks like <strong>blasting cycle delays, pit dewatering head, rainfall operational pauses, and haulage breakdowns are statutorily marked Non-Applicable (N/A)</strong>.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            {/* Production & Economics */}
+            <div style={{ background: "#FFFFFF", borderRadius: 12, padding: 18, border: "1px solid #E2E8F0", borderTop: "3px solid #185FA5" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <TrendingUp size={16} color="#185FA5" />
+                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+                  1. Production Targets & Economics
+                </h3>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
+                    Weekly Extraction Target (t)
+                  </label>
+                  <input
+                    type="number"
+                    value={safeInputs.tonnage ?? ""}
+                    onChange={(e) => onChangeInput("tonnage", parseFloat(e.target.value) || 0)}
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
+                    Ore Realization Value (₹/t)
+                  </label>
+                  <input
+                    type="number"
+                    value={safeInputs.ore_value_per_tonne ?? ""}
+                    onChange={(e) => onChangeInput("ore_value_per_tonne", parseFloat(e.target.value) || 0)}
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
+                    Mining Unit Cost (₹/t)
+                  </label>
+                  <input
+                    type="number"
+                    value={safeInputs.mining_cost ?? ""}
+                    onChange={(e) => onChangeInput("mining_cost", parseFloat(e.target.value) || 0)}
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
+                    Processing / Beneficiation Cost (₹/t)
+                  </label>
+                  <input
+                    type="number"
+                    value={safeInputs.processing_cost ?? ""}
+                    onChange={(e) => onChangeInput("processing_cost", parseFloat(e.target.value) || 0)}
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Equipment & Blasting Constraints */}
+            <div style={{ background: "#FFFFFF", borderRadius: 12, padding: 18, border: "1px solid #E2E8F0", borderTop: "3px solid #BA7517" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <Truck size={16} color="#BA7517" />
+                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+                  2. Equipment & Blasting Constraints
+                </h3>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
+                    Fleet Availability (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={safeInputs.equipment_availability_pct ?? ""}
+                    onChange={(e) => onChangeInput("equipment_availability_pct", parseFloat(e.target.value) || 0)}
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
+                    Unscheduled Breakdown (hrs/wk)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={safeInputs.unscheduled_downtime_hours ?? ""}
+                    onChange={(e) => onChangeInput("unscheduled_downtime_hours", parseFloat(e.target.value) || 0)}
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
+                    Blasting Safety Delay (hrs)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={safeInputs.blast_cycle_delay_hours ?? ""}
+                    onChange={(e) => onChangeInput("blast_cycle_delay_hours", parseFloat(e.target.value) || 0)}
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: "#475569", display: "block", marginBottom: 3 }}>
+                    Waste Flag
+                  </label>
+                  <select
+                    value={safeInputs.waste_flag ?? 0}
+                    onChange={(e) => onChangeInput("waste_flag", parseInt(e.target.value) || 0)}
+                    style={inputStyle}
+                  >
+                    <option value={0}>0 - Economically Viable Ore</option>
+                    <option value={1}>1 - Barren Overburden</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )
       )}
 
       {/* Tab 3: 2D/3D Reserve Heatmap & Depth Slices */}

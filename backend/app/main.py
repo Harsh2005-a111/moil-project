@@ -425,9 +425,52 @@ def predict_shortfall(features: FullMineInputs):
         known_classes = list(encoders["Rock_Type"].classes_)
         if rock_type not in known_classes:
             rock_type = "Magnetite" if "Magnetite" in known_classes else known_classes[0]
-        rock_type_encoded = encoders["Rock_Type"].transform([rock_type])[0]
     else:
         rock_type_encoded = 0
+
+    # Statutory Exclusion Check: If region is sterile, barren, or urban settlement
+    is_sterile_or_barren = (
+        features.waste_flag == 1
+        or (features.tonnage is not None and features.tonnage <= 0)
+        or (features.ore_grade_pct is not None and features.ore_grade_pct <= 0)
+        or "barren" in (features.region_name or "").lower()
+        or "sterilized" in (features.region_name or "").lower()
+        or "urban" in (features.region_name or "").lower()
+        or "connaught" in (features.region_name or "").lower()
+    )
+
+    if is_sterile_or_barren:
+        return {
+            "mine_id": features.block_id,
+            "region_name": features.region_name,
+            "is_barren": True,
+            "risk_level": "STATUTORILY_EXEMPT",
+            "risk_probabilities": {"Low": 1.0, "Medium": 0.0, "High": 0.0},
+            "recommendations": [
+                {
+                    "driver": "Statutory_Exclusion",
+                    "shap_value": 0.0,
+                    "direction": "none",
+                    "action": "Statutory Exclusion: Region is classified as Non-Mining Terrain (Urban Settlement or Barren Sterilized Land). Extraction operations, blasting, and procurement schedules are prohibited under MMDR Act.",
+                }
+            ],
+            "constraint_impact": {
+                "equipment_impact_pct": 0.0,
+                "weather_impact_pct": 0.0,
+                "blasting_impact_pct": 0.0,
+                "grade_dilution_risk_pct": 0.0,
+            },
+            "ml_shortfall": {
+                "target_tonnage": 0.0,
+                "predicted_production_tonnage": 0.0,
+                "projected_shortfall_tonnage": 0.0,
+                "shortfall_pct": 0.0,
+                "financial_shortfall_inr_lakhs": 0.0,
+                "risk_level": "EXEMPT",
+                "is_barren": True,
+                "summary": "Statutory Non-Mining Exclusion: Zero procurement target and zero in-situ manganese reserves. Operational constraints (rainfall, blasting delays, haul fleet) are marked Non-Applicable (N/A)."
+            }
+        }
 
     if model is not None:
         try:

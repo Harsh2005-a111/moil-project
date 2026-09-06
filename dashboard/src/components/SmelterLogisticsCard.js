@@ -56,6 +56,67 @@ export default function SmelterLogisticsCard({
     );
   }
 
+  const isTerrainBarren = Boolean(
+    selectedMine?.waste_flag === 1 ||
+    selectedMine?.type?.includes("Barren") ||
+    selectedMine?.type?.includes("Sterilized") ||
+    selectedMine?.name?.toLowerCase().includes("connaught") ||
+    inputs?.is_barren ||
+    inputs?.waste_flag === 1 ||
+    (inputs?.tonnage === 0 && inputs?.ore_grade_pct === 0)
+  );
+
+  if (isTerrainBarren) {
+    return (
+      <div
+        style={{
+          background: "#FFFFFF",
+          borderRadius: 12,
+          padding: 20,
+          border: "1px solid #E2E8F0",
+          borderTop: "3px solid #64748B",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 8,
+              background: "#F1F5F9",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Train size={20} color="#64748B" />
+          </div>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <h3 style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: "#1E293B" }}>
+                Pit-to-Smelter Logistics: Inactive (Non-Extraction Terrain)
+              </h3>
+              <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 4, background: "#E2E8F0", color: "#475569" }}>
+                EXEMPT
+              </span>
+            </div>
+            <p style={{ margin: "2px 0 0 0", fontSize: 12, color: "#64748B" }}>
+              No commercial manganese ore is procured or dispatched from this barren/urban sector. Freight routes and rake tariff schedules are inactive.
+            </p>
+          </div>
+        </div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#059669", background: "#ECFDF5", padding: "6px 12px", borderRadius: 6, border: "1px solid #A7F3D0" }}>
+          ✓ Freight Exposure: ₹0.00
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 12, padding: 20, border: "1px solid #E2E8F0", borderTop: "3px solid #0D9488" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>

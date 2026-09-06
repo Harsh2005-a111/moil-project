@@ -194,8 +194,12 @@ export default function App() {
       .finally(() => setLoading(false));
 
     // Update 12-week baseline trend
+    const isBarrenTerrain = inputs?.is_barren || inputs?.waste_flag === 1 || inputs?.tonnage === 0;
     const baseTarget = 1100 + (Math.abs(hashString(selectedMine?.name || "Balaghat")) % 400);
     const weeklyTrend = Array.from({ length: 12 }, (_, i) => {
+      if (isBarrenTerrain) {
+        return { week: `W${i + 1}`, expected: 0, actual: 0 };
+      }
       const target = baseTarget + i * 15;
       const penalty = (inputs.rainfall_mm > 60 ? 120 : 40) + (inputs.equipment_availability_pct < 80 ? 110 : 20);
       const actual = Math.round(target - penalty * (0.4 + Math.sin(i + 1) * 0.3));
