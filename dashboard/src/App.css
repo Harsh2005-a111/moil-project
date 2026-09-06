@@ -64,6 +64,32 @@
   transform-origin: center center;
 }
 
+/* Pulse ring for dropzone icon */
+@keyframes pulse-ring-anim {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.15;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+}
+
+/* Generic pulse for status dots */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
 /* =========================================================================
    FLOWING ANIMATIONS & MODERN CYBER-MINING COMMAND CENTER STYLING
    ========================================================================= */

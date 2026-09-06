@@ -15,6 +15,8 @@ import {
   Zap,
   Globe2,
   Key,
+  MapPin,
+  Sparkles,
 } from "lucide-react";
 
 export default function SatelliteScanner({
@@ -593,32 +595,87 @@ export default function SatelliteScanner({
         >
           {activeMode === "coordinates" ? (
             <>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
-                  1. Location Coordinates for Copernicus Live Retrieval
-                </h4>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#0284C7", boxShadow: "0 0 8px #0284C7" }} />
+                  <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.01em" }}>
+                    1. Location Coordinates & Concession Registry
+                  </h4>
+                </div>
                 <button
                   onClick={handleSyncSelectedMineCoords}
+                  className="flowing-btn"
                   style={{
-                    fontSize: 11,
-                    fontWeight: 600,
+                    fontSize: 11.5,
+                    fontWeight: 700,
                     color: "#0284C7",
                     background: "#F0F9FF",
                     border: "1px solid #BAE6FD",
-                    padding: "3px 8px",
-                    borderRadius: 4,
+                    padding: "4px 10px",
+                    borderRadius: 6,
                     cursor: "pointer",
                   }}
                 >
-                  Use {selectedMine?.name || "Balaghat"} Coords
+                  📍 Use {selectedMine?.name || "Balaghat"} Coords
                 </button>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
-                    LATITUDE (°N)
-                  </label>
+              {/* Quick Concession Presets Chips */}
+              <div style={{ background: "#F8FAFC", padding: "10px 12px", borderRadius: 10, border: "1px solid #E2E8F0" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 7, display: "flex", alignItems: "center", gap: 5 }}>
+                  <Sparkles size={12} color="#0284C7" />
+                  <span>QUICK GEOLOGICAL CONCESSION BENCHMARKS:</span>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {[
+                    { name: "Balaghat Deep Lode", lat: 21.8167, lon: 80.1833, desc: "High-grade Braunite" },
+                    { name: "Ukwa Ridge Extension", lat: 21.9667, lon: 80.4667, desc: "Monsoon Inundated" },
+                    { name: "Dongri Buzurg", lat: 21.5500, lon: 79.7167, desc: "Peroxide High-Mn" },
+                    { name: "Tirodi Ore Block", lat: 21.6833, lon: 79.7167, desc: "Medium Grade" },
+                    { name: "Mansar Belt", lat: 21.3900, lon: 79.2600, desc: "Sausar Group" },
+                  ].map((preset) => {
+                    const isSelected = Math.abs(parseFloat(customLat) - preset.lat) < 0.001 && Math.abs(parseFloat(customLon) - preset.lon) < 0.001;
+                    return (
+                      <button
+                        key={preset.name}
+                        onClick={() => {
+                          setCustomLat(preset.lat);
+                          setCustomLon(preset.lon);
+                          setSaveRegionName(`${preset.name} Satellite Sector`);
+                        }}
+                        style={{
+                          fontSize: 11,
+                          padding: "5px 10px",
+                          borderRadius: 7,
+                          background: isSelected ? "linear-gradient(135deg, #0284C7 0%, #0369A1 100%)" : "#FFFFFF",
+                          color: isSelected ? "#FFFFFF" : "#334155",
+                          border: isSelected ? "1px solid #0284C7" : "1px solid #CBD5E1",
+                          cursor: "pointer",
+                          fontWeight: isSelected ? 800 : 600,
+                          boxShadow: isSelected ? "0 2px 6px rgba(2,132,199,0.3)" : "0 1px 2px rgba(0,0,0,0.03)",
+                          transition: "all 0.18s ease",
+                        }}
+                        title={`${preset.desc} (${preset.lat}°N, ${preset.lon}°E)`}
+                      >
+                        📍 {preset.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Coordinate Input Fields */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={{ background: "#FFFFFF", padding: "10px 12px", borderRadius: 10, border: "1px solid #CBD5E1", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                    <label style={{ fontSize: 11, fontWeight: 800, color: "#0F2C59", display: "flex", alignItems: "center", gap: 5 }}>
+                      <MapPin size={13} color="#0284C7" />
+                      <span>LATITUDE (°N)</span>
+                    </label>
+                    <span style={{ fontSize: 9.5, color: "#64748B", background: "#F1F5F9", padding: "1px 5px", borderRadius: 4 }}>
+                      21.0° - 22.5°
+                    </span>
+                  </div>
                   <input
                     type="number"
                     step="0.0001"
@@ -626,19 +683,40 @@ export default function SatelliteScanner({
                     onChange={(e) => setCustomLat(e.target.value)}
                     style={{
                       width: "100%",
-                      padding: "7px 10px",
+                      padding: "8px 10px",
                       borderRadius: 6,
-                      border: "1px solid #CBD5E1",
-                      fontSize: 12.5,
-                      marginTop: 3,
+                      border: "1px solid #E2E8F0",
+                      background: "#F8FAFC",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "#0F172A",
                       boxSizing: "border-box",
+                      outline: "none",
+                      transition: "all 0.2s ease",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.background = "#FFFFFF";
+                      e.target.style.borderColor = "#0284C7";
+                      e.target.style.boxShadow = "0 0 0 3px rgba(2,132,199,0.18)";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.background = "#F8FAFC";
+                      e.target.style.borderColor = "#E2E8F0";
+                      e.target.style.boxShadow = "none";
                     }}
                   />
                 </div>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
-                    LONGITUDE (°E)
-                  </label>
+
+                <div style={{ background: "#FFFFFF", padding: "10px 12px", borderRadius: 10, border: "1px solid #CBD5E1", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                    <label style={{ fontSize: 11, fontWeight: 800, color: "#0F2C59", display: "flex", alignItems: "center", gap: 5 }}>
+                      <Compass size={13} color="#0284C7" />
+                      <span>LONGITUDE (°E)</span>
+                    </label>
+                    <span style={{ fontSize: 9.5, color: "#64748B", background: "#F1F5F9", padding: "1px 5px", borderRadius: 4 }}>
+                      78.5° - 81.5°
+                    </span>
+                  </div>
                   <input
                     type="number"
                     step="0.0001"
@@ -646,34 +724,69 @@ export default function SatelliteScanner({
                     onChange={(e) => setCustomLon(e.target.value)}
                     style={{
                       width: "100%",
-                      padding: "7px 10px",
+                      padding: "8px 10px",
                       borderRadius: 6,
-                      border: "1px solid #CBD5E1",
-                      fontSize: 12.5,
-                      marginTop: 3,
+                      border: "1px solid #E2E8F0",
+                      background: "#F8FAFC",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "#0F172A",
                       boxSizing: "border-box",
+                      outline: "none",
+                      transition: "all 0.2s ease",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.background = "#FFFFFF";
+                      e.target.style.borderColor = "#0284C7";
+                      e.target.style.boxShadow = "0 0 0 3px rgba(2,132,199,0.18)";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.background = "#F8FAFC";
+                      e.target.style.borderColor = "#E2E8F0";
+                      e.target.style.boxShadow = "none";
                     }}
                   />
                 </div>
               </div>
 
-              <div>
-                <label style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
-                  PROPOSED LEASE / EXPLORATION BLOCK NAME
-                </label>
+              {/* Lease / Exploration Block Name */}
+              <div style={{ background: "#FFFFFF", padding: "10px 12px", borderRadius: 10, border: "1px solid #CBD5E1", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 800, color: "#0F2C59", display: "flex", alignItems: "center", gap: 5 }}>
+                    <Layers size={13} color="#7E22CE" />
+                    <span>PROPOSED LEASE / EXPLORATION BLOCK NAME</span>
+                  </label>
+                  <span style={{ fontSize: 9.5, color: "#059669", background: "#ECFDF5", padding: "1px 6px", borderRadius: 4, fontWeight: 700 }}>
+                    REGISTRY IDENTIFIER
+                  </span>
+                </div>
                 <input
                   type="text"
                   value={saveRegionName}
                   onChange={(e) => setSaveRegionName(e.target.value)}
-                  placeholder="e.g. Balaghat North Exploration Sector"
+                  placeholder="e.g. Balaghat North Exploration Sector - Block 04"
                   style={{
                     width: "100%",
-                    padding: "7px 10px",
+                    padding: "8px 10px",
                     borderRadius: 6,
-                    border: "1px solid #CBD5E1",
-                    fontSize: 12.5,
-                    marginTop: 3,
+                    border: "1px solid #E2E8F0",
+                    background: "#F8FAFC",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#0F172A",
                     boxSizing: "border-box",
+                    outline: "none",
+                    transition: "all 0.2s ease",
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.background = "#FFFFFF";
+                    e.target.style.borderColor = "#7E22CE";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(126,34,206,0.15)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.background = "#F8FAFC";
+                    e.target.style.borderColor = "#E2E8F0";
+                    e.target.style.boxShadow = "none";
                   }}
                 />
               </div>
@@ -691,19 +804,23 @@ export default function SatelliteScanner({
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
-                    gap: 4,
+                    gap: 5,
+                    fontWeight: 600,
                   }}
                 >
-                  <Key size={12} />
+                  <Key size={13} color="#0284C7" />
                   <span>{showCreds ? "Hide" : "Optional:"} Copernicus CDSE Client Credentials</span>
+                  <span style={{ fontSize: 9.5, background: "#F1F5F9", padding: "1px 5px", borderRadius: 4 }}>
+                    {showCreds ? "▲" : "▼"}
+                  </span>
                 </button>
 
                 {showCreds && (
-                  <div style={{ marginTop: 8, padding: 10, background: "#F8FAFC", borderRadius: 6, border: "1px solid #E2E8F0", display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ marginTop: 8, padding: 12, background: "#F8FAFC", borderRadius: 8, border: "1px solid #E2E8F0", display: "flex", flexDirection: "column", gap: 8 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>Copernicus CDSE API Keys</span>
                       {clientId && clientSecret && (
-                        <span style={{ fontSize: 10.5, color: "#16A34A", fontWeight: 600 }}>✓ Saved in browser</span>
+                        <span style={{ fontSize: 10.5, color: "#16A34A", fontWeight: 700 }}>✓ Saved in browser</span>
                       )}
                     </div>
                     <input
@@ -714,7 +831,7 @@ export default function SatelliteScanner({
                         setClientId(e.target.value);
                         localStorage.setItem("MOIL_COPERNICUS_CLIENT_ID", e.target.value);
                       }}
-                      style={{ padding: "6px 8px", fontSize: 12, borderRadius: 4, border: "1px solid #CBD5E1" }}
+                      style={{ padding: "7px 10px", fontSize: 12, borderRadius: 6, border: "1px solid #CBD5E1", background: "#FFFFFF" }}
                     />
                     <input
                       type="password"
@@ -724,72 +841,87 @@ export default function SatelliteScanner({
                         setClientSecret(e.target.value);
                         localStorage.setItem("MOIL_COPERNICUS_CLIENT_SECRET", e.target.value);
                       }}
-                      style={{ padding: "6px 8px", fontSize: 12, borderRadius: 4, border: "1px solid #CBD5E1" }}
+                      style={{ padding: "7px 10px", fontSize: 12, borderRadius: 6, border: "1px solid #CBD5E1", background: "#FFFFFF" }}
                     />
                     <span style={{ fontSize: 10.5, color: "#64748B" }}>
-                      Keys are saved locally in your browser. If left empty, the engine automatically retrieves authentic high-resolution Sentinel-2 public imagery.
+                      Keys are securely preserved in your local browser session. If left blank, the platform automatically retrieves verified Sentinel-2 multispectral public imagery.
                     </span>
                   </div>
                 )}
               </div>
 
+              {/* Primary Ingestion Flowing Button */}
               <button
                 onClick={handleFetchFromCopernicus}
                 disabled={analyzing}
+                className="flowing-btn flowing-btn-navy"
                 style={{
-                  padding: "10px 16px",
-                  borderRadius: 8,
-                  border: "none",
-                  background: "#0284C7",
-                  color: "#FFFFFF",
-                  fontSize: 13,
-                  fontWeight: 700,
+                  padding: "11px 18px",
+                  fontSize: 13.5,
+                  fontWeight: 800,
                   cursor: analyzing ? "not-allowed" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  boxShadow: "0 2px 8px rgba(2,132,199,0.3)",
                 }}
               >
                 {analyzing ? (
                   <>
                     <div className="spin-animation">⚡</div>
-                    <span>Fetching Sentinel-2 Scene & Extracting Bands...</span>
+                    <span>Fetching Sentinel-2 Multi-Spectral Scene...</span>
                   </>
                 ) : (
                   <>
-                    <Satellite size={16} />
-                    <span>🚀 Fetch Sentinel-2 Live Scene & Extract Bands</span>
+                    <Satellite size={17} />
+                    <span>🛰️ Fetch Sentinel-2 Live Scene & Extract Bands</span>
                   </>
                 )}
               </button>
             </>
           ) : (
             <>
+              {/* ── Header with Format Pills ── */}
               <div>
-                <h4 style={{ margin: "0 0 4px 0", fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
-                  1. Upload Local Satellite Scene (.tif, .jpg, .png)
+                <h4 style={{ margin: "0 0 6px 0", fontSize: 14.5, fontWeight: 800, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: 7, background: "linear-gradient(135deg, #0EA5E9, #7C3AED)", color: "#FFF", fontSize: 13, fontWeight: 800 }}>1</span>
+                  Upload Local Satellite Scene
                 </h4>
-                <p style={{ margin: 0, fontSize: 12, color: "#64748B" }}>
-                  Upload any Sentinel-2 scene tile or multi-spectral GeoTIFF. The AI will automatically analyze the spectral bands and compute in-situ Manganese reserves.
+                <p style={{ margin: "0 0 8px 0", fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>
+                  Upload any Sentinel-2 scene tile or multi-spectral GeoTIFF. The AI will automatically analyze spectral bands and compute in-situ Manganese reserves.
                 </p>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {[
+                    { ext: ".tif", label: "GeoTIFF", color: "#7C3AED", bg: "#F3E8FF" },
+                    { ext: ".jpg", label: "JPEG", color: "#0284C7", bg: "#E0F2FE" },
+                    { ext: ".png", label: "PNG", color: "#0D9488", bg: "#CCFBF1" },
+                    { ext: ".tiff", label: "TIFF", color: "#B45309", bg: "#FEF3C7" },
+                  ].map((f) => (
+                    <span key={f.ext} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 20, background: f.bg, color: f.color, fontSize: 10.5, fontWeight: 700, border: `1px solid ${f.color}22` }}>
+                      <span style={{ width: 6, height: 6, borderRadius: "50%", background: f.color }} />
+                      {f.ext} {f.label}
+                    </span>
+                  ))}
+                </div>
               </div>
 
+              {/* ── Animated Cyber Dropzone ── */}
               <div
-                onDragOver={(e) => e.preventDefault()}
+                onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = "#7C3AED"; e.currentTarget.style.background = "linear-gradient(135deg, rgba(124,58,237,0.06), rgba(14,165,233,0.06))"; }}
+                onDragLeave={(e) => { e.currentTarget.style.borderColor = "#93C5FD"; e.currentTarget.style.background = "linear-gradient(135deg, #F0F9FF, #FAF5FF)"; }}
                 onDrop={(e) => {
                   e.preventDefault();
+                  e.currentTarget.style.borderColor = "#93C5FD";
+                  e.currentTarget.style.background = "linear-gradient(135deg, #F0F9FF, #FAF5FF)";
                   if (e.dataTransfer.files?.[0]) handleFileChange({ target: { files: e.dataTransfer.files } });
                 }}
                 onClick={() => fileInputRef.current?.click()}
                 style={{
                   border: "2px dashed #93C5FD",
-                  borderRadius: 10,
-                  padding: "28px 16px",
-                  background: "#F0F9FF",
+                  borderRadius: 14,
+                  padding: "30px 18px",
+                  background: "linear-gradient(135deg, #F0F9FF, #FAF5FF)",
                   textAlign: "center",
                   cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  position: "relative",
+                  overflow: "hidden",
                 }}
               >
                 <input
@@ -799,60 +931,122 @@ export default function SatelliteScanner({
                   accept="image/*,.tif,.tiff"
                   style={{ display: "none" }}
                 />
-                <UploadCloud size={38} color="#0284C7" style={{ margin: "0 auto 8px auto" }} />
-                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0369A1" }}>
-                  {file ? file.name : "Click to Browse or Drag Satellite Imagery Here"}
+                {/* Pulsing ring behind icon */}
+                <div style={{ position: "relative", width: 56, height: 56, margin: "0 auto 10px auto" }}>
+                  <div style={{ position: "absolute", inset: -4, borderRadius: "50%", border: "2px solid rgba(14,165,233,0.2)", animation: "pulse-ring-anim 2s ease-in-out infinite" }} />
+                  <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #0EA5E9, #7C3AED)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(14,165,233,0.3)" }}>
+                    <UploadCloud size={28} color="#FFFFFF" />
+                  </div>
                 </div>
-                <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 4 }}>
-                  Supports Sentinel-2 GeoTIFF, JPG, PNG (5km × 5km scene)
+                {file ? (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 8, background: "#DCFCE7", border: "1px solid #86EFAC" }}>
+                      <CheckCircle2 size={14} color="#16A34A" />
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#15803D" }}>{file.name}</span>
+                    </div>
+                    <span style={{ fontSize: 11, color: "#64748B" }}>{(file.size / 1024).toFixed(1)} KB — Ready for spectral analysis</span>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+                      Drop satellite imagery here or <span style={{ color: "#7C3AED", textDecoration: "underline" }}>browse files</span>
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 4 }}>
+                      Sentinel-2 GeoTIFF, JPG, or PNG — optimal 5 km × 5 km scene
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* ── Quick Demo Loaders ── */}
+              <div style={{ background: "linear-gradient(135deg, #F8FAFC, #F0F9FF)", borderRadius: 10, padding: "10px 14px", border: "1px solid #E2E8F0" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
+                  <Layers size={12} color="#0EA5E9" />
+                  Quick Demo Scenes (1-click load)
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {[
+                    { name: "Balaghat Sentinel-2 Tile", icon: "\uD83D\uDEF0\uFE0F" },
+                    { name: "Ukwa High-Moisture Scene", icon: "\uD83C\uDF27\uFE0F" },
+                    { name: "Dongri Buzurg Ridge", icon: "\u26F0\uFE0F" },
+                  ].map((demo) => (
+                    <button
+                      key={demo.name}
+                      onClick={() => {
+                        const blob = new Blob(["demo"], { type: "image/png" });
+                        const demoFile = new File([blob], `${demo.name.replace(/\s+/g, "_")}.png`, { type: "image/png" });
+                        handleFileChange({ target: { files: [demoFile] } });
+                      }}
+                      style={{
+                        padding: "5px 12px",
+                        borderRadius: 20,
+                        border: "1px solid #CBD5E1",
+                        background: "#FFFFFF",
+                        color: "#334155",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        transition: "all 0.2s ease",
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "#EFF6FF"; e.currentTarget.style.borderColor = "#0EA5E9"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "#FFFFFF"; e.currentTarget.style.borderColor = "#CBD5E1"; }}
+                    >
+                      <span>{demo.icon}</span>
+                      <span>{demo.name}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
               {/* ── Resolution & Coverage Guidance Note ── */}
               <div
                 style={{
-                  background: "#FFFBEB",
+                  background: "linear-gradient(135deg, #FFFBEB, #FFF7ED)",
                   border: "1px solid #FDE68A",
-                  borderRadius: 8,
-                  padding: "10px 14px",
+                  borderRadius: 10,
+                  padding: "12px 14px",
                   fontSize: 11.5,
                   color: "#92400E",
                   lineHeight: 1.6,
                 }}
               >
-                <div style={{ fontWeight: 700, marginBottom: 4, fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}>
-                  📐 Recommended Image Specifications
+                <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  \uD83D\uDCD0 Recommended Image Specifications
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" }}>
-                  <span style={{ fontWeight: 600 }}>Spatial Coverage:</span>
+                <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "3px 12px" }}>
+                  <span style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>\uD83D\uDCCF Coverage:</span>
                   <span>~2 km × 2 km to 5 km × 5 km per scene</span>
-                  <span style={{ fontWeight: 600 }}>Resolution:</span>
+                  <span style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>\uD83D\uDD2C Resolution:</span>
                   <span>10 m/pixel (Sentinel-2 native) to 30 m/pixel</span>
-                  <span style={{ fontWeight: 600 }}>Formats:</span>
+                  <span style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>\uD83D\uDCC1 Formats:</span>
                   <span>GeoTIFF (.tif), JPEG (.jpg), PNG (.png)</span>
                 </div>
-                <div style={{ marginTop: 6, fontSize: 11, color: "#78350F", fontStyle: "italic" }}>
-                  💡 Tip: Upload a focused geological section (e.g., a specific ridge or terrain patch), not an entire city/district screenshot. Smaller, targeted tiles yield more accurate spectral analysis.
+                <div style={{ marginTop: 6, fontSize: 11, color: "#78350F", fontStyle: "italic", padding: "4px 8px", background: "rgba(255,255,255,0.5)", borderRadius: 6 }}>
+                  \uD83D\uDCA1 Tip: Upload a focused geological section (e.g., a specific ridge), not an entire city/district screenshot.
                 </div>
               </div>
 
+              {/* ── Primary Flowing Action Button ── */}
               <button
                 onClick={handleAnalyzeUpload}
                 disabled={!file || analyzing}
+                className={file && !analyzing ? "flowing-btn flowing-btn-navy" : ""}
                 style={{
-                  padding: "10px 16px",
-                  borderRadius: 8,
+                  padding: "12px 18px",
+                  borderRadius: 10,
                   border: "none",
-                  background: !file ? "#94A3B8" : "#0284C7",
+                  background: !file ? "#94A3B8" : analyzing ? "#64748B" : undefined,
                   color: "#FFFFFF",
-                  fontSize: 13,
-                  fontWeight: 700,
+                  fontSize: 13.5,
+                  fontWeight: 800,
                   cursor: !file || analyzing ? "not-allowed" : "pointer",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   gap: 8,
-                  boxShadow: file ? "0 2px 8px rgba(2,132,199,0.3)" : "none",
                 }}
               >
                 {analyzing ? (
@@ -862,7 +1056,7 @@ export default function SatelliteScanner({
                   </>
                 ) : (
                   <>
-                    <Satellite size={16} />
+                    <Satellite size={17} />
                     <span>🚀 Analyze Uploaded Scene & Predict Reserves</span>
                   </>
                 )}
@@ -1027,22 +1221,70 @@ export default function SatelliteScanner({
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                minHeight: 350,
-                background: "#F8FAFC",
-                borderRadius: 10,
-                border: "1px dashed #CBD5E1",
-                padding: 20,
+                minHeight: 370,
+                background: "linear-gradient(160deg, #0F172A 0%, #1E293B 60%, #0F172A 100%)",
+                borderRadius: 14,
+                border: "1px solid #334155",
+                padding: "28px 20px",
                 textAlign: "center",
-                color: "#64748B",
+                position: "relative",
+                overflow: "hidden",
               }}
             >
-              <Satellite size={44} color="#94A3B8" style={{ marginBottom: 12 }} />
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#334155" }}>
-                Awaiting Satellite Band Ingestion
+              {/* Background grid lines */}
+              <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: "repeating-linear-gradient(0deg, #38BDF8, #38BDF8 1px, transparent 1px, transparent 30px), repeating-linear-gradient(90deg, #38BDF8, #38BDF8 1px, transparent 1px, transparent 30px)", pointerEvents: "none" }} />
+
+              {/* Radar animation ring */}
+              <div style={{ position: "relative", width: 80, height: 80, marginBottom: 16 }}>
+                <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid rgba(56,189,248,0.15)" }} />
+                <div style={{ position: "absolute", inset: 6, borderRadius: "50%", border: "1px solid rgba(56,189,248,0.1)" }} />
+                <div style={{ position: "absolute", inset: 0, borderRadius: "50%", borderTop: "2px solid #38BDF8", animation: "spin 3s linear infinite" }} />
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Satellite size={30} color="#38BDF8" style={{ filter: "drop-shadow(0 0 8px rgba(56,189,248,0.5))" }} />
+                </div>
               </div>
-              <div style={{ fontSize: 12, maxWidth: 360, marginTop: 4 }}>
-                Enter coordinates on the left or drop an image and click <strong>"Predict Reserves"</strong>.
-                The system evaluates 6 spectral bands against GSI litho-stratigraphy and machine learning models.
+
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#F1F5F9", letterSpacing: "0.5px", marginBottom: 4 }}>
+                AWAITING SATELLITE BAND INGESTION
+              </div>
+              <div style={{ fontSize: 12, color: "#94A3B8", maxWidth: 340, marginBottom: 18, lineHeight: 1.5 }}>
+                Enter coordinates or upload an image on the left panel and click <strong style={{ color: "#38BDF8" }}>"Predict Reserves"</strong>.
+                The system evaluates 6 spectral bands against GSI litho-stratigraphy.
+              </div>
+
+              {/* 6-Band Wavelength Sensor Status */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, width: "100%", maxWidth: 320 }}>
+                {[
+                  { band: "B2", nm: "490 nm", label: "Blue", color: "#3B82F6" },
+                  { band: "B3", nm: "560 nm", label: "Green", color: "#22C55E" },
+                  { band: "B4", nm: "665 nm", label: "Red", color: "#EF4444" },
+                  { band: "B8", nm: "842 nm", label: "NIR", color: "#A855F7" },
+                  { band: "B11", nm: "1610 nm", label: "SWIR-1", color: "#F59E0B" },
+                  { band: "B12", nm: "2190 nm", label: "SWIR-2", color: "#EC4899" },
+                ].map((s) => (
+                  <div key={s.band} style={{ padding: "8px 6px", borderRadius: 8, background: "rgba(30,41,59,0.8)", border: "1px solid #334155", textAlign: "center" }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px" }}>{s.label}</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.band}</div>
+                    <div style={{ fontSize: 9.5, color: "#475569", marginTop: 1 }}>{s.nm}</div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, marginTop: 4 }}>
+                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#475569", animation: "pulse 2s infinite" }} />
+                      <span style={{ fontSize: 8.5, color: "#64748B", fontWeight: 600 }}>STANDBY</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom status bar */}
+              <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12, padding: "6px 14px", borderRadius: 20, background: "rgba(30,41,59,0.9)", border: "1px solid #334155" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#F59E0B", animation: "pulse 1.5s infinite" }} />
+                  <span style={{ fontSize: 10, color: "#94A3B8", fontWeight: 600 }}>ML Model: Loaded</span>
+                </div>
+                <div style={{ width: 1, height: 12, background: "#334155" }} />
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />
+                  <span style={{ fontSize: 10, color: "#94A3B8", fontWeight: 600 }}>GSI Litho-DB: Online</span>
+                </div>
               </div>
             </div>
           ) : (

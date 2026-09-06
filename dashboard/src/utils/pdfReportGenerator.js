@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 export function generateGovtReportPDF(report, selectedMineName) {
   const doc = new jsPDF({
@@ -227,7 +227,7 @@ export function generateGovtReportPDF(report, selectedMineName) {
     p.operationalImpact,
   ]);
 
-  doc.autoTable({
+  autoTable(doc, {
     startY: cursorY,
     head: [["Parameter Name", "Unit", "Mining Range", "Default", "Operational Role & Geological Impact"]],
     body: parameterRows,
@@ -252,7 +252,7 @@ export function generateGovtReportPDF(report, selectedMineName) {
     margin: { left: margin, right: margin },
   });
 
-  cursorY = doc.lastAutoTable.finalY + 8;
+  cursorY = (doc.lastAutoTable?.finalY || cursorY + 45) + 8;
 
   // --- OUTPUT GUIDE TABLE ---
   checkPageBreak(25);
@@ -264,7 +264,7 @@ export function generateGovtReportPDF(report, selectedMineName) {
     o.normalVsAlert,
   ]);
 
-  doc.autoTable({
+  autoTable(doc, {
     startY: cursorY,
     head: [["Metric / Visual Output", "Operational & Physical Interpretation", "Statutory Threshold / Action Rule"]],
     body: outputRows,
@@ -287,7 +287,7 @@ export function generateGovtReportPDF(report, selectedMineName) {
     margin: { left: margin, right: margin },
   });
 
-  cursorY = doc.lastAutoTable.finalY + 8;
+  cursorY = (doc.lastAutoTable?.finalY || cursorY + 45) + 8;
 
   // --- JURY DEFENSE & DEPENDENCIES ---
   checkPageBreak(30);

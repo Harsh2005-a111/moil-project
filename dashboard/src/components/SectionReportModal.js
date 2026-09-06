@@ -44,8 +44,8 @@ export default function SectionReportModal({ reportId, isOpen, onClose, selected
     try {
       generateGovtReportPDF(report, mineContext);
     } catch (err) {
-      console.error("PDF generation failed, falling back to TXT:", err);
-      handleDownload();
+      console.error("PDF generation error:", err);
+      alert(`PDF generation failed: ${err.message}. Please use Export TXT for plain text format.`);
     }
   };
 
