@@ -260,9 +260,69 @@ def build_complete_report(output_filepath):
     )
 
     # =========================================================================
+    # CHAPTER 2: STANDARD GOVERNMENT STATUTORY MINERAL REPORT FRAMEWORK
+    # =========================================================================
+    add_h1("2. Standard Government Statutory Exploration Report Framework")
+    add_body(
+        "Whether prepared by the Geological Survey of India (GSI), the Indian Bureau of Mines (IBM), or submitted by a public/private "
+        "exploration entity under the National Mineral Exploration Trust (NMET), official mineral dossiers are strictly mandated to "
+        "contain five core statutory components. Government mining officials, statutory regulators, and technical evaluators do not "
+        "prioritize dry mathematical formulas; they require highly detailed, transparent explanations of physical parameters, "
+        "geological host environments, and Explainable AI (XAI) operational rationales."
+    )
+
+    add_h2("2.1 Area 1: Geological & Spatial Mapping")
+    add_body(
+        "The spatial and geological foundation defining the legal perimeter and physical continuity of the mineral concession:", bold_prefix="Statutory Focus: "
+    )
+    add_bullet("Exact Differential GPS (DGPS) survey coordinates, certified lease boundary pillars, cadastral village map superimposition, and total surface area (in hectares).", "Geographical Boundaries: ")
+    add_bullet("Host rock depositional environment (Proterozoic Sausar Group, Mansar Formation metapelites), thickness of ore-bearing strata, and footwall/hanging wall contact relationships.", "Lithology & Stratigraphy: ")
+    add_bullet("Detailed analysis of synclinal folds, transverse fault gouges, strike directions (regional ENE-WSW trend), and dip angles (45° to 75° NW) governing true underground ore position.", "Structural Geology: ")
+
+    add_h2("2.2 Area 2: Mineralogical & Chemical Composition (Ore Quality)")
+    add_body(
+        "Government agencies enforce rigorous multi-element chemical analysis to prevent the misclassification or under-reporting of ore grades:", bold_prefix="Statutory Focus: "
+    )
+    add_bullet("Total chemical percentage of elemental Manganese (Mn) and Manganese Dioxide (MnO2). High-grade deposits (>35% to 45% Mn) are flagged for premium ferromanganese metallurgy.", "Manganese Grade: ")
+    add_bullet("Crystalline identification of specific mineral species: primary Braunite (Mn7SiO12), Bixbyite ((Mn,Fe)2O3), Pyrolusite (MnO2), and Psilomelane.", "Mineral Forms: ")
+    add_bullet("Critical Manganese-to-Iron (Mn/Fe) ratio (ideally > 6:1 for steel alloy production), alongside strict quantification of deleterious elements: Silica (SiO2), Alumina (Al2O3), Phosphorus (statutory limit <0.15% P), and Sulfur (<0.05% S).", "Impurities & Deleterious Ratios: ")
+
+    add_h2("2.3 Area 3: Resource Estimation & UNFC Classification")
+    add_body(
+        "Categorization of mineral assets under the United Nations Framework Classification (UNFC 1997/2009) and Minerals (Evidence of Mineral Content) Rules:", bold_prefix="Statutory Focus: "
+    )
+    add_bullet("Categorization across the 4 G-Axes: G4 (Reconnaissance / UNFC 334), G3 (Prospecting / UNFC 333), G2 (Pre-Feasibility / UNFC 122), and G1 (Detailed Exploration / UNFC 111 Proved Reserve).", "UNFC Framework Classification: ")
+    add_bullet("Cross-sectional and 3D wireframe volumetric calculations delineating Inferred, Indicated, and Proved tonnages based on certified borehole drill grid density (<50m grid for G1).", "Tonnage & Volume: ")
+
+    add_h2("2.4 Area 4: Metallurgical & Beneficiation Potential")
+    add_body(
+        "Technical evaluation proving that extracted ore can be economically processed and upgraded into marketable products:", bold_prefix="Statutory Focus: "
+    )
+    add_bullet("Crushing characteristics, grindability indices, washing and scrubbing amenability, and gravity separation (jigging/heavy media separation) response to liberate silica and garnet gangue.", "Processing Viability: ")
+    add_bullet("Empirical results from 500t to 10,000t bulk sampling campaigns confirming that low-grade portions (20-28% Mn) can be upgraded to >35% commercial metallurgical standards with high metal recovery.", "Bulk Sampling Data: ")
+
+    add_h2("2.5 Area 5: Environmental & Socio-Economic Baselines")
+    add_body(
+        "Statutory environmental clearances and logistics infrastructure required to sustain commercial extraction:", bold_prefix="Statutory Focus: "
+    )
+    add_bullet("Distance to designated protected forests, wildlife sanctuaries (Pench/Kanha tiger corridors), and critical groundwater aquifers under MoEFCC guidelines.", "Ecological Sensitivity: ")
+    add_bullet("Proximity to South East Central Railway (SECR) loading sidings, national highways (NH-543), high-tension power transmission lines, and water supply sources.", "Infrastructure Assessment: ")
+    add_bullet("DGMS compliance standards regarding occupational health, continuous wet dust suppression, and biological medical surveillance to prevent airborne manganese dust exposure (manganism).", "Health, Safety & Dust Suppression: ")
+
+    add_callout(
+        "HOW THE PORTAL DELIVERS ON-DEMAND STATUTORY REPORTS",
+        "Every module and sub-tab in the MOIL platform features a dedicated 'View & Download Section Report' button. "
+        "Government inspectors, mining engineers, and hackathon judges can immediately review and export complete statutory dossiers "
+        "structured around these exact five areas, with complete Explainable AI parameter explanations.",
+        border_hex="059669", bg_hex="F0FDF4", title_color=EMERALD
+    )
+
+    doc.add_page_break()
+
+    # =========================================================================
     # SYSTEM ARCHITECTURE & DATA FLOW
     # =========================================================================
-    add_h1("2. End-to-End System Architecture")
+    add_h1("3. End-to-End System Architecture")
     add_body(
         "The system operates on a decoupled client-server architecture engineered for high availability, low latency, and deterministic scientific reproducibility:"
     )
@@ -663,5 +723,5 @@ def build_complete_report(output_filepath):
     print(f"Report successfully written to {output_filepath}")
 
 if __name__ == "__main__":
-    target = r"c:\Users\HARSH RAJ SRIVASTAVA\Desktop\Harsh_NSUT\Projects\SIH\moil-project\MOIL_AI_Space_Platform_Comprehensive_Manual.docx"
+    target = r"c:\Users\HARSH RAJ SRIVASTAVA\Desktop\Harsh_NSUT\Projects\SIH\moil-project\MOIL_Statutory_Government_Exploration_Dossier.docx"
     build_complete_report(target)
