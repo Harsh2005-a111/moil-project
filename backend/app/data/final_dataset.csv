@@ -104,3 +104,7 @@ MN_015,Mansar Lease Zone,GSI_Survey,Mansar_Formation,Mansar_Formation,21.5,79.02
 EASY_0058,EasyNeg_Quartzite_Marble_58,Easy_Negative,None,Quartzite_Marble,27.7602,74.2414,0.172,0.242,0.599,31.4,64.1,0.356,62.2,97.0,0
 HARD_0017,HardNeg_Calc_Silicate_17,Hard_Negative,None,Calc_Silicate,21.7949,78.6203,0.61,0.495,0.475,36.4,51.0,0.27,263.0,356.0,0
 EASY_0068,EasyNeg_Sedimentary_68,Easy_Negative,None,Sedimentary,10.8621,79.9119,0.328,0.318,0.686,29.9,91.3,0.548,86.8,145.0,0
+MN_036,Jagalur Davanagere Karnataka,GSI_Survey,Braunite_Series,Braunite_Series,14.58,76.2,0.805,0.728,0.252,34.8,38.2,0.21,482.0,410.0,1
+MN_037,Mansar Ore Horizon MOIL,MOIL_Official,Underground,Gondite_Braunite,21.3965,79.2848,0.835,0.742,0.235,35.2,41.5,0.23,520.0,388.0,1
+MN_038,Mansar Type Locality MOIL,MOIL_Official,Underground,Gondite_Braunite,21.39,79.26,0.832,0.738,0.240,35.0,42.0,0.22,518.0,385.0,1
+

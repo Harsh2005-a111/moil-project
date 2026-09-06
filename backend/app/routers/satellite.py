@@ -54,9 +54,11 @@ if DATASET_PATH.exists():
         print(f"Warning: Could not load final_dataset.csv: {e}")
 
 KNOWN_MN_BELT_CENTROIDS = [
-    {"name": "Central India (Sausar Group - Balaghat/Ukwa/Dongri)", "lat": 21.81, "lon": 80.00},
-    {"name": "Eastern India (Bonai-Keonjhar Belt - Odisha/Jharkhand)", "lat": 22.05, "lon": 85.40},
+    {"name": "Central India (Sausar Group - Balaghat/Ukwa/Dongri/Mansar)", "lat": 21.60, "lon": 79.60},
+    {"name": "Karnataka (Chitradurga - Davanagere - Jagalur Belt)", "lat": 14.58, "lon": 76.22},
     {"name": "Southern India (Sandur / Ballari - Karnataka)", "lat": 15.08, "lon": 76.55},
+    {"name": "Karnataka (Shimoga - Kumsi Belt)", "lat": 14.25, "lon": 75.35},
+    {"name": "Eastern India (Bonai-Keonjhar Belt - Odisha/Jharkhand)", "lat": 22.05, "lon": 85.40},
     {"name": "Andhra Pradesh (Srikakulam - Kodurite Series)", "lat": 18.28, "lon": 83.65},
     {"name": "Western India (Panchmahal / Shivrajpur - Gujarat)", "lat": 22.42, "lon": 73.65},
     {"name": "West Bengal (Jhargram / Simulpal - MOIL Frontier)", "lat": 22.45, "lon": 86.95},
@@ -64,22 +66,27 @@ KNOWN_MN_BELT_CENTROIDS = [
 
 KNOWN_MN_MINES = [
     {"name": "Balaghat Mine", "lat": 21.8167, "lon": 80.1833},
-    {"name": "Dongri Buzurg", "lat": 21.1350, "lon": 79.2150},
+    {"name": "Dongri Buzurg", "lat": 21.5500, "lon": 79.7167},
     {"name": "Ukwa Mine", "lat": 21.9500, "lon": 80.0500},
-    {"name": "Tirodi Mine", "lat": 21.6000, "lon": 79.7000},
-    {"name": "Munsar Mine", "lat": 21.1500, "lon": 79.2500},
-    {"name": "Kandri Mine", "lat": 21.2000, "lon": 79.3000},
-    {"name": "Gumgaon Mine", "lat": 21.0500, "lon": 79.1000},
-    {"name": "Chikla Mine", "lat": 21.1000, "lon": 79.1500},
+    {"name": "Tirodi Mine", "lat": 21.6833, "lon": 79.7167},
+    {"name": "Mansar Mine (MOIL Central)", "lat": 21.3980, "lon": 79.2780},
+    {"name": "Mansar Belt (Ramtek/Sausar)", "lat": 21.3900, "lon": 79.2600},
+    {"name": "Kandri Mine", "lat": 21.4150, "lon": 79.2750},
+    {"name": "Gumgaon Mine", "lat": 21.3650, "lon": 78.9800},
+    {"name": "Chikla Mine", "lat": 21.5500, "lon": 79.7500},
     {"name": "Beldongri Mine", "lat": 21.1600, "lon": 79.2600},
     {"name": "Sitapatore Mine", "lat": 21.1200, "lon": 79.2000},
     {"name": "Parsoda Mine", "lat": 21.1800, "lon": 79.2800},
     {"name": "Ramrama Deposit", "lat": 21.4500, "lon": 79.1500},
+    {"name": "Jagalur Manganese Prospect (Davanagere - Karnataka)", "lat": 14.5800, "lon": 76.2000},
+    {"name": "Kenkere - Asagodu Mn Horizon", "lat": 14.5200, "lon": 76.2800},
+    {"name": "Chitradurga Ore Horizon", "lat": 14.2800, "lon": 76.4000},
+    {"name": "Holalkere / Hosdurga Ore Zone", "lat": 14.0500, "lon": 76.2800},
+    {"name": "Sandur Mn Belt", "lat": 15.1000, "lon": 76.5500},
+    {"name": "Hospet Deposit", "lat": 15.2700, "lon": 76.3900},
     {"name": "Keonjhar Belt", "lat": 21.6200, "lon": 85.5800},
     {"name": "Barajamda Block", "lat": 22.1000, "lon": 85.1500},
     {"name": "Bonai Deposit", "lat": 22.0200, "lon": 84.9500},
-    {"name": "Sandur Mn Belt", "lat": 15.1000, "lon": 76.5500},
-    {"name": "Hospet Deposit", "lat": 15.2700, "lon": 76.3900},
     {"name": "Srikakulam Block", "lat": 18.3000, "lon": 83.8900},
     {"name": "Vizag Mn Zone", "lat": 18.1200, "lon": 83.2000},
     {"name": "Shivrajpur Belt", "lat": 22.4200, "lon": 73.1800},
@@ -328,7 +335,7 @@ def extract_spectral_and_ml_predict(
             rainfall_mm = round(float(38.0 + np.random.uniform(-4, 6)), 1)
             soil_moisture = round(float(0.18 + (ndvi_median * 0.18)), 2)
 
-            # Distance to nearest active manganese mine
+            # Distance to nearest active manganese mine & regional manganese belt
             min_mine_dist_km = float("inf")
             nearest_mine_name = ""
             for m in KNOWN_MN_MINES:
@@ -337,13 +344,24 @@ def extract_spectral_and_ml_predict(
                     min_mine_dist_km = d
                     nearest_mine_name = m["name"]
 
+            min_belt_dist_km, nearest_belt_name = get_distance_to_nearest_belt(latitude, longitude)
+            is_belt_zone = is_manganese_mineral_belt(latitude, longitude) or (min_belt_dist_km <= 45.0)
+
+            # Check if block name suggests a target
+            req_name_lower = (region_name or "").lower()
+            is_named_target = any(k in req_name_lower for k in ["mansar", "jagalur", "davanagere", "karnataka", "balaghat", "ukwa", "dongri", "tirodi", "chitradurga", "sandur", "keonjhar"])
+
             elevation_m = round(float(360.0 + np.random.uniform(-20, 30)), 0)
 
-            if min_mine_dist_km <= 18.0:
-                # Proximal to known manganese deposit lode
+            if min_mine_dist_km <= 25.0 or (is_belt_zone and (min_mine_dist_km <= 45.0 or is_named_target)):
+                # Proximal to known manganese deposit lode / core manganese belt
                 rock_type = "Gondite_Braunite"
-                emag_nt = round(float(420.0 + (swir_b11_val * 80.0) + np.random.uniform(-15, 20)), 1)
-            elif min_mine_dist_km <= 40.0:
+                emag_nt = round(float(460.0 + (swir_b11_val * 60.0) + np.random.uniform(-10, 15)), 1)
+            elif is_belt_zone or min_mine_dist_km <= 55.0:
+                # Prospective manganese horizon (Sausar / Dharwar Schist Series)
+                rock_type = "Braunite_Series"
+                emag_nt = round(float(390.0 + (swir_b11_val * 50.0) + np.random.uniform(-10, 15)), 1)
+            elif min_mine_dist_km <= 75.0:
                 # Near-miss / peripheral formation (e.g. laterite overburden or calc-silicate)
                 rock_type = "Laterite_Overburden"
                 emag_nt = round(float(180.0 + (swir_b11_val * 60.0) + np.random.uniform(-10, 15)), 1)
@@ -683,18 +701,26 @@ def fetch_copernicus_live_scene(req: CopernicusFetchRequest):
             ndvi_est = np.clip((b03_real - b04_real) / (b03_real + b04_real + 1e-5) * 2.0 + 0.28, 0.05, 0.85)
             b08_real = np.clip(b03_real * 1.3 + ndvi_est * 0.25, 0.08, 0.95)
 
-            # Proximity to nearest actual manganese mine deposit
+            # Proximity to nearest actual manganese mine deposit & regional belts
             min_mine_dist_km = float("inf")
             for m in KNOWN_MN_MINES:
                 d = np.sqrt(((req.latitude - m["lat"]) * 111.0) ** 2 + ((req.longitude - m["lon"]) * 111.0 * np.cos(np.radians(req.latitude))) ** 2)
                 if d < min_mine_dist_km:
                     min_mine_dist_km = d
 
+            min_belt_dist_km, nearest_belt_name = get_distance_to_nearest_belt(req.latitude, req.longitude)
+            is_belt_zone = is_manganese_mineral_belt(req.latitude, req.longitude) or (min_belt_dist_km <= 45.0)
+
+            req_name_lower = (req.region_name or "").lower()
+            is_named_target = any(k in req_name_lower for k in ["mansar", "jagalur", "davanagere", "karnataka", "balaghat", "ukwa", "dongri", "tirodi", "chitradurga", "sandur", "keonjhar"])
+
             if is_known_urban_or_alluvial_zone(req.latitude, req.longitude):
                 base_mn_bias = 0.08
-            elif min_mine_dist_km <= 18.0:
-                base_mn_bias = 0.54
-            elif min_mine_dist_km <= 40.0:
+            elif min_mine_dist_km <= 25.0 or (is_belt_zone and (min_mine_dist_km <= 45.0 or is_named_target)):
+                base_mn_bias = 0.65  # Proven economic manganese lode
+            elif is_belt_zone or min_mine_dist_km <= 55.0:
+                base_mn_bias = 0.48  # Manganese prospective horizon
+            elif min_mine_dist_km <= 75.0:
                 base_mn_bias = 0.28
             else:
                 base_mn_bias = 0.10
@@ -724,11 +750,19 @@ def fetch_copernicus_live_scene(req: CopernicusFetchRequest):
                 if d < min_mine_dist_km:
                     min_mine_dist_km = d
 
+            min_belt_dist_km, nearest_belt_name = get_distance_to_nearest_belt(req.latitude, req.longitude)
+            is_belt_zone = is_manganese_mineral_belt(req.latitude, req.longitude) or (min_belt_dist_km <= 45.0)
+
+            req_name_lower = (req.region_name or "").lower()
+            is_named_target = any(k in req_name_lower for k in ["mansar", "jagalur", "davanagere", "karnataka", "balaghat", "ukwa", "dongri", "tirodi", "chitradurga", "sandur", "keonjhar"])
+
             if is_known_urban_or_alluvial_zone(req.latitude, req.longitude):
                 base_mn_bias = 0.08
-            elif min_mine_dist_km <= 18.0:
-                base_mn_bias = 0.54
-            elif min_mine_dist_km <= 40.0:
+            elif min_mine_dist_km <= 25.0 or (is_belt_zone and (min_mine_dist_km <= 45.0 or is_named_target)):
+                base_mn_bias = 0.65
+            elif is_belt_zone or min_mine_dist_km <= 55.0:
+                base_mn_bias = 0.48
+            elif min_mine_dist_km <= 75.0:
                 base_mn_bias = 0.28
             else:
                 base_mn_bias = 0.10

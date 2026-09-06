@@ -633,6 +633,7 @@ export default function SatelliteScanner({
                     { name: "Dongri Buzurg", lat: 21.5500, lon: 79.7167, desc: "Peroxide High-Mn" },
                     { name: "Tirodi Ore Block", lat: 21.6833, lon: 79.7167, desc: "Medium Grade" },
                     { name: "Mansar Belt", lat: 21.3900, lon: 79.2600, desc: "Sausar Group" },
+                    { name: "Jagalur Taluk (Karnataka)", lat: 14.5800, lon: 76.2000, desc: "Chitradurga Belt" },
                   ].map((preset) => {
                     const isSelected = Math.abs(parseFloat(customLat) - preset.lat) < 0.001 && Math.abs(parseFloat(customLon) - preset.lon) < 0.001;
                     return (
