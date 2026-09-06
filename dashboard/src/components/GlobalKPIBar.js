@@ -16,12 +16,21 @@ export default function GlobalKPIBar({
   prediction,
   trend,
 }) {
-  const isSelected = Boolean(selectedMine);
+  const hasValidInputs = Boolean(
+    inputs && (
+      (inputs.tonnage !== undefined && inputs.tonnage > 0) ||
+      (inputs.ore_grade_pct !== undefined && inputs.ore_grade_pct > 0) ||
+      inputs.equipment_availability_pct !== undefined ||
+      inputs.rainfall_mm !== undefined ||
+      inputs.is_barren !== undefined
+    )
+  );
+  const isSelected = Boolean(selectedMine) || hasValidInputs;
   const isBarren = isSelected && (
-    selectedMine.waste_flag === 1 ||
+    (selectedMine && (selectedMine.waste_flag === 1 || selectedMine.type?.includes("Barren") || selectedMine.type?.includes("Sterilized"))) ||
+    inputs?.is_barren === true ||
     inputs?.waste_flag === 1 ||
-    selectedMine.type?.includes("Barren") ||
-    inputs?.ore_grade_pct === 0
+    (inputs?.ore_grade_pct === 0 && inputs?.tonnage === 0)
   );
 
   // 1. Shortfall Risk Status

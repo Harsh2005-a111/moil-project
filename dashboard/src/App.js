@@ -134,44 +134,45 @@ export default function App() {
 
   // Run ML Prediction whenever selectedMine or inputs change (with debounce)
   useEffect(() => {
-    if (!selectedMine || !inputs) {
+    if (!inputs && !selectedMine) {
       setPrediction(null);
       return;
     }
     const timer = setTimeout(() => {
       runEvaluation();
-    }, 400);
+    }, 350);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMine, inputs]);
 
   const runEvaluation = () => {
-    if (!inputs || !selectedMine) {
+    if (!inputs && !selectedMine) {
       setPrediction(null);
       return;
     }
     setLoading(true);
 
+    const activeInputs = inputs || selectedMine?.inputs || {};
     const payload = {
-      region_name: selectedMine?.name || "Balaghat Mine",
-      block_id: inputs.block_id || "BLK-01",
-      x: parseFloat(inputs.x) || 150.0,
-      y: parseFloat(inputs.y) || 320.0,
-      z: parseFloat(inputs.z) || 85.0,
-      rock_type: inputs.rock_type || "Magnetite",
-      ore_grade_pct: parseFloat(inputs.ore_grade_pct) || 38.5,
-      tonnage: parseFloat(inputs.tonnage) || 120000.0,
-      ore_value_per_tonne: parseFloat(inputs.ore_value_per_tonne) || 260.0,
-      mining_cost: parseFloat(inputs.mining_cost) || 45.0,
-      processing_cost: parseFloat(inputs.processing_cost) || 28.0,
-      waste_flag: parseInt(inputs.waste_flag) || 0,
-      equipment_availability_pct: parseFloat(inputs.equipment_availability_pct) || 88.0,
-      unscheduled_downtime_hours: parseFloat(inputs.unscheduled_downtime_hours) || 3.5,
-      blast_cycle_delay_hours: parseFloat(inputs.blast_cycle_delay_hours) || 1.5,
-      rainfall_mm: parseFloat(inputs.rainfall_mm) || 38.0,
-      soil_moisture: parseFloat(inputs.soil_moisture) || 0.28,
-      ndvi: parseFloat(inputs.ndvi) || 0.35,
-      land_temp_c: parseFloat(inputs.land_temp_c) || 33.5,
+      region_name: selectedMine?.name || activeInputs.region_name || "MOIL Exploration Zone",
+      block_id: activeInputs.block_id || "BLK-01",
+      x: parseFloat(activeInputs.x) || 150.0,
+      y: parseFloat(activeInputs.y) || 320.0,
+      z: parseFloat(activeInputs.z) || 85.0,
+      rock_type: activeInputs.rock_type || "Magnetite",
+      ore_grade_pct: parseFloat(activeInputs.ore_grade_pct) || 38.5,
+      tonnage: parseFloat(activeInputs.tonnage) || 120000.0,
+      ore_value_per_tonne: parseFloat(activeInputs.ore_value_per_tonne) || 260.0,
+      mining_cost: parseFloat(activeInputs.mining_cost) || 45.0,
+      processing_cost: parseFloat(activeInputs.processing_cost) || 28.0,
+      waste_flag: parseInt(activeInputs.waste_flag) || 0,
+      equipment_availability_pct: parseFloat(activeInputs.equipment_availability_pct) || 88.0,
+      unscheduled_downtime_hours: parseFloat(activeInputs.unscheduled_downtime_hours) || 3.5,
+      blast_cycle_delay_hours: parseFloat(activeInputs.blast_cycle_delay_hours) || 1.5,
+      rainfall_mm: parseFloat(activeInputs.rainfall_mm) || 38.0,
+      soil_moisture: parseFloat(activeInputs.soil_moisture) || 0.28,
+      ndvi: parseFloat(activeInputs.ndvi) || 0.35,
+      land_temp_c: parseFloat(activeInputs.land_temp_c) || 33.5,
     };
 
     fetch(`${API_BASE}/api/predict/shortfall`, {
@@ -194,14 +195,16 @@ export default function App() {
       .finally(() => setLoading(false));
 
     // Update 12-week baseline trend
-    const isBarrenTerrain = inputs?.is_barren || inputs?.waste_flag === 1 || inputs?.tonnage === 0;
-    const baseTarget = 1100 + (Math.abs(hashString(selectedMine?.name || "Balaghat")) % 400);
+    const isBarrenTerrain = activeInputs?.is_barren || activeInputs?.waste_flag === 1 || activeInputs?.tonnage === 0;
+    const baseTarget = 1100 + (Math.abs(hashString(selectedMine?.name || activeInputs?.region_name || "Balaghat")) % 400);
     const weeklyTrend = Array.from({ length: 12 }, (_, i) => {
       if (isBarrenTerrain) {
         return { week: `W${i + 1}`, expected: 0, actual: 0 };
       }
       const target = baseTarget + i * 15;
-      const penalty = (inputs.rainfall_mm > 60 ? 120 : 40) + (inputs.equipment_availability_pct < 80 ? 110 : 20);
+      const rain = activeInputs?.rainfall_mm || 38.0;
+      const equip = activeInputs?.equipment_availability_pct || 88.0;
+      const penalty = (rain > 60 ? 120 : 40) + (equip < 80 ? 110 : 20);
       const actual = Math.round(target - penalty * (0.4 + Math.sin(i + 1) * 0.3));
       return {
         week: `W${i + 1}`,
@@ -314,6 +317,7 @@ export default function App() {
             <ReserveIngestionHub
               mines={mines}
               selectedMine={selectedMine}
+              onSelectMine={handleSelectMine}
               inputs={inputs}
               onChangeInput={handleChangeInput}
               onSubmitEvaluation={runEvaluation}

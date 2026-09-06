@@ -25,6 +25,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 export default function ReserveIngestionHub({
   mines,
   selectedMine,
+  onSelectMine,
   inputs,
   onChangeInput,
   onSubmitEvaluation,
@@ -133,7 +134,51 @@ export default function ReserveIngestionHub({
         onChangeInput("equipment_availability_pct", equipAvail);
         onChangeInput("mining_cost", miningCost);
         onChangeInput("processing_cost", procCost);
+        onChangeInput("ore_value_per_tonne", 275.0);
       }
+    }
+
+    // Synchronize active mine or select matched mine so the top navigation & KPI bar stay in sync
+    if (onSelectMine && (!selectedMine || selectedMine.lat === undefined)) {
+      const pLat = parseFloat(params.lat || params.latitude);
+      const pLon = parseFloat(params.lon || params.longitude);
+      const pName = (params.region_name || "").toLowerCase();
+
+      const matched = mines?.find((m) => {
+        const nameMatch = m.name && pName && (
+          m.name.toLowerCase().includes(pName) || pName.includes(m.name.toLowerCase())
+        );
+        const coordMatch = m.lat && pLat && Math.abs(m.lat - pLat) < 0.12 && Math.abs(m.lon - pLon) < 0.12;
+        return nameMatch || coordMatch;
+      });
+
+      if (matched) {
+        onSelectMine(matched);
+      } else {
+        onSelectMine({
+          mine_id: `SAT-${Date.now().toString().slice(-4)}`,
+          name: params.region_name || "Active Satellite Sector",
+          state: "Exploration Concession",
+          district: "CITZ Belt",
+          lat: pLat || 21.8,
+          lon: pLon || 80.0,
+          lease_area_ha: 250.0,
+          annual_capacity_mt: 0.35,
+          primary_rock: rock,
+          avg_grade_pct: grade,
+          avg_rainfall_mm: rain,
+          fleet_size: 24,
+          predicted_reserves_kt: Math.round(tonnageKt),
+          type: isBarren ? "Barren Non-Mineralized" : "Satellite Prospect",
+          waste_flag: isBarren ? 1 : 0,
+        });
+      }
+    }
+
+    if (onSubmitEvaluation) {
+      setTimeout(() => {
+        onSubmitEvaluation();
+      }, 50);
     }
 
     // Always synchronize 2D/3D heatmap & depth slices to correspond to this evaluated scene!
@@ -833,7 +878,9 @@ export default function ReserveIngestionHub({
       {/* Tab 0: Satellite Image AI Scanner */}
       {activeTab === "scanner" && (
         <SatelliteScanner
+          mines={mines}
           selectedMine={selectedMine}
+          onSelectMine={onSelectMine}
           inputs={inputs}
           onChangeInput={onChangeInput}
           onAddNewRegion={onAddNewRegion}

@@ -67,13 +67,19 @@ KNOWN_MN_BELT_CENTROIDS = [
 KNOWN_MN_MINES = [
     {"name": "Balaghat Mine", "lat": 21.8167, "lon": 80.1833},
     {"name": "Dongri Buzurg", "lat": 21.5500, "lon": 79.7167},
+    {"name": "Dongri Buzurg (Bhandara)", "lat": 21.1350, "lon": 79.2150},
     {"name": "Ukwa Mine", "lat": 21.9500, "lon": 80.0500},
     {"name": "Tirodi Mine", "lat": 21.6833, "lon": 79.7167},
+    {"name": "Tirodi South Deposit", "lat": 21.6000, "lon": 79.7000},
     {"name": "Mansar Mine (MOIL Central)", "lat": 21.3980, "lon": 79.2780},
     {"name": "Mansar Belt (Ramtek/Sausar)", "lat": 21.3900, "lon": 79.2600},
+    {"name": "Mansar Lease Zone", "lat": 21.5000, "lon": 79.0200},
     {"name": "Kandri Mine", "lat": 21.4150, "lon": 79.2750},
-    {"name": "Gumgaon Mine", "lat": 21.3650, "lon": 78.9800},
+    {"name": "Kandri Mine (Sausar)", "lat": 21.2000, "lon": 79.3000},
+    {"name": "Gumgaon Mine", "lat": 21.0500, "lon": 79.1000},
+    {"name": "Gumgaon North / Khapa Zone", "lat": 21.3650, "lon": 78.9800},
     {"name": "Chikla Mine", "lat": 21.5500, "lon": 79.7500},
+    {"name": "Chikla Mine (Bhandara)", "lat": 21.1000, "lon": 79.1500},
     {"name": "Beldongri Mine", "lat": 21.1600, "lon": 79.2600},
     {"name": "Sitapatore Mine", "lat": 21.1200, "lon": 79.2000},
     {"name": "Parsoda Mine", "lat": 21.1800, "lon": 79.2800},
@@ -800,7 +806,12 @@ def fetch_copernicus_live_scene(req: CopernicusFetchRequest):
             is_belt_zone = is_manganese_mineral_belt(req.latitude, req.longitude) or (min_belt_dist_km <= 45.0)
 
             req_name_lower = (req.region_name or "").lower()
-            is_named_target = any(k in req_name_lower for k in ["mansar", "jagalur", "davanagere", "karnataka", "balaghat", "ukwa", "dongri", "tirodi", "chitradurga", "sandur", "keonjhar"])
+            is_named_target = any(k in req_name_lower for k in [
+                "mansar", "jagalur", "davanagere", "karnataka", "balaghat", "ukwa", 
+                "dongri", "tirodi", "chitradurga", "sandur", "keonjhar", "gumgaon", 
+                "kandri", "chikla", "beldongri", "sitapatore", "parsoda", "ramrama", 
+                "sausar", "bhandara", "chhindwara"
+            ])
 
             craton_prov = get_tectonic_craton_province(req.latitude, req.longitude)
 
@@ -845,7 +856,12 @@ def fetch_copernicus_live_scene(req: CopernicusFetchRequest):
             is_belt_zone = is_manganese_mineral_belt(req.latitude, req.longitude) or (min_belt_dist_km <= 45.0)
 
             req_name_lower = (req.region_name or "").lower()
-            is_named_target = any(k in req_name_lower for k in ["mansar", "jagalur", "davanagere", "karnataka", "balaghat", "ukwa", "dongri", "tirodi", "chitradurga", "sandur", "keonjhar"])
+            is_named_target = any(k in req_name_lower for k in [
+                "mansar", "jagalur", "davanagere", "karnataka", "balaghat", "ukwa", 
+                "dongri", "tirodi", "chitradurga", "sandur", "keonjhar", "gumgaon", 
+                "kandri", "chikla", "beldongri", "sitapatore", "parsoda", "ramrama", 
+                "sausar", "bhandara", "chhindwara"
+            ])
 
             craton_prov = get_tectonic_craton_province(req.latitude, req.longitude)
 

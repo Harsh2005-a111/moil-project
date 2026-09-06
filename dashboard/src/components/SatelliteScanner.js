@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   UploadCloud,
   Satellite,
@@ -20,7 +20,9 @@ import {
 } from "lucide-react";
 
 export default function SatelliteScanner({
+  mines,
   selectedMine,
+  onSelectMine,
   inputs,
   onChangeInput,
   onAddNewRegion,
@@ -41,6 +43,19 @@ export default function SatelliteScanner({
   // Coordinate inputs
   const [customLat, setCustomLat] = useState(selectedMine?.lat || 21.8167);
   const [customLon, setCustomLon] = useState(selectedMine?.lon || 80.1833);
+
+  // Auto-sync custom coordinates and name when selectedMine changes from parent dropdown/selector
+  useEffect(() => {
+    if (selectedMine) {
+      if (selectedMine.lat !== undefined && selectedMine.lat !== null) {
+        setCustomLat(selectedMine.lat);
+      }
+      if (selectedMine.lon !== undefined && selectedMine.lon !== null) {
+        setCustomLon(selectedMine.lon);
+      }
+      setSaveRegionName(`${selectedMine.name} Sector Extension`);
+    }
+  }, [selectedMine]);
 
   // Optional Copernicus Credentials with persistent localStorage
   const [showCreds, setShowCreds] = useState(false);
@@ -138,6 +153,10 @@ export default function SatelliteScanner({
           // Sync heatmap to 0 reserves / barren blue without auto-filling extraction sliders
           onApplyExtractedParameters({
             is_barren: true,
+            latitude: parseFloat(customLat) || 21.8167,
+            longitude: parseFloat(customLon) || 80.1833,
+            lat: parseFloat(customLat) || 21.8167,
+            lon: parseFloat(customLon) || 80.1833,
             region_name: saveRegionName.trim() || `Copernicus-${customLat}_${customLon}`,
             ore_grade_pct: 0.0,
             total_available_reserves_kt: 0.0,
@@ -150,6 +169,10 @@ export default function SatelliteScanner({
           // Fully synchronize sliders, delays, fleet, and heatmap
           onApplyExtractedParameters({
             is_barren: false,
+            latitude: parseFloat(customLat) || 21.8167,
+            longitude: parseFloat(customLon) || 80.1833,
+            lat: parseFloat(customLat) || 21.8167,
+            lon: parseFloat(customLon) || 80.1833,
             region_name: saveRegionName.trim() || `Copernicus-${customLat}_${customLon}`,
             rainfall_mm: feat.rainfall_mm_weekly,
             soil_moisture: feat.soil_moisture,
@@ -278,9 +301,17 @@ export default function SatelliteScanner({
     }
 
     const feat = analysisResult.extracted_features;
+    const curLat = parseFloat(customLat) || 21.8167;
+    const curLon = parseFloat(customLon) || 80.1833;
+    const regName = saveRegionName.trim() || `Sat-Deposit-${Date.now().toString().slice(-4)}`;
 
     if (onApplyExtractedParameters) {
       onApplyExtractedParameters({
+        latitude: curLat,
+        longitude: curLon,
+        lat: curLat,
+        lon: curLon,
+        region_name: regName,
         rainfall_mm: feat.rainfall_mm_weekly,
         soil_moisture: feat.soil_moisture,
         ndvi: feat.ndvi,
@@ -295,8 +326,18 @@ export default function SatelliteScanner({
       });
     }
 
+    if (onSelectMine && mines) {
+      const matched = mines.find((m) => {
+        return (m.lat && Math.abs(m.lat - curLat) < 0.12 && Math.abs(m.lon - curLon) < 0.12) ||
+               (m.name && regName && m.name.toLowerCase().includes(regName.toLowerCase()));
+      });
+      if (matched) {
+        onSelectMine(matched);
+      }
+    }
+
     setSuccessMsg(
-      "✓ Auto-filled! All satellite indicators, rainfall, LST, soil moisture, and grade parameters are now populated in your portal sliders."
+      "✓ Auto-filled! All satellite indicators, rainfall, LST, soil moisture, and grade parameters are now populated in your portal sliders and top KPI bar."
     );
   };
 
@@ -629,11 +670,15 @@ export default function SatelliteScanner({
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {[
                     { name: "Balaghat Deep Lode", lat: 21.8167, lon: 80.1833, desc: "Sausar Belt - High Grade" },
+                    { name: "Gumgaon Mine (Maharashtra)", lat: 21.0500, lon: 79.1000, desc: "Sausar Group - MOIL Underground" },
                     { name: "Mansar Belt (Ramtek)", lat: 21.3965, lon: 79.2848, desc: "Sausar Group - MOIL Horizon" },
+                    { name: "Ukwa Mine (Balaghat)", lat: 21.9500, lon: 80.0500, desc: "Sausar Gondite Reef" },
+                    { name: "Dongri Buzurg", lat: 21.5500, lon: 79.7167, desc: "Peroxide High-Mn" },
+                    { name: "Kandri Mine", lat: 21.2000, lon: 79.3000, desc: "Sausar Group - Hematite Gondite" },
+                    { name: "Tirodi Mine", lat: 21.6833, lon: 79.7167, desc: "Sausar Belt - High Grade Braunite" },
+                    { name: "Chikla Mine", lat: 21.5500, lon: 79.7500, desc: "Sausar Belt - Braunite Lode" },
                     { name: "Jagalur Taluk (Karnataka)", lat: 14.5800, lon: 76.2000, desc: "Dharwar Craton - Chitradurga Belt" },
                     { name: "Keonjhar Belt (Odisha)", lat: 21.6200, lon: 85.5800, desc: "Singhbhum Craton - IOG Series" },
-                    { name: "Dongri Buzurg", lat: 21.5500, lon: 79.7167, desc: "Peroxide High-Mn" },
-                    { name: "Ukwa Mine (Balaghat)", lat: 21.9500, lon: 80.0500, desc: "Sausar Gondite Reef" },
                   ].map((preset) => {
                     const isSelected = Math.abs(parseFloat(customLat) - preset.lat) < 0.001 && Math.abs(parseFloat(customLon) - preset.lon) < 0.001;
                     return (
@@ -643,6 +688,14 @@ export default function SatelliteScanner({
                           setCustomLat(preset.lat);
                           setCustomLon(preset.lon);
                           setSaveRegionName(`${preset.name} Satellite Sector`);
+                          if (onSelectMine && mines) {
+                            const matched = mines.find((m) =>
+                              (m.lat && Math.abs(m.lat - preset.lat) < 0.1 && Math.abs(m.lon - preset.lon) < 0.1) ||
+                              (m.name && preset.name.toLowerCase().includes(m.name.toLowerCase())) ||
+                              (m.name && m.name.toLowerCase().includes(preset.name.toLowerCase().split(" ")[0]))
+                            );
+                            if (matched) onSelectMine(matched);
+                          }
                         }}
                         style={{
                           fontSize: 11,
