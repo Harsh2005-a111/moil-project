@@ -429,7 +429,6 @@ export default function ReserveIngestionHub({
     document.body.removeChild(link);
   };
 
-  const safeInputs = inputs || {};
   const grid = reservesData?.probability_grid || [];
   const depthSlices = reservesData?.depth_slices || [];
 
