@@ -8,6 +8,7 @@ import {
   AlertOctagon,
 } from "lucide-react";
 import SmelterLogisticsCard from "./SmelterLogisticsCard";
+import SectionReportButton from "./SectionReportButton";
 import {
   LineChart,
   Line,
@@ -85,20 +86,31 @@ export default function ShortfallPredictor({
           boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 4, background: "#BA7517", color: "#fff" }}>
-            MODULE B: SHORTFALL PREDICTOR
-          </span>
-          <span style={{ fontSize: 13, color: "#64748B" }}>
-            {selectedMine?.name} • Target Block: {inputs?.block_id}
-          </span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 4, background: "#BA7517", color: "#fff" }}>
+                MODULE B: SHORTFALL PREDICTOR
+              </span>
+              <span style={{ fontSize: 13, color: "#64748B" }}>
+                {selectedMine?.name} • Target Block: {inputs?.block_id}
+              </span>
+            </div>
+            <h2 style={{ margin: "4px 0 0 0", fontSize: 18, fontWeight: 700, color: "#0F172A" }}>
+              Production Shortfall & Operational Constraint Risk Engine
+            </h2>
+            <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "#64748B" }}>
+              Evaluates multi-source constraints including haul fleet availability, unscheduled equipment downtime, rainfall saturation, and blasting cycle lags using LightGBM machine learning.
+            </p>
+          </div>
+
+          <SectionReportButton
+            reportId="shortfall_predictor"
+            selectedMineName={selectedMine?.name}
+            variant="amber"
+            buttonText="View & Download Shortfall Report"
+          />
         </div>
-        <h2 style={{ margin: "4px 0 0 0", fontSize: 18, fontWeight: 700, color: "#0F172A" }}>
-          Production Shortfall & Operational Constraint Risk Engine
-        </h2>
-        <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "#64748B" }}>
-          Evaluates multi-source constraints including haul fleet availability, unscheduled equipment downtime, rainfall saturation, and blasting cycle lags using LightGBM machine learning.
-        </p>
       </div>
 
       {/* Real-time Trained ML Regressor Bottleneck Banner */}

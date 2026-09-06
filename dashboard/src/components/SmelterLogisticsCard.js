@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Train, Navigation, ShieldCheck } from "lucide-react";
+import SectionReportButton from "./SectionReportButton";
 
 export default function SmelterLogisticsCard({
   selectedMine,
@@ -70,17 +71,26 @@ export default function SmelterLogisticsCard({
           </p>
         </div>
 
-        {logisticsData?.optimal_smelter && (
-          <div style={{ background: "#ECFDF5", border: "1px solid #6EE7B7", borderRadius: 8, padding: "6px 12px", display: "flex", alignItems: "center", gap: 8 }}>
-            <ShieldCheck size={16} color="#059669" />
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#065F46", textTransform: "uppercase" }}>Optimal Rail Dispatch Route</div>
-              <div style={{ fontSize: 12, fontWeight: 800, color: "#047857" }}>
-                {logisticsData.optimal_smelter} — ₹{logisticsData.optimal_nsr_per_t}/t NSR
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          {logisticsData?.optimal_smelter && (
+            <div style={{ background: "#ECFDF5", border: "1px solid #6EE7B7", borderRadius: 8, padding: "6px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+              <ShieldCheck size={16} color="#059669" />
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#065F46", textTransform: "uppercase" }}>Optimal Rail Dispatch Route</div>
+                <div style={{ fontSize: 12, fontWeight: 800, color: "#047857" }}>
+                  {logisticsData.optimal_smelter} — ₹{logisticsData.optimal_nsr_per_t}/t NSR
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          <SectionReportButton
+            reportId="smelter_logistics"
+            selectedMineName={selectedMine?.name}
+            variant="emerald"
+            buttonText="Logistics Report"
+          />
+        </div>
       </div>
 
       {loading ? (

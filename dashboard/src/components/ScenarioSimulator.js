@@ -7,6 +7,7 @@ import {
   Layers,
   Sparkles,
 } from "lucide-react";
+import SectionReportButton from "./SectionReportButton";
 import {
   BarChart,
   Bar,
@@ -112,25 +113,34 @@ export default function ScenarioSimulator({ selectedMine, inputs }) {
             </p>
           </div>
 
-          <button
-            onClick={resetSliders}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "8px 14px",
-              borderRadius: 8,
-              border: "1px solid #CBD5E1",
-              background: "#F8FAFC",
-              color: "#334155",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            <RotateCcw size={14} />
-            <span>Reset Constraints</span>
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              onClick={resetSliders}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "8px 14px",
+                borderRadius: 8,
+                border: "1px solid #CBD5E1",
+                background: "#F8FAFC",
+                color: "#334155",
+                fontSize: 12.5,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              <RotateCcw size={14} />
+              <span>Reset Constraints</span>
+            </button>
+
+            <SectionReportButton
+              reportId="scenario_simulator"
+              selectedMineName={selectedMine?.name}
+              variant="amber"
+              buttonText="Simulator Report"
+            />
+          </div>
         </div>
       </div>
 

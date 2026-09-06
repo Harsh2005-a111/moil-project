@@ -17,6 +17,7 @@ import {
 import { PRESET_SCENARIOS, SAMPLE_CSV_CONTENT } from "../data/moilData";
 import SatelliteScanner from "./SatelliteScanner";
 import BoreholeCoreViewer from "./BoreholeCoreViewer";
+import SectionReportButton from "./SectionReportButton";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -693,6 +694,107 @@ export default function ReserveIngestionHub({
           <span>Batch CSV</span>
         </button>
       </div>
+
+      {/* Active Section Context & On-Demand Report Banner */}
+      {(() => {
+        const TAB_REPORT_MAP = {
+          scanner: {
+            id: "satellite_scanner",
+            title: "Satellite Multi-Spectral Image AI Analyzer",
+            desc: "Sentinel-2 Level-2A surface reflectance, MSI mineral index, and vegetation deconvolution.",
+            badge: "ESA COPERNICUS",
+            variant: "default",
+          },
+          prospector: {
+            id: "geological_indicators",
+            title: "1. Satellite & Geological Indicators (Sliders)",
+            desc: "Multi-spectral band sliders coupled with Bayesian GSI geological lithology priors.",
+            badge: "GSI PRIORS",
+            variant: "default",
+          },
+          operations: {
+            id: "operational_constraints",
+            title: "2. Operational Pit Feasibility & Constraints",
+            desc: "Cutoff grade, stripping ratio W:O, dewatering pumping head, and statutory forest buffers.",
+            badge: "DGMS COMPLIANT",
+            variant: "default",
+          },
+          heatmap: {
+            id: "reserve_heatmap",
+            title: "3. 2D/3D Reserve Heatmap & Depth Slices",
+            desc: "Geospatial kriging interpolation, strike-dip visualization, and horizontal bench depth RL slicing.",
+            badge: "SPATIAL KRIGING",
+            variant: "default",
+          },
+          boreholes: {
+            id: "subsurface_boreholes",
+            title: "4. Subsurface Borehole & Drill-Core Ingestion",
+            desc: "Downhole diamond core assay compositing, geometric dip correction, RQD stability, and UNFC 111/122 progression.",
+            badge: "UNFC 111 CERTIFIED",
+            variant: "purple",
+          },
+          upload: {
+            id: "batch_csv",
+            title: "Batch CSV Exploration & Portfolio Estimation",
+            desc: "Bulk lease concession evaluation, automated prospectivity ranking, and multi-block reserves.",
+            badge: "PORTFOLIO BATCH",
+            variant: "default",
+          },
+        };
+        const currentMeta = TAB_REPORT_MAP[activeTab];
+        if (!currentMeta) return null;
+        return (
+          <div
+            style={{
+              background: "linear-gradient(90deg, #F8FAFC 0%, #EFF6FF 50%, #FAF5FF 100%)",
+              border: "1px solid #CBD5E1",
+              borderRadius: 10,
+              padding: "10px 18px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+              boxShadow: "0 2px 6px rgba(0,0,0,0.03)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span className="live-beacon" />
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: "#0F2C59" }}>
+                    {currentMeta.title}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 800,
+                      padding: "2px 7px",
+                      borderRadius: 4,
+                      background: activeTab === "boreholes" ? "#7E22CE" : "#1A56A0",
+                      color: "#FFFFFF",
+                    }}
+                  >
+                    {currentMeta.badge}
+                  </span>
+                </div>
+                <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 2 }}>
+                  {currentMeta.desc}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <SectionReportButton
+                reportId={currentMeta.id}
+                selectedMineName={selectedMine?.name}
+                variant={currentMeta.variant}
+                buttonText="View & Download Section Report"
+              />
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Tab 0: Satellite Image AI Scanner */}
       {activeTab === "scanner" && (

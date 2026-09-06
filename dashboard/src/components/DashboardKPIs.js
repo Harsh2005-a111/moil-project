@@ -12,6 +12,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import SectionReportButton from "./SectionReportButton";
 
 export default function DashboardKPIs({
   mines,
@@ -158,7 +159,12 @@ export default function DashboardKPIs({
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <SectionReportButton
+            reportId="dashboard_kpis"
+            selectedMineName={selectedMine?.name}
+            buttonText="Executive Report"
+          />
           <button
             onClick={handleDownloadIBMDossier}
             style={{
@@ -179,15 +185,15 @@ export default function DashboardKPIs({
             style={{
               padding: "9px 16px",
               borderRadius: 8,
-              border: "1px solid rgba(255,255,255,0.2)",
-              background: "rgba(255,255,255,0.1)",
-              color: "#fff",
+              border: "none",
+              background: "#185FA5",
+              color: "#FFFFFF",
               fontSize: 13,
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: "pointer",
             }}
           >
-            Update Mine Inputs
+            🛰️ Go to Reserve Hub
           </button>
           <button
             onClick={() => onNavigateSection("actions")}

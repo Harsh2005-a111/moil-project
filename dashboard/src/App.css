@@ -1,3 +1,4 @@
+/* Smooth Spin Keyframe */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -11,7 +12,75 @@
   animation: spin 1s linear infinite;
 }
 
-/* Custom Scrollbars */
+/* Modal Smooth Entrance */
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Glowing Pulsing Dot */
+@keyframes pulseGlow {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.live-beacon {
+  width: 8px;
+  height: 8px;
+  background-color: #10B981;
+  border-radius: 50%;
+  animation: pulseGlow 2s infinite;
+  display: inline-block;
+}
+
+/* Radar Sweep Keyframe for Satellite Scanners */
+@keyframes radarSweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.radar-sweep-anim {
+  animation: radarSweep 4s linear infinite;
+  transform-origin: center center;
+}
+
+/* Subtle Shimmer for High Priority Badges */
+@keyframes subtleShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-badge {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: subtleShimmer 3s infinite;
+}
+
+/* Custom Modern Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -30,18 +99,31 @@
   background: #94a3b8;
 }
 
-/* Card hover transitions */
+/* Card hover transitions & elevation */
 .hover-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease;
 }
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.03);
+}
+
+/* Interactive Button Hover Glow */
+.section-report-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+/* Ambient Subtle Background Mesh */
+.ambient-dashboard-bg {
+  background: radial-gradient(circle at 10% 10%, rgba(26, 86, 160, 0.03) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(126, 34, 206, 0.03) 0%, transparent 40%),
+              #F8FAFC;
 }
 
 @media print {
-  aside, header {
+  aside, header, .section-report-btn {
     display: none !important;
   }
   main {

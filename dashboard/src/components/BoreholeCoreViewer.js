@@ -5,6 +5,7 @@ import {
   ShieldCheck,
   RefreshCw,
 } from "lucide-react";
+import SectionReportButton from "./SectionReportButton";
 
 export default function BoreholeCoreViewer({
   selectedMine,
@@ -206,6 +207,13 @@ export default function BoreholeCoreViewer({
               <UploadCloud size={13} />
               <span>{showCsvBox ? "Close CSV" : "Upload Custom CSV"}</span>
             </button>
+
+            <SectionReportButton
+              reportId="subsurface_boreholes"
+              selectedMineName={selectedMine?.name}
+              variant="purple"
+              buttonText="View & Download Core Report"
+            />
           </div>
         </div>
 
