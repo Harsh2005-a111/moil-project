@@ -633,7 +633,7 @@ export default function SatelliteScanner({
                     { name: "Jagalur Taluk (Karnataka)", lat: 14.5800, lon: 76.2000, desc: "Dharwar Craton - Chitradurga Belt" },
                     { name: "Keonjhar Belt (Odisha)", lat: 21.6200, lon: 85.5800, desc: "Singhbhum Craton - IOG Series" },
                     { name: "Dongri Buzurg", lat: 21.5500, lon: 79.7167, desc: "Peroxide High-Mn" },
-                    { name: "Ukwa Ridge Extension", lat: 21.9667, lon: 80.4667, desc: "Monsoon Inundated" },
+                    { name: "Ukwa Mine (Balaghat)", lat: 21.9500, lon: 80.0500, desc: "Sausar Gondite Reef" },
                   ].map((preset) => {
                     const isSelected = Math.abs(parseFloat(customLat) - preset.lat) < 0.001 && Math.abs(parseFloat(customLon) - preset.lon) < 0.001;
                     return (

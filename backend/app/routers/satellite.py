@@ -460,11 +460,13 @@ def extract_spectral_and_ml_predict(
                 tree_preds = [tree.predict_proba(feature_row)[0][1] for tree in clf.estimators_]
                 mean_p = float(np.mean(tree_preds))
                 std_p = float(np.std(tree_preds))
+                n_trees = len(tree_preds)
+                se_p = float(std_p / np.sqrt(n_trees)) if n_trees > 0 else 0.0
 
                 prob_pct = round(float(mean_p * 100.0), 1)
-                uncertainty_pct = round(float(1.96 * std_p * 100.0), 1)
-                lower_ci = round(float(max(0.0, mean_p - 1.96 * std_p) * 100.0), 1)
-                upper_ci = round(float(min(1.0, mean_p + 1.96 * std_p) * 100.0), 1)
+                uncertainty_pct = round(float(1.96 * se_p * 100.0), 1)
+                lower_ci = round(float(max(0.0, mean_p - 1.96 * se_p) * 100.0), 1)
+                upper_ci = round(float(min(1.0, mean_p + 1.96 * se_p) * 100.0), 1)
                 confidence_range = [lower_ci, upper_ci]
             except Exception as e:
                 print("ML inference error fallback:", e)
