@@ -10,63 +10,60 @@ export default function SectionReportButton({
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  let bgStyle = "linear-gradient(135deg, #0F2C59 0%, #1A56A0 100%)";
-  let borderStyle = "1px solid rgba(255, 255, 255, 0.2)";
-  let textColor = "#FFFFFF";
-  let shadow = "0 2px 8px rgba(15, 44, 89, 0.2)";
-
-  if (variant === "purple") {
-    bgStyle = "linear-gradient(135deg, #7E22CE 0%, #9333EA 100%)";
-    shadow = "0 2px 8px rgba(126, 34, 206, 0.25)";
-  } else if (variant === "emerald") {
-    bgStyle = "linear-gradient(135deg, #059669 0%, #10B981 100%)";
-    shadow = "0 2px 8px rgba(16, 185, 129, 0.25)";
-  } else if (variant === "amber") {
-    bgStyle = "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)";
-    shadow = "0 2px 8px rgba(217, 119, 6, 0.25)";
-  } else if (variant === "outline") {
-    bgStyle = "#FFFFFF";
-    borderStyle = "1px solid #CBD5E1";
-    textColor = "#0F2C59";
-    shadow = "0 1px 3px rgba(0,0,0,0.05)";
-  }
+  let variantClass = "flowing-btn-navy";
+  if (variant === "purple") variantClass = "flowing-btn-purple";
+  else if (variant === "emerald") variantClass = "flowing-btn-emerald";
+  else if (variant === "amber") variantClass = "flowing-btn-amber";
 
   return (
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="section-report-btn hover-lift"
+        className={`flowing-btn flowing-report-btn ${variantClass}`}
         style={{
           display: "inline-flex",
           alignItems: "center",
-          gap: 6,
-          padding: variant === "compact" ? "5px 10px" : "7px 13px",
-          background: bgStyle,
-          color: textColor,
-          border: borderStyle,
-          borderRadius: 8,
-          fontSize: variant === "compact" ? 11.5 : 12,
+          gap: 7,
+          padding: variant === "compact" ? "6px 12px" : "8px 15px",
+          borderRadius: 9,
+          fontSize: variant === "compact" ? 11.5 : 12.5,
           fontWeight: 700,
           cursor: "pointer",
-          boxShadow: shadow,
-          transition: "all 0.2s ease",
           whiteSpace: "nowrap",
+          border: "1px solid rgba(255, 255, 255, 0.28)",
         }}
-        title="View comprehensive technical audit, formulas, parameters and download official section report"
+        title="View comprehensive technical audit, formulas, parameters and download official section PDF report"
       >
-        <BookOpen size={variant === "compact" ? 13 : 14} />
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <BookOpen size={variant === "compact" ? 13 : 15} />
+          <span
+            style={{
+              position: "absolute",
+              top: -2,
+              right: -3,
+              width: 5,
+              height: 5,
+              borderRadius: "50%",
+              backgroundColor: "#34D399",
+              boxShadow: "0 0 6px #34D399",
+            }}
+          />
+        </div>
         <span>{buttonText}</span>
         <span
           style={{
             fontSize: 9.5,
-            fontWeight: 800,
-            background: "rgba(255, 255, 255, 0.25)",
-            padding: "1px 5px",
-            borderRadius: 10,
-            letterSpacing: "0.02em",
+            fontWeight: 900,
+            background: "rgba(255, 255, 255, 0.24)",
+            padding: "1.5px 6px",
+            borderRadius: 6,
+            letterSpacing: "0.03em",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 2,
           }}
         >
-          REPORT
+          📄 PDF
         </span>
       </button>
 

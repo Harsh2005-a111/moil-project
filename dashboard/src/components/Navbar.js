@@ -137,21 +137,22 @@ export default function Navbar({
           <button
             onClick={() => setShowAddModal(true)}
             title="Add Custom Lease / Exploration Block"
+            className="flowing-btn"
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 4,
-              padding: "7px 10px",
+              gap: 5,
+              padding: "7px 12px",
               borderRadius: 8,
-              border: "1px dashed #94A3B8",
+              border: "1px solid #CBD5E1",
               background: "#F8FAFC",
-              color: "#334155",
+              color: "#0F2C59",
               fontSize: 12,
-              fontWeight: 500,
+              fontWeight: 600,
               cursor: "pointer",
             }}
           >
-            <PlusCircle size={14} color="#0D9488" />
+            <PlusCircle size={14} color="#059669" />
             <span>New Region</span>
           </button>
         </div>
@@ -160,20 +161,12 @@ export default function Navbar({
         <button
           onClick={onRefresh}
           disabled={loading}
+          className="flowing-btn flowing-btn-navy"
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "7px 14px",
-            borderRadius: 8,
-            border: "none",
-            background: "#185FA5",
-            color: "#FFFFFF",
+            padding: "8px 16px",
             fontSize: 13,
-            fontWeight: 600,
             cursor: loading ? "not-allowed" : "pointer",
             opacity: loading ? 0.7 : 1,
-            boxShadow: "0 1px 3px rgba(24,95,165,0.3)",
           }}
         >
           <RefreshCw size={14} className={loading ? "spin-animation" : ""} />

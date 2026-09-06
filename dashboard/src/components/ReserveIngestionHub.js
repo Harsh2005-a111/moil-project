@@ -559,15 +559,16 @@ export default function ReserveIngestionHub({
       </div>
 
       {/* Tab Navigation Strip */}
-      <div style={{ display: "flex", gap: 4, background: "#FFFFFF", padding: 4, borderRadius: 10, border: "1px solid #E2E8F0", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 6, background: "#FFFFFF", padding: 6, borderRadius: 12, border: "1px solid #E2E8F0", flexWrap: "wrap", boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}>
         <button
           onClick={() => setActiveTab("scanner")}
+          className={activeTab === "scanner" ? "flowing-btn flowing-btn-navy" : "flowing-btn"}
           style={{
-            padding: "8px 14px",
-            border: "none",
-            borderRadius: 7,
-            background: activeTab === "scanner" ? "#0284C7" : "transparent",
-            color: activeTab === "scanner" ? "#FFFFFF" : "#0369A1",
+            padding: "8px 16px",
+            border: activeTab === "scanner" ? "none" : "1px solid transparent",
+            borderRadius: 8,
+            background: activeTab === "scanner" ? undefined : "#F8FAFC",
+            color: activeTab === "scanner" ? "#FFFFFF" : "#0284C7",
             fontSize: 12.5,
             fontWeight: 800,
             cursor: "pointer",
@@ -575,7 +576,6 @@ export default function ReserveIngestionHub({
             alignItems: "center",
             justifyContent: "center",
             gap: 6,
-            boxShadow: activeTab === "scanner" ? "0 2px 6px rgba(2,132,199,0.25)" : "none",
           }}
         >
           <Sparkles size={14} />
@@ -584,14 +584,15 @@ export default function ReserveIngestionHub({
 
         <button
           onClick={() => setActiveTab("prospector")}
+          className={activeTab === "prospector" ? "flowing-btn flowing-btn-navy" : "flowing-btn"}
           style={{
             flex: 1,
             minWidth: 180,
             padding: "8px 12px",
-            border: "none",
-            borderRadius: 7,
-            background: activeTab === "prospector" ? "#185FA5" : "transparent",
-            color: activeTab === "prospector" ? "#FFFFFF" : "#64748B",
+            border: activeTab === "prospector" ? "none" : "1px solid transparent",
+            borderRadius: 8,
+            background: activeTab === "prospector" ? undefined : "transparent",
+            color: activeTab === "prospector" ? "#FFFFFF" : "#475569",
             fontSize: 12.5,
             fontWeight: 700,
             cursor: "pointer",
@@ -602,19 +603,20 @@ export default function ReserveIngestionHub({
           }}
         >
           <Satellite size={14} />
-          <span>1. Satellite & Geological Indicators (Sliders)</span>
+          <span>1. Satellite & Geological Indicators</span>
         </button>
 
         <button
           onClick={() => setActiveTab("operations")}
+          className={activeTab === "operations" ? "flowing-btn flowing-btn-navy" : "flowing-btn"}
           style={{
             flex: 1,
             minWidth: 160,
             padding: "8px 12px",
-            border: "none",
-            borderRadius: 7,
-            background: activeTab === "operations" ? "#185FA5" : "transparent",
-            color: activeTab === "operations" ? "#FFFFFF" : "#64748B",
+            border: activeTab === "operations" ? "none" : "1px solid transparent",
+            borderRadius: 8,
+            background: activeTab === "operations" ? undefined : "transparent",
+            color: activeTab === "operations" ? "#FFFFFF" : "#475569",
             fontSize: 12.5,
             fontWeight: 700,
             cursor: "pointer",
@@ -630,14 +632,15 @@ export default function ReserveIngestionHub({
 
         <button
           onClick={() => setActiveTab("heatmap")}
+          className={activeTab === "heatmap" ? "flowing-btn flowing-btn-emerald" : "flowing-btn"}
           style={{
             flex: 1,
             minWidth: 180,
             padding: "8px 12px",
-            border: "none",
-            borderRadius: 7,
-            background: activeTab === "heatmap" ? "#185FA5" : "transparent",
-            color: activeTab === "heatmap" ? "#FFFFFF" : "#64748B",
+            border: activeTab === "heatmap" ? "none" : "1px solid transparent",
+            borderRadius: 8,
+            background: activeTab === "heatmap" ? undefined : "transparent",
+            color: activeTab === "heatmap" ? "#FFFFFF" : "#475569",
             fontSize: 12.5,
             fontWeight: 700,
             cursor: "pointer",
@@ -653,14 +656,15 @@ export default function ReserveIngestionHub({
 
         <button
           onClick={() => setActiveTab("boreholes")}
+          className={activeTab === "boreholes" ? "flowing-btn flowing-btn-purple" : "flowing-btn"}
           style={{
             flex: 1,
             minWidth: 190,
             padding: "8px 12px",
-            border: "none",
-            borderRadius: 7,
-            background: activeTab === "boreholes" ? "#7E22CE" : "transparent",
-            color: activeTab === "boreholes" ? "#FFFFFF" : "#64748B",
+            border: activeTab === "boreholes" ? "none" : "1px solid transparent",
+            borderRadius: 8,
+            background: activeTab === "boreholes" ? undefined : "transparent",
+            color: activeTab === "boreholes" ? "#FFFFFF" : "#475569",
             fontSize: 12.5,
             fontWeight: 700,
             cursor: "pointer",
@@ -676,12 +680,13 @@ export default function ReserveIngestionHub({
 
         <button
           onClick={() => setActiveTab("upload")}
+          className={activeTab === "upload" ? "flowing-btn flowing-btn-amber" : "flowing-btn"}
           style={{
             padding: "8px 14px",
-            border: "none",
-            borderRadius: 7,
-            background: activeTab === "upload" ? "#185FA5" : "transparent",
-            color: activeTab === "upload" ? "#FFFFFF" : "#64748B",
+            border: activeTab === "upload" ? "none" : "1px solid transparent",
+            borderRadius: 8,
+            background: activeTab === "upload" ? undefined : "transparent",
+            color: activeTab === "upload" ? "#FFFFFF" : "#475569",
             fontSize: 12.5,
             fontWeight: 700,
             cursor: "pointer",

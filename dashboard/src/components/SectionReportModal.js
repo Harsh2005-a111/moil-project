@@ -12,8 +12,10 @@ import {
   Scale,
   Settings2,
   TreePine,
+  FileText,
 } from "lucide-react";
 import { SECTION_REPORTS } from "../data/sectionReportsData";
+import { generateGovtReportPDF } from "../utils/pdfReportGenerator";
 
 export default function SectionReportModal({ reportId, isOpen, onClose, selectedMineName }) {
   const [copied, setCopied] = useState(false);
@@ -36,6 +38,16 @@ export default function SectionReportModal({ reportId, isOpen, onClose, selected
 
   const mineContext = selectedMineName || "Balaghat Mining Lease (Active)";
   const pillars = report.govPillars || {};
+
+  // Download official Government PDF Report
+  const handleDownloadPDF = () => {
+    try {
+      generateGovtReportPDF(report, mineContext);
+    } catch (err) {
+      console.error("PDF generation failed, falling back to TXT:", err);
+      handleDownload();
+    }
+  };
 
   // Generate official government report format for download
   const handleDownload = () => {
@@ -204,33 +216,37 @@ END OF OFFICIAL STATUTORY DOSSIER — MOIL LIMITED & MINISTRY OF STEEL
         {/* Header Bar */}
         <div
           style={{
-            padding: "18px 24px",
-            background: "linear-gradient(135deg, #0F2C59 0%, #1A56A0 100%)",
+            flexShrink: 0,
+            padding: "16px 24px",
+            background: "linear-gradient(135deg, #0F2C59 0%, #1A56A0 50%, #0D254C 100%)",
             color: "#FFFFFF",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             gap: 16,
-            borderBottom: "1px solid rgba(255, 255, 255, 0.15)",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.18)",
+            boxShadow: "0 4px 14px rgba(15, 44, 89, 0.25)",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0, flex: 1 }}>
             <div
               style={{
-                width: 42,
-                height: 42,
-                borderRadius: 10,
-                background: "rgba(255, 255, 255, 0.14)",
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                background: "linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                backdropFilter: "blur(4px)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                flexShrink: 0,
               }}
             >
-              <BookOpen size={22} color="#FFFFFF" />
+              <BookOpen size={24} color="#FFFFFF" />
             </div>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 3 }}>
                 <span
                   style={{
                     fontSize: 10,
@@ -239,102 +255,124 @@ END OF OFFICIAL STATUTORY DOSSIER — MOIL LIMITED & MINISTRY OF STEEL
                     background: "#059669",
                     color: "#FFFFFF",
                     padding: "2px 8px",
-                    borderRadius: 4,
+                    borderRadius: 5,
+                    boxShadow: "0 2px 6px rgba(5, 150, 105, 0.35)",
                   }}
                 >
                   {report.badge}
                 </span>
-                <span style={{ fontSize: 11, color: "#93C5FD", fontWeight: 600 }}>
+                <span style={{ fontSize: 11.5, color: "#93C5FD", fontWeight: 600 }}>
                   {report.category} • {mineContext}
                 </span>
               </div>
-              <h2 style={{ margin: "3px 0 0 0", fontSize: 18, fontWeight: 700, color: "#FFFFFF" }}>
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: "#FFFFFF",
+                  letterSpacing: "-0.01em",
+                  lineHeight: 1.25,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+                title={report.title}
+              >
                 {report.title}
               </h2>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <button
+              onClick={handleDownloadPDF}
+              className="flowing-btn flowing-btn-emerald"
+              style={{
+                padding: "8px 15px",
+                fontSize: 12.5,
+              }}
+              title="Download Official Government Statutory Dossier as PDF Document"
+            >
+              <Download size={15} />
+              <span>Download PDF</span>
+              <span
+                style={{
+                  fontSize: 9.5,
+                  background: "rgba(255, 255, 255, 0.28)",
+                  padding: "1px 6px",
+                  borderRadius: 6,
+                  fontWeight: 900,
+                }}
+              >
+                PDF
+              </span>
+            </button>
+
             <button
               onClick={handleDownload}
+              className="flowing-btn"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "7px 13px",
-                background: "#10B981",
+                padding: "8px 12px",
+                background: "rgba(255, 255, 255, 0.12)",
                 color: "#FFFFFF",
-                border: "none",
-                borderRadius: 8,
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: "pointer",
-                boxShadow: "0 2px 6px rgba(16, 185, 129, 0.35)",
+                border: "1px solid rgba(255, 255, 255, 0.25)",
+                fontSize: 11.5,
               }}
-              title="Download Official Government Statutory Report"
+              title="Download Plain Text Format (.txt)"
             >
-              <Download size={14} />
-              <span>Download Govt Report</span>
+              <FileText size={13} />
+              <span>TXT</span>
             </button>
 
             <button
               onClick={handleCopySummary}
+              className="flowing-btn"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                padding: "7px 11px",
-                background: "rgba(255, 255, 255, 0.15)",
+                padding: "8px 12px",
+                background: "rgba(255, 255, 255, 0.12)",
                 color: "#FFFFFF",
                 border: "1px solid rgba(255, 255, 255, 0.25)",
-                borderRadius: 8,
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: "pointer",
+                fontSize: 11.5,
               }}
               title="Copy Summary to Clipboard"
             >
-              {copied ? <Check size={14} color="#34D399" /> : <Copy size={14} />}
+              {copied ? <Check size={13} color="#34D399" /> : <Copy size={13} />}
               <span>{copied ? "Copied!" : "Copy"}</span>
             </button>
 
             <button
               onClick={handlePrint}
+              className="flowing-btn"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                padding: "7px 11px",
-                background: "rgba(255, 255, 255, 0.15)",
+                padding: "8px 12px",
+                background: "rgba(255, 255, 255, 0.12)",
                 color: "#FFFFFF",
                 border: "1px solid rgba(255, 255, 255, 0.25)",
-                borderRadius: 8,
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: "pointer",
+                fontSize: 11.5,
               }}
-              title="Print or Save as PDF"
+              title="Print Dossier"
             >
-              <Printer size={14} />
-              <span>Print</span>
+              <Printer size={13} />
             </button>
 
             <button
               onClick={onClose}
               style={{
-                background: "rgba(255, 255, 255, 0.12)",
-                border: "none",
-                borderRadius: 8,
-                width: 32,
-                height: 32,
+                background: "rgba(255, 255, 255, 0.14)",
+                border: "1px solid rgba(255, 255, 255, 0.25)",
+                borderRadius: 9,
+                width: 34,
+                height: 34,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#FFFFFF",
                 cursor: "pointer",
-                marginLeft: 4,
+                transition: "all 0.2s ease",
               }}
+              title="Close Modal"
             >
               <X size={18} />
             </button>
@@ -344,39 +382,52 @@ END OF OFFICIAL STATUTORY DOSSIER — MOIL LIMITED & MINISTRY OF STEEL
         {/* Modal Navigation Tabs */}
         <div
           style={{
+            flexShrink: 0,
             display: "flex",
+            alignItems: "center",
             background: "#F8FAFC",
             borderBottom: "1px solid #E2E8F0",
-            padding: "0 24px",
-            gap: 16,
+            padding: "8px 20px",
+            gap: 10,
             overflowX: "auto",
+            minHeight: 52,
           }}
         >
           {[
-            { key: "govReport", label: "🏛️ Statutory Govt Report (5 Areas)" },
-            { key: "parameters", label: "🧭 Explainable AI & Parameters" },
-            { key: "outputs", label: "📊 Output Guide & Reading Metrics" },
-            { key: "dependencies", label: "🔗 Dependencies & Defense Pitch" },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              style={{
-                padding: "12px 6px",
-                border: "none",
-                background: "transparent",
-                color: activeTab === tab.key ? "#0F2C59" : "#64748B",
-                fontSize: 12.5,
-                fontWeight: activeTab === tab.key ? 800 : 500,
-                cursor: "pointer",
-                position: "relative",
-                borderBottom: activeTab === tab.key ? "3px solid #0F2C59" : "3px solid transparent",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+            { key: "govReport", label: "Statutory Govt Report (5 Areas)", icon: "🏛️" },
+            { key: "parameters", label: "Explainable AI & Parameters", icon: "🧭" },
+            { key: "outputs", label: "Output Guide & Reading Metrics", icon: "📊" },
+            { key: "dependencies", label: "Dependencies & Defense Pitch", icon: "🔗" },
+          ].map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className="flowing-btn"
+                style={{
+                  padding: "7px 14px",
+                  borderRadius: 8,
+                  fontSize: 12.5,
+                  fontWeight: isActive ? 800 : 600,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  background: isActive
+                    ? "linear-gradient(135deg, #0F2C59 0%, #1A56A0 100%)"
+                    : "#FFFFFF",
+                  color: isActive ? "#FFFFFF" : "#475569",
+                  border: isActive ? "1px solid #0F2C59" : "1px solid #CBD5E1",
+                  boxShadow: isActive
+                    ? "0 3px 10px rgba(15, 44, 89, 0.3)"
+                    : "0 1px 3px rgba(0,0,0,0.04)",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Modal Body */}
@@ -385,6 +436,7 @@ END OF OFFICIAL STATUTORY DOSSIER — MOIL LIMITED & MINISTRY OF STEEL
             padding: 24,
             overflowY: "auto",
             flex: 1,
+            minHeight: 0,
             display: "flex",
             flexDirection: "column",
             gap: 20,
@@ -693,50 +745,54 @@ END OF OFFICIAL STATUTORY DOSSIER — MOIL LIMITED & MINISTRY OF STEEL
         {/* Footer */}
         <div
           style={{
-            padding: "12px 24px",
+            flexShrink: 0,
+            padding: "14px 24px",
             background: "#F8FAFC",
             borderTop: "1px solid #E2E8F0",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             flexWrap: "wrap",
-            gap: 10,
+            gap: 12,
           }}
         >
-          <span style={{ fontSize: 11, color: "#64748B" }}>
+          <span style={{ fontSize: 11.5, color: "#64748B" }}>
             Conforms to Indian Bureau of Mines (IBM) & GSI Mineral Report Standards • Smart India Hackathon
           </span>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              onClick={handleDownloadPDF}
+              className="flowing-btn flowing-btn-emerald"
+              style={{
+                padding: "8px 16px",
+                fontSize: 12,
+              }}
+              title="Generate and download official PDF document"
+            >
+              <Download size={14} />
+              <span>Download Official PDF</span>
+            </button>
             <button
               onClick={handleDownload}
+              className="flowing-btn flowing-btn-navy"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "6px 12px",
-                background: "#0F2C59",
-                color: "#FFFFFF",
-                border: "none",
-                borderRadius: 6,
-                fontSize: 11.5,
-                fontWeight: 700,
-                cursor: "pointer",
+                padding: "8px 14px",
+                fontSize: 12,
               }}
+              title="Download plain text format (.txt)"
             >
-              <Download size={13} />
-              <span>Download Govt Report (.txt)</span>
+              <FileText size={14} />
+              <span>Export TXT</span>
             </button>
             <button
               onClick={onClose}
+              className="flowing-btn"
               style={{
-                padding: "6px 14px",
+                padding: "8px 16px",
                 background: "#E2E8F0",
                 color: "#1E293B",
-                border: "none",
-                borderRadius: 6,
-                fontSize: 11.5,
-                fontWeight: 600,
-                cursor: "pointer",
+                border: "1px solid #CBD5E1",
+                fontSize: 12,
               }}
             >
               Close

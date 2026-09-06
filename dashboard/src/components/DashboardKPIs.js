@@ -167,48 +167,33 @@ export default function DashboardKPIs({
           />
           <button
             onClick={handleDownloadIBMDossier}
+            className="flowing-btn flowing-btn-emerald"
             style={{
               padding: "9px 16px",
-              borderRadius: 8,
-              border: "1px solid #38BDF8",
-              background: "rgba(56, 189, 248, 0.15)",
-              color: "#38BDF8",
               fontSize: 13,
-              fontWeight: 700,
-              cursor: "pointer",
             }}
           >
             📥 Export IBM Form F-1 Dossier
           </button>
           <button
             onClick={() => onNavigateSection("ingestion")}
+            className="flowing-btn flowing-btn-navy"
             style={{
               padding: "9px 16px",
-              borderRadius: 8,
-              border: "none",
-              background: "#185FA5",
-              color: "#FFFFFF",
               fontSize: 13,
-              fontWeight: 700,
-              cursor: "pointer",
             }}
           >
             🛰️ Go to Reserve Hub
           </button>
           <button
             onClick={() => onNavigateSection("actions")}
+            className="flowing-btn flowing-btn-purple"
             style={{
               padding: "9px 18px",
-              borderRadius: 8,
-              border: "none",
-              background: "#38BDF8",
-              color: "#0F172A",
               fontSize: 13,
-              fontWeight: 700,
-              cursor: "pointer",
             }}
           >
-            View Corrective Actions
+            ⚡ View Corrective Actions
           </button>
         </div>
       </div>
