@@ -12,7 +12,6 @@ import {
   Scale,
   Settings2,
   TreePine,
-  FileText,
 } from "lucide-react";
 import { SECTION_REPORTS } from "../data/sectionReportsData";
 import { generateGovtReportPDF } from "../utils/pdfReportGenerator";
@@ -20,6 +19,8 @@ import { generateGovtReportPDF } from "../utils/pdfReportGenerator";
 export default function SectionReportModal({ reportId, isOpen, onClose, selectedMineName }) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("govReport");
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   if (!isOpen || !reportId) return null;
 
@@ -42,137 +43,84 @@ export default function SectionReportModal({ reportId, isOpen, onClose, selected
   // Download official Government PDF Report
   const handleDownloadPDF = () => {
     try {
-      generateGovtReportPDF(report, mineContext);
+      setIsGeneratingPDF(true);
+      setTimeout(() => {
+        try {
+          generateGovtReportPDF(report, mineContext);
+          setIsGeneratingPDF(false);
+          setDownloadSuccess(true);
+          setTimeout(() => setDownloadSuccess(false), 3000);
+        } catch (innerErr) {
+          console.error("PDF generation inner error:", innerErr);
+          setIsGeneratingPDF(false);
+          alert(`PDF Generation failed: ${innerErr.message || "Unknown error"}`);
+        }
+      }, 50);
     } catch (err) {
       console.error("PDF generation error:", err);
-      alert(`PDF generation failed: ${err.message}. Please use Export TXT for plain text format.`);
+      setIsGeneratingPDF(false);
+      alert(`PDF Generation failed: ${err.message || "Unknown error"}`);
     }
   };
 
-  // Generate official government report format for download
-  const handleDownload = () => {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const filename = `GOVT_STATUTORY_REPORT_${reportId.toUpperCase()}_${timestamp}.txt`;
-
-    let content = `================================================================================
-GOVERNMENT OF INDIA — MINISTRY OF STEEL & MINISTRY OF MINES
+  const handleCopySummary = () => {
+    const textToCopy = `================================================================================
+GOVERNMENT OF INDIA • MINISTRY OF MINES & MINISTRY OF STEEL
 INDIAN BUREAU OF MINES (IBM) & GEOLOGICAL SURVEY OF INDIA (GSI)
-OFFICIAL STATUTORY MINERAL EXPLORATION & OPERATIONAL DOSSIER
+OFFICIAL STATUTORY MINERAL DOSSIER: ${report.title.toUpperCase()}
 ================================================================================
-Document Title:       ${report.title.toUpperCase()}
-Target Concession:    ${mineContext.toUpperCase()}
-Statutory Standard:   ${report.badge}
-Functional Domain:    ${report.category}
-Date of Generation:   ${new Date().toLocaleString()}
-Systemic Platform:    MOIL AI-Space Exploration & Shortfall Mitigation System
+Target Concession:     ${mineContext.toUpperCase()}
+Statutory Standard:    UNFC-1997 / UNFC-2009 • ${report.badge}
+Functional Domain:     ${report.category}
+Date of Generation:    ${new Date().toLocaleString("en-IN")}
+Platform Security:     MOIL AI-Space Exploration & Shortfall Mitigation System
 ================================================================================
 
-EXECUTIVE OVERVIEW:
+EXECUTIVE MANDATE & AUDIT TRAIL:
 ${report.executiveSummary}
 
-EXPLAINABLE AI (XAI) RATIONALE:
+EXPLAINABLE AI (XAI) DECISION RATIONALE:
 ${report.explainableAiRationale}
 
 --------------------------------------------------------------------------------
-AREA 1: GEOLOGICAL & SPATIAL MAPPING
+AREA 1: GEOLOGICAL & SPATIAL MAPPING (G-AXIS)
 --------------------------------------------------------------------------------
-1.1 Geographical Boundaries & Coordinates:
-    ${pillars.geologicalMapping?.geographicalBoundaries || "Surveyed and georeferenced to national grid."}
-
-1.2 Lithology & Host Rock Stratigraphy:
-    ${pillars.geologicalMapping?.lithologyStratigraphy || "Belongs to the Sausar Group Proterozoic manganese belt."}
-
-1.3 Structural Geology (Faults, Folds, Dip & Strike):
-    ${pillars.geologicalMapping?.structuralGeology || "Regional strike ENE-WSW with moderate to steep dip."}
+1.1 Geographical Boundaries: ${pillars.geologicalMapping?.geographicalBoundaries || "Surveyed and georeferenced to national grid."}
+1.2 Lithology & Stratigraphy: ${pillars.geologicalMapping?.lithologyStratigraphy || "Sausar Group Proterozoic metasedimentary manganese formation."}
+1.3 Structural Geology: ${pillars.geologicalMapping?.structuralGeology || "Regional strike ENE-WSW with moderate to steep dip."}
 
 --------------------------------------------------------------------------------
-AREA 2: MINERALOGICAL & CHEMICAL COMPOSITION (ORE QUALITY)
+AREA 2: MINERALOGICAL & CHEMICAL QUALITY
 --------------------------------------------------------------------------------
-2.1 Manganese Grade (% Mn & MnO2):
-    ${pillars.mineralogicalComposition?.manganeseGrade || "Certified metallurgical ore grade."}
-
-2.2 Mineral Forms Present:
-    ${pillars.mineralogicalComposition?.mineralForms || "Braunite, Pyrolusite, Psilomelane assemblage."}
-
-2.3 Impurities, Ratios & Deleterious Elements:
-    ${pillars.mineralogicalComposition?.impuritiesAndRatios || "Mn/Fe ratio, SiO2, Al2O3, Phosphorus and Sulfur within limits."}
+2.1 Certified Manganese Grade: ${pillars.mineralogicalComposition?.manganeseGrade || "Certified metallurgical ore grade."}
+2.2 Dominant Mineral Forms: ${pillars.mineralogicalComposition?.mineralForms || "Braunite, Pyrolusite, Psilomelane assemblage."}
+2.3 Deleterious Impurities & Ratios: ${pillars.mineralogicalComposition?.impuritiesAndRatios || "Mn/Fe ratio, SiO2, Al2O3, P, S within limits."}
 
 --------------------------------------------------------------------------------
-AREA 3: RESOURCE ESTIMATION & UNFC FRAMEWORK CLASSIFICATION
+AREA 3: RESOURCE ESTIMATION & UNFC FRAMEWORK
 --------------------------------------------------------------------------------
-3.1 UNFC Stage Classification (G1 to G4):
-    ${pillars.resourceEstimation?.unfcFramework || "Categorized under UNFC 1997/2009 standards."}
-
-3.2 Tonnage & Volumetric Quantification:
-    ${pillars.resourceEstimation?.tonnageVolume || "Delineated based on core drilling density and specific gravity."}
+3.1 UNFC Stage Classification: ${pillars.resourceEstimation?.unfcFramework || "Categorized under UNFC-1997/2009 norms."}
+3.2 In-Situ Tonnage & Volumetric Geometry: ${pillars.resourceEstimation?.tonnageVolume || "Delineated based on core drilling density."}
 
 --------------------------------------------------------------------------------
 AREA 4: METALLURGICAL & BENEFICIATION POTENTIAL
 --------------------------------------------------------------------------------
-4.1 Processing Viability (Crushing, Washing, Scrubbing, Jigging):
-    ${pillars.metallurgicalBeneficiation?.processingViability || "Responsive to mechanical crushing and wet gravity separation."}
-
-4.2 Bulk Sampling & Recovery Data:
-    ${pillars.metallurgicalBeneficiation?.bulkSampling || "Bulk sampling confirms high lump recovery and grade enhancement."}
+4.1 Processing Viability: ${pillars.metallurgicalBeneficiation?.processingViability || "Responsive to mechanical crushing and wet gravity separation."}
+4.2 Bulk Sampling & Recovery Analysis: ${pillars.metallurgicalBeneficiation?.bulkSampling || "High metallurgical recovery confirmed."}
 
 --------------------------------------------------------------------------------
-AREA 5: ENVIRONMENTAL, INFRASTRUCTURE & SOCIO-ECONOMIC BASELINES
+AREA 5: ENVIRONMENTAL, INFRASTRUCTURE & DGMS SAFETY
 --------------------------------------------------------------------------------
-5.1 Ecological Sensitivity & Forest Setbacks:
-    ${pillars.environmentalSocioEconomic?.ecologicalSensitivity || "Conforms to MoEFCC statutory exclusion buffer norms."}
-
-5.2 Regional Infrastructure & Logistics Networks:
-    ${pillars.environmentalSocioEconomic?.infrastructureLogistics || "Rail sidings (SECR), national highways, and power grid."}
-
-5.3 Health, Safety & Manganese Dust Suppression:
-    ${pillars.environmentalSocioEconomic?.healthSafetyDust || "DGMS compliant wet suppression and personal protective equipment standards."}
-
---------------------------------------------------------------------------------
-EXPLAINABLE AI PARAMETER DICTIONARY
---------------------------------------------------------------------------------
-${(report.parametersTable || [])
-  .map(
-    (p) =>
-      `• Parameter: ${p.name.padEnd(32)} | Unit: ${p.unit.padEnd(12)} | Range: ${p.range.padEnd(18)} | Default: ${p.default}\n  Operational Role & Interpretation: ${p.operationalImpact}\n`
-  )
-  .join("\n")}
-
---------------------------------------------------------------------------------
-HOW TO READ & INTERPRET PORTAL OUTPUTS
---------------------------------------------------------------------------------
-${(report.outputGuide || [])
-  .map(
-    (o) =>
-      `• METRIC: ${o.outputName}\n  Operational Meaning: ${o.interpretation}\n  Statutory Threshold Rule: ${o.normalVsAlert}\n`
-  )
-  .join("\n")}
-
---------------------------------------------------------------------------------
-HACKATHON JURY & OPERATOR DEFENSE SCRIPT
---------------------------------------------------------------------------------
-${(report.judgePitch || []).map((j, i) => `[Point ${i + 1}] ${j}`).join("\n")}
+5.1 Ecological Sensitivity & Forest Setbacks: ${pillars.environmentalSocioEconomic?.ecologicalSensitivity || "Conforms to MoEFCC statutory exclusion norms."}
+5.2 Regional Rail & Logistics Infrastructure: ${pillars.environmentalSocioEconomic?.infrastructureLogistics || "Direct SECR siding and national highway connectivity."}
+5.3 Occupational Health, Safety & Wet Suppression: ${pillars.environmentalSocioEconomic?.healthSafetyDust || "DGMS compliant wet suppression and PPE standards."}
 
 ================================================================================
-END OF OFFICIAL STATUTORY DOSSIER — MOIL LIMITED & MINISTRY OF STEEL
-================================================================================
-`;
-
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
-  const handleCopySummary = () => {
-    const textToCopy = `${report.title} (${report.badge})\n\nExecutive Summary:\n${report.executiveSummary}\n\nExplainable AI:\n${report.explainableAiRationale}\n\n1. Geology: ${pillars.geologicalMapping?.geographicalBoundaries}\n2. Chemistry: ${pillars.mineralogicalComposition?.manganeseGrade}\n3. UNFC: ${pillars.resourceEstimation?.unfcFramework}\n4. Metallurgy: ${pillars.metallurgicalBeneficiation?.processingViability}\n5. Environment: ${pillars.environmentalSocioEconomic?.ecologicalSensitivity}`;
+END OF OFFICIAL STATUTORY DOSSIER — MOIL LIMITED & MINISTRY OF MINES
+================================================================================`;
     navigator.clipboard.writeText(textToCopy);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   const handlePrint = () => {
@@ -288,15 +236,22 @@ END OF OFFICIAL STATUTORY DOSSIER — MOIL LIMITED & MINISTRY OF STEEL
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <button
               onClick={handleDownloadPDF}
+              disabled={isGeneratingPDF}
               className="flowing-btn flowing-btn-emerald"
               style={{
-                padding: "8px 15px",
+                padding: "8px 16px",
                 fontSize: 12.5,
+                opacity: isGeneratingPDF ? 0.75 : 1,
+                cursor: isGeneratingPDF ? "wait" : "pointer",
               }}
               title="Download Official Government Statutory Dossier as PDF Document"
             >
-              <Download size={15} />
-              <span>Download PDF</span>
+              {downloadSuccess ? (
+                <Check size={15} color="#FFFFFF" />
+              ) : (
+                <Download size={15} className={isGeneratingPDF ? "animate-spin" : ""} />
+              )}
+              <span>{isGeneratingPDF ? "Generating PDF..." : downloadSuccess ? "Downloaded PDF!" : "Download Official PDF"}</span>
               <span
                 style={{
                   fontSize: 9.5,
@@ -311,50 +266,35 @@ END OF OFFICIAL STATUTORY DOSSIER — MOIL LIMITED & MINISTRY OF STEEL
             </button>
 
             <button
-              onClick={handleDownload}
-              className="flowing-btn"
-              style={{
-                padding: "8px 12px",
-                background: "rgba(255, 255, 255, 0.12)",
-                color: "#FFFFFF",
-                border: "1px solid rgba(255, 255, 255, 0.25)",
-                fontSize: 11.5,
-              }}
-              title="Download Plain Text Format (.txt)"
-            >
-              <FileText size={13} />
-              <span>TXT</span>
-            </button>
-
-            <button
               onClick={handleCopySummary}
               className="flowing-btn"
               style={{
-                padding: "8px 12px",
+                padding: "8px 13px",
                 background: "rgba(255, 255, 255, 0.12)",
                 color: "#FFFFFF",
                 border: "1px solid rgba(255, 255, 255, 0.25)",
                 fontSize: 11.5,
               }}
-              title="Copy Summary to Clipboard"
+              title="Copy Formal Statutory Dossier to Clipboard"
             >
               {copied ? <Check size={13} color="#34D399" /> : <Copy size={13} />}
-              <span>{copied ? "Copied!" : "Copy"}</span>
+              <span>{copied ? "Copied!" : "Copy Dossier"}</span>
             </button>
 
             <button
               onClick={handlePrint}
               className="flowing-btn"
               style={{
-                padding: "8px 12px",
+                padding: "8px 13px",
                 background: "rgba(255, 255, 255, 0.12)",
                 color: "#FFFFFF",
                 border: "1px solid rgba(255, 255, 255, 0.25)",
                 fontSize: 11.5,
               }}
-              title="Print Dossier"
+              title="Print Official Dossier Stationery"
             >
               <Printer size={13} />
+              <span>Print</span>
             </button>
 
             <button
@@ -371,6 +311,7 @@ END OF OFFICIAL STATUTORY DOSSIER — MOIL LIMITED & MINISTRY OF STEEL
                 color: "#FFFFFF",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
+                marginLeft: 4,
               }}
               title="Close Modal"
             >
@@ -759,38 +700,60 @@ END OF OFFICIAL STATUTORY DOSSIER — MOIL LIMITED & MINISTRY OF STEEL
           <span style={{ fontSize: 11.5, color: "#64748B" }}>
             Conforms to Indian Bureau of Mines (IBM) & GSI Mineral Report Standards • Smart India Hackathon
           </span>
-          <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <button
               onClick={handleDownloadPDF}
+              disabled={isGeneratingPDF}
               className="flowing-btn flowing-btn-emerald"
               style={{
-                padding: "8px 16px",
+                padding: "8px 18px",
                 fontSize: 12,
+                opacity: isGeneratingPDF ? 0.75 : 1,
+                cursor: isGeneratingPDF ? "wait" : "pointer",
               }}
               title="Generate and download official PDF document"
             >
-              <Download size={14} />
-              <span>Download Official PDF</span>
+              {downloadSuccess ? (
+                <Check size={14} color="#FFFFFF" />
+              ) : (
+                <Download size={14} className={isGeneratingPDF ? "animate-spin" : ""} />
+              )}
+              <span>{isGeneratingPDF ? "Generating PDF..." : downloadSuccess ? "Downloaded PDF!" : "Download Official PDF"}</span>
             </button>
             <button
-              onClick={handleDownload}
+              onClick={handlePrint}
               className="flowing-btn flowing-btn-navy"
               style={{
                 padding: "8px 14px",
                 fontSize: 12,
               }}
-              title="Download plain text format (.txt)"
+              title="Print official dossier formatted for A4 stationery"
             >
-              <FileText size={14} />
-              <span>Export TXT</span>
+              <Printer size={14} />
+              <span>Print Dossier</span>
+            </button>
+            <button
+              onClick={handleCopySummary}
+              className="flowing-btn"
+              style={{
+                padding: "8px 14px",
+                background: "#E2E8F0",
+                color: "#1E293B",
+                border: "1px solid #CBD5E1",
+                fontSize: 12,
+              }}
+              title="Copy formal summary to clipboard"
+            >
+              {copied ? <Check size={14} color="#059669" /> : <Copy size={14} />}
+              <span>{copied ? "Copied!" : "Copy Dossier"}</span>
             </button>
             <button
               onClick={onClose}
               className="flowing-btn"
               style={{
                 padding: "8px 16px",
-                background: "#E2E8F0",
-                color: "#1E293B",
+                background: "#F1F5F9",
+                color: "#475569",
                 border: "1px solid #CBD5E1",
                 fontSize: 12,
               }}
