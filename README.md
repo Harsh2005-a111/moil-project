@@ -78,8 +78,10 @@ flowchart TD
 
 ### 1. Satellite Multi-Spectral AI Exploration Engine
 - **Copernicus Sentinel-2 Ingestion**: Analyzes Level-2A surface reflectance data across Band 4 (Red 665nm), Band 8 (NIR 842nm), Band 11 (SWIR-1 1610nm), and Band 12 (SWIR-2 2190nm).
+- **Macro Tectonic Craton Exploration**: Evaluates greenfield and brownfield coordinates across India's 6 macro tectonic manganese provinces—including the **Dharwar Craton** (Chitradurga, Jagalur, Sandur, Shimoga), **Central Indian Tectonic Zone** (Sausar Group: Balaghat, Mansar, Dongri Buzurg, Tirodi), **Singhbhum Craton** (Bonai-Keonjhar Belt), **Eastern Ghats Mobile Belt** (Kodurite series), **Aravalli-Delhi Fold Belt** (Champaner series), and the **North Singhbhum / Jhargram Frontier**.
 - **Manganese Absorption Spectroscopy**: Detects diagnostic secondary manganese oxides (Pyrolusite $MnO_2$, Psilomelane, Braunite $3Mn_2O_3 \cdot MnSiO_3$) through diagnostic SWIR absorption depths paired with iron-oxide gossan suppression.
-- **Trained Mineral Classifier**: Distinguishes Gondite/Mansar manganese formations from hard negatives (calc-silicates, quartzites, weathered laterite overburden).
+- **Ensemble Uncertainty & Epistemic Variance**: Evaluates variance across 150 regularized Random Forest estimators to produce transparent $95\%$ Confidence Intervals ($\mu \pm 1.96\sigma$), signaling whether targets reflect multi-tree consensus or wildcat greenfield exploration.
+- **Statutory UNFC G4 Reconnaissance Calibration**: Adheres to Indian Bureau of Mines (IBM) and UNFC-2009 standards, treating remote sensing outputs as **UNFC Category 334 / G4 Stage (Reconnaissance Screening)** and maintaining rigorous separation from borehole-certified UNFC 111 / G1 Proven Reserves.
 - **Interactive Multi-Spectral Band Composite Views**: Provides False-Color Infrared (CIR), Mineral Exploration Composite (SWIR/NIR/Red), and Iron-Oxide Hydrothermal Alteration Halos.
 
 ### 2. Subsurface Borehole Core Viewer & UNFC Categorization

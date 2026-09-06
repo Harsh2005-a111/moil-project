@@ -628,12 +628,12 @@ export default function SatelliteScanner({
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {[
-                    { name: "Balaghat Deep Lode", lat: 21.8167, lon: 80.1833, desc: "High-grade Braunite" },
-                    { name: "Ukwa Ridge Extension", lat: 21.9667, lon: 80.4667, desc: "Monsoon Inundated" },
+                    { name: "Balaghat Deep Lode", lat: 21.8167, lon: 80.1833, desc: "Sausar Belt - High Grade" },
+                    { name: "Mansar Belt (Ramtek)", lat: 21.3965, lon: 79.2848, desc: "Sausar Group - MOIL Horizon" },
+                    { name: "Jagalur Taluk (Karnataka)", lat: 14.5800, lon: 76.2000, desc: "Dharwar Craton - Chitradurga Belt" },
+                    { name: "Keonjhar Belt (Odisha)", lat: 21.6200, lon: 85.5800, desc: "Singhbhum Craton - IOG Series" },
                     { name: "Dongri Buzurg", lat: 21.5500, lon: 79.7167, desc: "Peroxide High-Mn" },
-                    { name: "Tirodi Ore Block", lat: 21.6833, lon: 79.7167, desc: "Medium Grade" },
-                    { name: "Mansar Belt", lat: 21.3900, lon: 79.2600, desc: "Sausar Group" },
-                    { name: "Jagalur Taluk (Karnataka)", lat: 14.5800, lon: 76.2000, desc: "Chitradurga Belt" },
+                    { name: "Ukwa Ridge Extension", lat: 21.9667, lon: 80.4667, desc: "Monsoon Inundated" },
                   ].map((preset) => {
                     const isSelected = Math.abs(parseFloat(customLat) - preset.lat) < 0.001 && Math.abs(parseFloat(customLon) - preset.lon) < 0.001;
                     return (
@@ -1363,18 +1363,26 @@ export default function SatelliteScanner({
                     evaluation: {
                       decision: analysisResult.prediction?.decision,
                       manganese_probability_pct: analysisResult.prediction?.manganese_probability_pct,
+                      uncertainty_pct: analysisResult.prediction?.uncertainty_pct,
+                      confidence_interval_95: analysisResult.prediction?.confidence_interval,
                       unfc_classification: analysisResult.prediction?.unfc_classification,
                       gsi_exploration_stage: analysisResult.prediction?.gsi_stage,
-                      total_available_reserves_kt: analysisResult.prediction?.total_available_reserves_kt,
+                      inferred_tonnage_footprint_kt: analysisResult.prediction?.total_available_reserves_kt,
                       viable_extractable_tonnage_kt: analysisResult.prediction?.viable_extractable_tonnage_kt,
-                      estimated_grade_pct: analysisResult.prediction?.estimated_grade_pct,
+                      indicative_grade_pct: analysisResult.prediction?.estimated_grade_pct,
                       extraction_recovery_pct: analysisResult.prediction?.extraction_recovery_pct,
+                    },
+                    data_provenance: analysisResult.provenance || {
+                      optical: "Copernicus Sentinel-2 L2A (10m)",
+                      magnetic: "NOAA EMAG2 v3 (2-arc-minute)",
+                      elevation: "NASA SRTM 30m Global DEM",
                     },
                     multi_spectral_indicators: analysisResult.extracted_features,
                     geological_notes: analysisResult.prediction?.geo_notes,
+                    statutory_disclaimer: analysisResult.prediction?.statutory_disclaimer || "UNFC G4 Reconnaissance Screening only. Drilling required for UNFC 111 reserve certification per IBM MCDR 2017.",
                     compliance: {
                       statutory_standard: "UNFC 1997 / 2009 & Indian Bureau of Mines (MCDR 2017)",
-                      status: "Certified AI Exploration Screening",
+                      status: "Certified AI Exploration Screening (G4 Stage)",
                     },
                   };
 
@@ -1391,7 +1399,7 @@ export default function SatelliteScanner({
                 return (
                   <>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                      {/* Total Available Reserves */}
+                      {/* Total Inferred Tonnage Footprint */}
                       <div
                         style={{
                           background: isBarrenOrUrban
@@ -1405,20 +1413,20 @@ export default function SatelliteScanner({
                         }}
                       >
                         <div style={{ fontSize: 11, color: isBarrenOrUrban ? "#CBD5E1" : isGreenfield ? "#FDE68A" : "#A7F3D0", fontWeight: 700 }}>
-                          TOTAL AVAILABLE MN RESERVES
+                          INFERRED TONNAGE FOOTPRINT (UNFC G4)
                         </div>
                         <div style={{ fontSize: 24, fontWeight: 800, color: "#FFFFFF", marginTop: 2 }}>
                           {Number(totalReservesKt).toLocaleString()} kt
                         </div>
                         <div style={{ fontSize: 11.5, color: isBarrenOrUrban ? "#E2E8F0" : isGreenfield ? "#FEF3C7" : "#D1FAE5", marginTop: 2 }}>
-                          Economically Viable:{" "}
+                          Economically Viable (Screening):{" "}
                           <strong>
                             {Number(viableTonnageKt).toLocaleString()} kt ({recoveryPct}%)
                           </strong>
                         </div>
                       </div>
 
-                      {/* Predicted Grade & Confidence */}
+                      {/* Indicative Grade & Confidence */}
                       <div
                         style={{
                           background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
@@ -1428,18 +1436,92 @@ export default function SatelliteScanner({
                         }}
                       >
                         <div style={{ fontSize: 11, color: "#94A3B8", fontWeight: 700 }}>
-                          PREDICTED IN-SITU GRADE
+                          INDICATIVE RECONNAISSANCE GRADE
                         </div>
                         <div style={{ fontSize: 24, fontWeight: 800, color: isBarrenOrUrban ? "#94A3B8" : "#38BDF8", marginTop: 2 }}>
                           {estimatedGrade}% Mn
                         </div>
                         <div style={{ fontSize: 11.5, color: "#CBD5E1", marginTop: 2 }}>
-                          ML Probability:{" "}
+                          Occurrence Probability:{" "}
                           <strong>
                             {probPct}% ({analysisResult.prediction.confidence || "Evaluated"})
                           </strong>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Ensemble Uncertainty Range Gauge (95% CI) */}
+                    {!isBarrenOrUrban && (
+                      <div
+                        style={{
+                          background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+                          borderRadius: 10,
+                          padding: "12px 16px",
+                          color: "#FFFFFF",
+                          border: "1px solid #334155",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", display: "flex", alignItems: "center", gap: 5 }}>
+                            <Sparkles size={12} color="#38BDF8" />
+                            ENSEMBLE UNCERTAINTY GAUGE (150 RANDOM FOREST TREES)
+                          </span>
+                          <span style={{ fontSize: 11.5, fontWeight: 800, color: "#38BDF8" }}>
+                            {probPct}% ± {analysisResult.prediction.uncertainty_pct || 0}% (95% CI)
+                          </span>
+                        </div>
+                        {/* Gauge Track */}
+                        <div style={{ position: "relative", height: 8, background: "#334155", borderRadius: 4, overflow: "hidden", margin: "8px 0 6px 0" }}>
+                          <div
+                            style={{
+                              position: "absolute",
+                              left: `${Math.max(0, analysisResult.prediction.confidence_interval?.[0] || 0)}%`,
+                              width: `${Math.max(3, Math.min(100, (analysisResult.prediction.confidence_interval?.[1] || 100) - (analysisResult.prediction.confidence_interval?.[0] || 0)))}%`,
+                              height: "100%",
+                              background: "linear-gradient(90deg, #0284C7, #38BDF8, #10B981)",
+                              borderRadius: 4,
+                            }}
+                          />
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: "#94A3B8" }}>
+                          <span>Lower 95% Bound: <strong style={{ color: "#E2E8F0" }}>{analysisResult.prediction.confidence_interval?.[0] || 0}%</strong></span>
+                          <span>Tree Mean: <strong style={{ color: "#38BDF8" }}>{probPct}%</strong></span>
+                          <span>Upper 95% Bound: <strong style={{ color: "#E2E8F0" }}>{analysisResult.prediction.confidence_interval?.[1] || 0}%</strong></span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Data Provenance & Tectonic Domain Badges */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 6,
+                        flexWrap: "wrap",
+                        padding: "8px 12px",
+                        borderRadius: 8,
+                        background: "#F8FAFC",
+                        border: "1px solid #E2E8F0",
+                      }}
+                    >
+                      <span style={{ fontSize: 10.5, fontWeight: 700, color: "#475569", display: "flex", alignItems: "center", gap: 4 }}>
+                        🛰️ Sentinel-2 L2A (10m Optical)
+                      </span>
+                      <span style={{ fontSize: 10.5, color: "#CBD5E1" }}>•</span>
+                      <span style={{ fontSize: 10.5, fontWeight: 700, color: "#475569", display: "flex", alignItems: "center", gap: 4 }}>
+                        🧲 NOAA EMAG2 v3 (Magnetic)
+                      </span>
+                      <span style={{ fontSize: 10.5, color: "#CBD5E1" }}>•</span>
+                      <span style={{ fontSize: 10.5, fontWeight: 700, color: "#475569", display: "flex", alignItems: "center", gap: 4 }}>
+                        ⛰️ NASA SRTM 30m (DEM)
+                      </span>
+                      {analysisResult.provenance?.tectonic_domain && (
+                        <>
+                          <span style={{ fontSize: 10.5, color: "#CBD5E1" }}>•</span>
+                          <span style={{ fontSize: 10.5, fontWeight: 700, color: "#0369A1", background: "#E0F2FE", padding: "1px 6px", borderRadius: 4 }}>
+                            🌍 {analysisResult.provenance.tectonic_domain}
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     {/* Geological & Stratigraphy Audit Alert */}
@@ -1459,45 +1541,50 @@ export default function SatelliteScanner({
                       </div>
                     )}
 
-                    {/* UNFC Classification & Dossier Download */}
+                    {/* UNFC Classification, Statutory Note & Dossier Download */}
                     <div
                       style={{
-                        padding: "8px 12px",
+                        padding: "10px 14px",
                         borderRadius: 8,
                         background: isBarrenOrUrban ? "#F8FAFC" : "#EFF6FF",
                         border: `1px solid ${isBarrenOrUrban ? "#CBD5E1" : "#BFDBFE"}`,
                         fontSize: 12,
                         color: isBarrenOrUrban ? "#475569" : "#1E40AF",
                         display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        flexWrap: "wrap",
+                        flexDirection: "column",
                         gap: 6,
                       }}
                     >
-                      <span>
-                        <strong>UNFC:</strong> {analysisResult.prediction.unfc_classification || "Proven Mineral Reserve (UNFC 111)"}
-                        {analysisResult.prediction.gsi_stage && (
-                          <span style={{ marginLeft: 6, opacity: 0.85 }}>
-                            ({analysisResult.prediction.gsi_stage})
-                          </span>
-                        )}
-                      </span>
-                      <button
-                        onClick={handleDownloadDossier}
-                        style={{
-                          fontSize: 11,
-                          background: isBarrenOrUrban ? "#E2E8F0" : "#DBEAFE",
-                          color: isBarrenOrUrban ? "#334155" : "#1E40AF",
-                          padding: "4px 8px",
-                          borderRadius: 4,
-                          fontWeight: 700,
-                          border: "none",
-                          cursor: "pointer",
-                        }}
-                      >
-                        📥 Export GSI / UNFC Dossier
-                      </button>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
+                        <span>
+                          <strong>UNFC Framework:</strong> {analysisResult.prediction.unfc_classification || "Reconnaissance Resource (UNFC 334 / G4)"}
+                          {analysisResult.prediction.gsi_stage && (
+                            <span style={{ marginLeft: 6, opacity: 0.85 }}>
+                              ({analysisResult.prediction.gsi_stage})
+                            </span>
+                          )}
+                        </span>
+                        <button
+                          onClick={handleDownloadDossier}
+                          style={{
+                            fontSize: 11,
+                            background: isBarrenOrUrban ? "#E2E8F0" : "#DBEAFE",
+                            color: isBarrenOrUrban ? "#334155" : "#1E40AF",
+                            padding: "4px 8px",
+                            borderRadius: 4,
+                            fontWeight: 700,
+                            border: "none",
+                            cursor: "pointer",
+                          }}
+                        >
+                          📥 Export GSI / UNFC Dossier
+                        </button>
+                      </div>
+                      {!isBarrenOrUrban && (
+                        <div style={{ fontSize: 10.5, color: "#1D4ED8", borderTop: "1px dashed #BFDBFE", paddingTop: 5, lineHeight: 1.4 }}>
+                          ℹ️ <em>Statutory Note:</em> Remote sensing and geophysical models provide G4 Reconnaissance target screening. Subsurface diamond core drilling and chemical assays are required for UNFC 111 / G1 Proven Reserve conversion under IBM MCDR 2017.
+                        </div>
+                      )}
                     </div>
 
                     {/* Extracted Tabular Geophysical Parameters */}
