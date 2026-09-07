@@ -1620,6 +1620,33 @@ export default function SatelliteScanner({
                       </div>
                     )}
 
+                    {/* OOD Epistemic Uncertainty Warning Banner */}
+                    {analysisResult.prediction.is_ood && (
+                      <div
+                        style={{
+                          background: "linear-gradient(135deg, #78350F 0%, #92400E 100%)",
+                          border: "1px solid #F59E0B",
+                          borderRadius: 10,
+                          padding: "10px 14px",
+                          color: "#FFFFFF",
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 10,
+                        }}
+                      >
+                        <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+                        <div>
+                          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.05em", color: "#FDE68A" }}>
+                            OUT-OF-DISTRIBUTION EPISTEMIC UNCERTAINTY ALERT
+                          </div>
+                          <div style={{ fontSize: 12, color: "#FEF3C7", marginTop: 3, lineHeight: 1.45 }}>
+                            {analysisResult.prediction.ood_warning ||
+                              "This location falls outside the calibrated cratonic training domain. Predictions carry elevated epistemic uncertainty. Preliminary scout pitting recommended before diamond drilling."}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Data Provenance & Tectonic Domain Badges */}
                     <div
                       style={{
@@ -1781,6 +1808,55 @@ export default function SatelliteScanner({
                           {emagVal} nT
                         </div>
                       </div>
+
+                      {/* Diagnostic Spectral Band Ratio Indices */}
+                      {analysisResult.extracted_features?.mmi_index !== undefined && (
+                        <div style={{ padding: "8px 12px", borderRadius: 8, background: "#FFFBEB", border: "1px solid #FDE68A" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#92400E" }}>
+                            <Zap size={13} color="#D97706" />
+                            <span>MMI (Mn Mineral Index)</span>
+                          </div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#78350F", marginTop: 2 }}>
+                            {parseFloat(analysisResult.extracted_features.mmi_index).toFixed(4)}
+                          </div>
+                        </div>
+                      )}
+
+                      {analysisResult.extracted_features?.ndmi_moisture_index !== undefined && (
+                        <div style={{ padding: "8px 12px", borderRadius: 8, background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#166534" }}>
+                            <Droplets size={13} color="#059669" />
+                            <span>NDMI Moisture Index</span>
+                          </div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#064E3B", marginTop: 2 }}>
+                            {parseFloat(analysisResult.extracted_features.ndmi_moisture_index).toFixed(4)}
+                          </div>
+                        </div>
+                      )}
+
+                      {analysisResult.extracted_features?.ferrous_iron_ratio !== undefined && (
+                        <div style={{ padding: "8px 12px", borderRadius: 8, background: "#FEF2F2", border: "1px solid #FECACA" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#991B1B" }}>
+                            <Compass size={13} color="#DC2626" />
+                            <span>Ferrous Iron Index (B12/B08)</span>
+                          </div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#7F1D1D", marginTop: 2 }}>
+                            {parseFloat(analysisResult.extracted_features.ferrous_iron_ratio).toFixed(4)}
+                          </div>
+                        </div>
+                      )}
+
+                      {analysisResult.extracted_features?.ferric_iron_alteration !== undefined && (
+                        <div style={{ padding: "8px 12px", borderRadius: 8, background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#1E40AF" }}>
+                            <Layers size={13} color="#2563EB" />
+                            <span>Ferric Iron Alteration (B04/B02)</span>
+                          </div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#1E3A8A", marginTop: 2 }}>
+                            {parseFloat(analysisResult.extracted_features.ferric_iron_alteration).toFixed(4)}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </>
                 );

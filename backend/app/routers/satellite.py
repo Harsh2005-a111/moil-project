@@ -25,23 +25,27 @@ router = APIRouter(prefix="/api", tags=["Satellite Intelligence & Regions"])
 MODEL_DIR = Path(__file__).parent.parent / "model"
 CLASSIFIER_PATH = MODEL_DIR / "mn_classifier.pkl"
 LABEL_ENCODER_PATH = MODEL_DIR / "mn_label_encoder.pkl"
+CALIBRATED_PATH = MODEL_DIR / "mn_calibrated_classifier.pkl"
 REGIONS_FILE = Path(__file__).parent.parent / "data" / "regions.json"
 
 # Global lazy loaded models
 mn_model = None
 mn_encoder = None
+mn_calibrated = None
 
 def get_ml_models():
-    global mn_model, mn_encoder
+    global mn_model, mn_encoder, mn_calibrated
     if mn_model is None:
         try:
             if CLASSIFIER_PATH.exists():
                 mn_model = joblib.load(CLASSIFIER_PATH)
             if LABEL_ENCODER_PATH.exists():
                 mn_encoder = joblib.load(LABEL_ENCODER_PATH)
+            if CALIBRATED_PATH.exists():
+                mn_calibrated = joblib.load(CALIBRATED_PATH)
         except Exception as e:
             print(f"Warning: Could not load Mn classifier: {e}")
-    return mn_model, mn_encoder
+    return mn_model, mn_encoder, mn_calibrated
 
 
 # Dataset reference for ground-truth exploration surveys
@@ -351,6 +355,24 @@ def extract_spectral_and_ml_predict(
     if swir_b12_raw > 1.0:
         swir_b12_raw = swir_b12_raw / 255.0
 
+    # 2b. Compute Diagnostic Mineral Spectral Band Ratios (Illumination-Invariant)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        # Manganese Mineral Index (MMI) = (B11 - B12) / (B11 + B12 + 1e-5)
+        mmi_grid = (b11 - b12) / (b11 + b12 + 1e-5)
+        mmi_val = round(float(np.nanmedian(np.clip(mmi_grid, -1.0, 1.0))), 3)
+
+        # Ferrous Iron Index = B12 / (B08 + 1e-5)
+        ferrous_grid = b12 / (b08 + 1e-5)
+        ferrous_val = round(float(np.nanmedian(np.clip(ferrous_grid, 0.0, 5.0))), 3)
+
+        # NDMI (Normalized Difference Moisture Index) = (B08 - B11) / (B08 + B11 + 1e-5)
+        ndmi_grid = (b08 - b11) / (b08 + b11 + 1e-5)
+        ndmi_val = round(float(np.nanmedian(np.clip(ndmi_grid, -1.0, 1.0))), 3)
+
+        # Ferric Iron Alteration Ratio = B04 / (B02 + 1e-5)
+        ferric_grid = b04 / (b02 + 1e-5)
+        ferric_val = round(float(np.nanmedian(np.clip(ferric_grid, 0.0, 5.0))), 3)
+
     is_greenfield = False
     craton_prov_ref = get_tectonic_craton_province(latitude, longitude)
 
@@ -443,7 +465,7 @@ def extract_spectral_and_ml_predict(
                 elevation_m = round(float(250.0 + np.random.uniform(-20, 20)), 0)
 
         # 3. Evaluate Random Forest Machine Learning Model with Ensemble Variance
-        clf, encoder = get_ml_models()
+        clf, encoder, cal_model = get_ml_models()
         rock_enc = 0
         if encoder is not None and rock_type in encoder.classes_:
             rock_enc = int(encoder.transform([rock_type])[0])
@@ -451,6 +473,8 @@ def extract_spectral_and_ml_predict(
         prob_pct = 0.0
         uncertainty_pct = 0.0
         confidence_range = [0.0, 0.0]
+        is_ood = False
+        ood_warning = None
 
         if clf is not None:
             try:
@@ -466,16 +490,35 @@ def extract_spectral_and_ml_predict(
                     rock_enc,
                 ]])
                 tree_preds = [tree.predict_proba(feature_row)[0][1] for tree in clf.estimators_]
-                mean_p = float(np.mean(tree_preds))
+                raw_mean_p = float(np.mean(tree_preds))
                 std_p = float(np.std(tree_preds))
                 n_trees = len(tree_preds)
                 se_p = float(std_p / np.sqrt(n_trees)) if n_trees > 0 else 0.0
+
+                # Blend with isotonic/sigmoid calibrated classifier if available
+                if cal_model is not None:
+                    try:
+                        cal_p = float(cal_model.predict_proba(feature_row)[0][1])
+                        mean_p = 0.40 * raw_mean_p + 0.60 * cal_p
+                    except Exception:
+                        mean_p = raw_mean_p
+                else:
+                    mean_p = raw_mean_p
 
                 prob_pct = round(float(mean_p * 100.0), 1)
                 uncertainty_pct = round(float(1.96 * se_p * 100.0), 1)
                 lower_ci = round(float(max(0.0, mean_p - 1.96 * se_p) * 100.0), 1)
                 upper_ci = round(float(min(1.0, mean_p + 1.96 * se_p) * 100.0), 1)
                 confidence_range = [lower_ci, upper_ci]
+
+                # Out-of-Distribution (OOD) Epistemic Uncertainty Gating
+                if uncertainty_pct > 12.0 or (min_dist_km > 120.0 and craton_prov_ref is None):
+                    is_ood = True
+                    ood_warning = (
+                        f"Elevated Epistemic Uncertainty (sigma = {uncertainty_pct}%). Target lies {min_dist_km:.1f} km from calibrated "
+                        f"GSI manganese basins. High tree variance detected. Statutory scout pitting and geochemical trenching "
+                        f"are strictly recommended prior to scout core drilling."
+                    )
             except Exception as e:
                 print("ML inference error fallback:", e)
                 prob_pct = 15.0
@@ -633,6 +676,10 @@ def extract_spectral_and_ml_predict(
         "extracted_features": {
             "swir_b11_absorption": swir_b11_val,
             "swir_b12_absorption": swir_b12_val,
+            "mmi_index": mmi_val,
+            "ndmi_moisture_index": ndmi_val,
+            "ferrous_iron_ratio": ferrous_val,
+            "ferric_iron_alteration": ferric_val,
             "ndvi": ndvi_median,
             "land_surface_temp_c": lst_c,
             "rainfall_mm_weekly": rainfall_mm,
@@ -645,6 +692,8 @@ def extract_spectral_and_ml_predict(
             "manganese_probability_pct": prob_pct,
             "uncertainty_pct": uncertainty_pct,
             "confidence_interval": confidence_range,
+            "is_ood": is_ood,
+            "ood_warning": ood_warning,
             "decision": decision,
             "estimated_grade_pct": est_grade,
             "ibm_grade_classification": ibm_category,
@@ -663,7 +712,7 @@ def extract_spectral_and_ml_predict(
             "statutory_disclaimer": "IBM Statutory MCDR 2017 Compliance: Minimum threshold cutoff is 10% Mn. Ore between 10-25% Mn is classified as Mineral Rejects (MR Ore) requiring conservation/beneficiation. Subsurface drilling is required for UNFC 111 Proven Reserve certification.",
         },
         "provenance": {
-            "optical_multispectral": "Copernicus Sentinel-2 L2A (10m-20m spatial resolution)",
+            "optical_multispectral": source_type,
             "magnetic_anomaly": "NOAA EMAG2 v3 (2-arc-minute Global Earth Magnetic Anomaly)",
             "elevation_model": "NASA SRTM 30m Global Digital Elevation Model (DEM)",
             "tectonic_domain": craton_prov_ref["name"] if craton_prov_ref else ("Urban / Alluvium" if is_urban else "Indian Continental Platform"),
@@ -714,13 +763,71 @@ def fetch_high_res_satellite_scene(lat: float, lon: float, zoom: int = 14) -> Op
     return None
 
 
+def fetch_planetary_computer_sentinel2(lat: float, lon: float, buffer_deg: float = 0.025) -> Optional[Dict[str, np.ndarray]]:
+    """
+    Direct zero-credential Sentinel-2 L2A multi-spectral scene ingestion via Microsoft Planetary Computer STAC API.
+    Streams Cloud-Optimized GeoTIFF (COG) pixel arrays for B02, B03, B04, B08, B11, B12 with cloud filtering.
+    """
+    try:
+        stac_url = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
+        payload = {
+            "collections": ["sentinel-2-l2a"],
+            "bbox": [lon - buffer_deg, lat - buffer_deg, lon + buffer_deg, lat + buffer_deg],
+            "datetime": "2024-01-01T00:00:00Z/2025-12-31T23:59:59Z",
+            "query": {"eo:cloud_cover": {"lt": 25}},
+            "limit": 1,
+            "sortby": [{"field": "properties.eo:cloud_cover", "direction": "asc"}]
+        }
+        resp = requests.post(stac_url, json=payload, timeout=8)
+        if resp.status_code != 200:
+            return None
+
+        data = resp.json()
+        features = data.get("features", [])
+        if not features:
+            return None
+
+        item = features[0]
+        assets = item.get("assets", {})
+        needed_bands = ["B02", "B03", "B04", "B08", "B11", "B12"]
+        if not all(b in assets for b in needed_bands):
+            return None
+
+        import rasterio
+        from rasterio.windows import Window
+
+        bands_dict = {}
+        for b in needed_bands:
+            raw_href = assets[b]["href"]
+            sign_url = f"https://planetarycomputer.microsoft.com/api/sas/v1/sign?href={raw_href}"
+            sign_resp = requests.get(sign_url, timeout=5)
+            if sign_resp.status_code != 200:
+                return None
+            signed_href = sign_resp.json().get("href")
+
+            with rasterio.open(signed_href) as src:
+                # Read centered 128x128 window
+                cx, cy = src.width // 2, src.height // 2
+                win_size = min(128, min(src.width, src.height))
+                win = Window(cx - win_size // 2, cy - win_size // 2, win_size, win_size)
+                arr = src.read(1, window=win).astype(np.float32)
+                # Sentinel-2 L2A BOA surface reflectance: 10000 DN = 1.0 reflectance
+                arr_norm = np.clip(arr / 10000.0, 0.0, 1.0)
+                bands_dict[b] = arr_norm
+
+        return bands_dict
+    except Exception as e:
+        print(f"Planetary Computer STAC note: {e}")
+        return None
+
+
 @router.post("/satellite/fetch-copernicus")
 def fetch_copernicus_live_scene(req: CopernicusFetchRequest):
     """
-    Executes Copernicus CDSE Sentinel-2 Process API request for user-input lat/lon,
-    retrieves the 6 multi-spectral bands, extracts tabular parameters, and runs ML prediction.
-    If Copernicus credentials are not provided or query times out, fetches an authentic
-    high-resolution satellite scene for the exact coordinates.
+    Executes multi-tier multi-spectral satellite acquisition:
+      Tier A: Copernicus CDSE Process API (if user supplies credentials)
+      Tier B: Microsoft Planetary Computer STAC API (zero-credential open access)
+      Tier C: High-resolution ArcGIS World Imagery + cratonic multi-spectral synthesis
     """
     client_id = req.client_id or os.environ.get("COPERNICUS_CLIENT_ID")
     client_secret = req.client_secret or os.environ.get("COPERNICUS_CLIENT_SECRET")
@@ -730,7 +837,9 @@ def fetch_copernicus_live_scene(req: CopernicusFetchRequest):
     
     live_success = False
     bands_data = None
+    source_type = "Copernicus Sentinel-2 API"
 
+    # Tier A: Copernicus CDSE Process API
     if client_id and client_secret:
         try:
             token_resp = requests.post(
@@ -816,13 +925,26 @@ def fetch_copernicus_live_scene(req: CopernicusFetchRequest):
                                     "B12": img_arr[5],
                                 }
                                 live_success = True
+                                source_type = "Copernicus Sentinel-2 L2A (CDSE Process API)"
                     except Exception as rast_err:
                         print("Rasterio parse note:", rast_err)
         except Exception as e:
             print("Copernicus live query note:", e)
 
-    # Authentic high-resolution satellite scene retrieval
+    # Tier B: Zero-Credential Open STAC (Planetary Computer Sentinel-2 L2A)
     if not live_success or bands_data is None:
+        try:
+            stac_bands = fetch_planetary_computer_sentinel2(req.latitude, req.longitude, req.buffer_deg or 0.025)
+            if stac_bands is not None:
+                bands_data = stac_bands
+                live_success = True
+                source_type = "Copernicus Sentinel-2 L2A via Planetary Computer STAC (Zero-Credential Open Access)"
+        except Exception as stac_err:
+            print("Planetary Computer STAC fallback note:", stac_err)
+
+    # Tier C: Authentic high-resolution satellite scene retrieval
+    if not live_success or bands_data is None:
+        source_type = "Sentinel-2 Multi-Spectral Engine (High-Resolution Satellite Ingestion)"
         real_scene = fetch_high_res_satellite_scene(req.latitude, req.longitude, zoom=14)
         if real_scene is not None:
             rgb_arr = np.array(real_scene, dtype=np.float32) / 255.0
@@ -936,7 +1058,7 @@ def fetch_copernicus_live_scene(req: CopernicusFetchRequest):
         req.latitude,
         req.longitude,
         req.region_name,
-        source_type="Copernicus Process API (Live)" if live_success else "Sentinel-2 Multi-Spectral Engine (High-Resolution Satellite Ingestion)",
+        source_type=source_type,
     )
 
 
