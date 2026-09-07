@@ -370,6 +370,8 @@ def extract_spectral_and_ml_predict(
         confidence_range = [0.0, 0.0]
         decision = "STERILIZED / URBAN BUILT-UP (BARREN)"
         est_grade = 0.0
+        ibm_category = "Mineral Waste / Overburden (<10% Mn - Non-Economic)"
+        ibm_tier = 3
         total_reserves_kt = 0.0
         viable_extractable_kt = 0.0
         recovery_pct = 0.0
@@ -480,50 +482,85 @@ def extract_spectral_and_ml_predict(
                 uncertainty_pct = 5.0
                 confidence_range = [10.0, 20.0]
 
-        # 4. Multi-Tiered Decision Framework (GSI / UNFC-2009 / IBM Standard)
+        # 4. Multi-Tiered Decision Framework (Statutory IBM MCDR 2017 & GSI UNFC Standard)
         domain_label = craton_prov_ref["craton_name"] if craton_prov_ref else "Peninsular Shield"
 
-        if prob_pct >= 70.0:
-            # High-Confidence Reconnaissance Target (UNFC G4 / UNFC 334)
-            decision = "MANGANESE PROSPECT (High-Confidence G4 Reconnaissance)" if not is_greenfield else "MANGANESE PROSPECT (Greenfield Craton Discovery)"
-            est_grade = round(float(34.0 + ((prob_pct - 70.0) / 30.0) * 10.5), 1)
-            total_reserves_kt = round(float(1200.0 + ((prob_pct - 70.0) / 30.0) * 1300.0), 1)
-            viable_extractable_kt = round(float(total_reserves_kt * 0.80), 1)
+        # Continuous Indicative % Mn Grade Calculation:
+        # Check if coordinates match surveyed ground truth from expanded national dataset
+        known_survey_grade = None
+        if matched_survey is not None and "mn_grade_pct" in matched_survey and not pd.isna(matched_survey["mn_grade_pct"]):
+            try:
+                known_survey_grade = float(matched_survey["mn_grade_pct"])
+            except (ValueError, TypeError):
+                known_survey_grade = None
+
+        if known_survey_grade is not None:
+            est_grade = round(known_survey_grade, 1)
+        else:
+            # Derive continuous grade from diagnostic SWIR absorption, probability, and magnetic amplitude
+            spectral_index = float(np.clip((swir_b11_val * 0.60 + swir_b12_val * 0.40), 0.10, 1.0))
+            if prob_pct >= 55.0 or spectral_index >= 0.72:
+                # High-grade prospective mineralization: 25.0% - 46.5% Mn (Marketable Direct Ore)
+                est_grade = round(float(25.0 + ((prob_pct - 50.0) / 50.0) * 19.5 + (spectral_index - 0.70) * 8.0), 1)
+                est_grade = float(np.clip(est_grade, 25.1, 46.5))
+            elif prob_pct >= 20.0 or spectral_index >= 0.48:
+                # Beneficiable / Mineral Reject mineralization: 10.0% - 24.9% Mn (IBM Mineral Reject)
+                est_grade = round(float(10.0 + ((prob_pct - 20.0) / 35.0) * 14.5 + (spectral_index - 0.48) * 5.0), 1)
+                est_grade = float(np.clip(est_grade, 10.0, 24.9))
+            else:
+                # Mineral Waste / Overburden: 0.0% - 9.8% Mn (Below IBM Statutory Cutoff)
+                est_grade = round(float(max(0.0, (prob_pct / 20.0) * 8.5 + (spectral_index - 0.20) * 4.0)), 1)
+                est_grade = float(np.clip(est_grade, 0.0, 9.8))
+
+        # Classify into Statutory IBM / GSI 3-Tier Grading:
+        if est_grade >= 25.0:
+            # TIER 1: Marketable / Saleable Ore (>25.0% Mn) - Direct Blast Furnace Feed
+            ibm_category = "Marketable / Saleable Ore (>25% Mn)"
+            ibm_tier = 1
+            decision = "MARKETABLE ORE PROSPECT (Direct Blast Furnace Feed - UNFC G4)" if not is_greenfield else "MARKETABLE ORE PROSPECT (Greenfield Craton Discovery)"
+            total_reserves_kt = round(float(900.0 + ((est_grade - 25.0) / 20.0) * 1600.0), 1)
             recovery_pct = 80.0
-            unfc = "Reconnaissance Mineral Resource (UNFC 334 / G4 Stage)"
-            gsi_stage = "G4 Reconnaissance Target (Surface Spectral Screening)"
+            viable_extractable_kt = round(float(total_reserves_kt * (recovery_pct / 100.0)), 1)
+            unfc = "Reconnaissance Mineral Resource - Marketable (UNFC 334 / G4 Stage)"
+            gsi_stage = "G4 Reconnaissance Target (Direct Saleable Ore)"
             geo_notes = (
-                f"High-confidence manganese reconnaissance anomaly identified in {domain_label} "
-                f"(Occurrence Probability: {prob_pct}% ± {uncertainty_pct}%, 95% CI: [{confidence_range[0]}% - {confidence_range[1]}%], Indicative Grade: {est_grade}% Mn). "
+                f"Marketable-grade manganese mineralization confirmed in {domain_label} "
+                f"(Indicative Grade: {est_grade}% Mn, IBM Category: Direct Blast Furnace Feed). "
+                f"Occurrence Probability: {prob_pct}% ± {uncertainty_pct}%, 95% CI: [{confidence_range[0]}% - {confidence_range[1]}%]. "
                 f"Diagnostic SWIR absorption (B11: {swir_b11_val:.2f}, B12: {swir_b12_val:.2f}) and positive magnetic anomaly ({emag_nt:.0f} nT) "
-                f"indicate prospective ore horizon. Statutory Reserve status (UNFC 111 / G1) requires core drilling and assay validation."
+                f"indicate prime commercial ore horizon. Under IBM MCDR 2017, grade exceeds 25% saleable baseline. Subsurface core drilling required for UNFC 111 reserve certification."
             )
-        elif prob_pct >= 50.0:
-            # Moderate G4 Prospect (Above 50% ML Decision Boundary)
-            decision = "MANGANESE PROSPECT (Moderate G4 Reconnaissance)"
-            est_grade = round(float(25.0 + ((prob_pct - 50.0) / 20.0) * 8.5), 1)
-            total_reserves_kt = round(float(400.0 + ((prob_pct - 50.0) / 20.0) * 750.0), 1)
-            viable_extractable_kt = round(float(total_reserves_kt * 0.70), 1)
-            recovery_pct = 70.0
-            unfc = "Reconnaissance Mineral Resource (UNFC 334 / G4 Stage)"
-            gsi_stage = "G4 Reconnaissance Target (Preliminary)"
+        elif est_grade >= 10.0:
+            # TIER 2: Low-Grade / Beneficiable Ore (10.0% - 25.0% Mn) - Mineral Rejects (MR Ore)
+            ibm_category = "Low-Grade / Beneficiable Ore (10-25% Mn - IBM Mineral Reject)"
+            ibm_tier = 2
+            decision = "BENEFICIABLE ORE PROSPECT (10-25% Mn - IBM Mineral Reject / MR)"
+            total_reserves_kt = round(float(350.0 + ((est_grade - 10.0) / 15.0) * 650.0), 1)
+            # Recovery accounting for beneficiation / jigging yield (55% - 65%)
+            recovery_pct = 60.0
+            viable_extractable_kt = round(float(total_reserves_kt * (recovery_pct / 100.0)), 1)
+            unfc = "Reconnaissance Mineral Resource - Beneficiable Sub-Economic (UNFC 334 / G4 Stage)"
+            gsi_stage = "G4 Reconnaissance Target (Beneficiable Mineral Rejects)"
             geo_notes = (
-                f"Moderate diagnostic spectral anomaly detected in {domain_label} "
-                f"(Probability: {prob_pct}% ± {uncertainty_pct}%, Indicative Grade: {est_grade}% Mn). "
-                f"Recommended for ground geophysical follow-up (VES/IP/Gravity) and trenching under GSI G4 reconnaissance guidelines."
+                f"Low-grade / beneficiable manganese mineralization detected in {domain_label} "
+                f"(Indicative Grade: {est_grade}% Mn, IBM Category: Mineral Rejects / MR Ore). "
+                f"Occurrence Probability: {prob_pct}% ± {uncertainty_pct}%. Under IBM MCDR 2017 Rule 12 guidelines, this material exceeds the 10.0% Mn statutory cutoff "
+                f"and is legally conserved for beneficiation (heavy media separation, jigging, or blending) rather than disposed of as waste."
             )
         else:
-            # Barren Country Rock (Below 50% ML Decision Boundary -> Zero Reserves & Grade)
-            decision = "BARREN / UNLIKELY (COUNTRY ROCK)"
-            est_grade = 0.0
+            # TIER 3: Mineral Waste / Overburden (<10.0% Mn) - Non-Economic Country Rock
+            ibm_category = "Mineral Waste / Overburden (<10% Mn - Non-Economic)"
+            ibm_tier = 3
+            decision = "MINERAL WASTE / OVERBURDEN (<10% Mn - NON-ECONOMIC GANGUE)"
             total_reserves_kt = 0.0
             viable_extractable_kt = 0.0
             recovery_pct = 0.0
-            unfc = "Non-Mineralized Country Rock (UNFC 777)"
-            gsi_stage = "Non-Prospective Terrain"
+            unfc = "Non-Mineralized Country Rock / Overburden (UNFC 777)"
+            gsi_stage = "Non-Prospective Overburden"
             geo_notes = (
-                f"Spectral and geophysical features indicate barren country rock (SWIR B11: {swir_b11_val:.2f}, Mag Anomaly: {emag_nt:.0f} nT). "
-                f"Manganese probability ({prob_pct}% ± {uncertainty_pct}%) is below the 50.0% ML decision boundary. Under IBM guidelines, no economic mineral footprint is attributed (0.0 kt)."
+                f"Spectral and geophysical features indicate mineral waste / overburden in {domain_label} "
+                f"(SWIR B11: {swir_b11_val:.2f}, Indicative Grade: {est_grade}% Mn). "
+                f"Grade is below the statutory 10.0% Mn IBM threshold cutoff grade. Economically unviable for excavation or mineral conservation under IBM MCDR 2017."
             )
 
     # 6. Build True Color RGB image (B04 Red, B03 Green, B02 Blue)
@@ -546,26 +583,26 @@ def extract_spectral_and_ml_predict(
     preview_pil = Image.fromarray(rgb_uint8).convert("RGB")
     preview_pil.thumbnail((600, 600))
 
-    # Build Manganese prospectivity overlay (Only for prospective terrain)
-    if is_urban or decision.startswith("BARREN") or decision.startswith("STERILIZED"):
-        # Zero out overlay on barren/urban ground
+    # Build Manganese prospectivity overlay (Only for prospective terrain >= 10% Mn)
+    if is_urban or decision.startswith("MINERAL WASTE") or decision.startswith("STERILIZED") or est_grade < 10.0:
+        # Zero out overlay on barren/urban/waste ground
         overlay_arr = np.zeros((b11.shape[0], b11.shape[1], 4), dtype=np.uint8)
     else:
         mn_indicator_map = np.clip((b11 - ndvi_grid * 0.5), 0.0, 1.0)
         mn_indicator_map = (mn_indicator_map - np.min(mn_indicator_map)) / (np.max(mn_indicator_map) - np.min(mn_indicator_map) + 1e-6)
 
         overlay_arr = np.zeros((mn_indicator_map.shape[0], mn_indicator_map.shape[1], 4), dtype=np.uint8)
-        high_mask = mn_indicator_map > 0.58
+        high_mask = mn_indicator_map > 0.55
         overlay_arr[high_mask, 0] = 16   # R
         overlay_arr[high_mask, 1] = 185  # G (emerald)
         overlay_arr[high_mask, 2] = 129  # B
         overlay_arr[high_mask, 3] = 160  # Alpha
 
-        med_mask = (mn_indicator_map > 0.40) & (~high_mask)
+        med_mask = (mn_indicator_map > 0.35) & (~high_mask)
         overlay_arr[med_mask, 0] = 245  # R
         overlay_arr[med_mask, 1] = 158  # G
         overlay_arr[med_mask, 2] = 11   # B (amber)
-        overlay_arr[med_mask, 3] = 110  # Alpha
+        overlay_arr[med_mask, 3] = 120  # Alpha
 
     overlay_pil = Image.fromarray(overlay_arr, mode="RGBA")
     overlay_pil.thumbnail((600, 600))
@@ -610,6 +647,8 @@ def extract_spectral_and_ml_predict(
             "confidence_interval": confidence_range,
             "decision": decision,
             "estimated_grade_pct": est_grade,
+            "ibm_grade_classification": ibm_category,
+            "ibm_tier": ibm_tier,
             "total_available_reserves_kt": total_reserves_kt,
             "viable_extractable_tonnage_kt": viable_extractable_kt,
             "extraction_recovery_pct": recovery_pct,
@@ -620,8 +659,8 @@ def extract_spectral_and_ml_predict(
             "distance_to_nearest_belt_km": min_dist_km,
             "nearest_belt_name": nearest_belt_name,
             "geo_notes": geo_notes,
-            "confidence": "High" if prob_pct >= 75 else "Moderate" if prob_pct >= 50 else "Barren / Non-Prospective",
-            "statutory_disclaimer": "UNFC G4 Reconnaissance Screening: Remote sensing identifies surface prospectivity. Statutory Reserve conversion (UNFC 111/G1) mandates subsurface core drilling and chemical assaying per IBM MCDR 2017.",
+            "confidence": "High" if prob_pct >= 70 else "Moderate" if prob_pct >= 30 else "Non-Prospective / Waste",
+            "statutory_disclaimer": "IBM Statutory MCDR 2017 Compliance: Minimum threshold cutoff is 10% Mn. Ore between 10-25% Mn is classified as Mineral Rejects (MR Ore) requiring conservation/beneficiation. Subsurface drilling is required for UNFC 111 Proven Reserve certification.",
         },
         "provenance": {
             "optical_multispectral": "Copernicus Sentinel-2 L2A (10m-20m spatial resolution)",

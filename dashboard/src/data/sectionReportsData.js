@@ -203,7 +203,7 @@ export const SECTION_REPORTS = {
       {
         outputName: "Predicted In-Situ Grade (% Mn)",
         interpretation: "Expected chemical manganese concentration in the rock outcrop.",
-        normalVsAlert: "Grade ≥ 35%: High-grade commercial ore. Grade < 28%: Requires mechanical beneficiation.",
+        normalVsAlert: "Grade ≥ 25%: Marketable direct blast furnace ore. 10%–25%: Low-grade beneficiable ore (IBM Mineral Reject requiring mandatory conservation under MCDR 2017). Grade < 10%: Statutory mineral waste / overburden.",
       },
       {
         outputName: "Exploration Potential Score (%)",

@@ -1,110 +1,281 @@
-mine_id,name,source,deposit_type,rock_type,lat,lon,swir_b11_absorption,swir_b12_absorption,ndvi,land_surface_temp_c,rainfall_mm_weekly,soil_moisture,emag2_anomaly_nt,elevation_m,has_manganese
-MN_031,Bramhapuri Zone,GSI_Survey,Gondite_Series,Gondite_Series,20.6,79.86,0.7259317355108241,0.714249601142833,0.28923146289747925,38.274836012543844,41.32582684449372,0.23373049760509262,344.33656677052846,366.93155211394907,1
-NEAR_0004,NearMiss_GonditeSurface_4,Near_Miss,SubEconomic,Gondite_Series,21.1421,79.4965,0.679,0.709,0.381,33.3,42.3,0.308,224.6,348.0,0
-NEAR_0003,NearMiss_GonditeSurface_3,Near_Miss,SubEconomic,Gondite_Series,21.4978,78.6738,0.717,0.65,0.507,34.0,37.6,0.28,141.7,398.0,0
-HARD_0019,HardNeg_Laterite_Overburden_19,Hard_Negative,None,Laterite_Overburden,21.7802,79.8904,0.708,0.552,0.341,35.7,45.5,0.254,202.7,407.0,0
-HARD_0011,HardNeg_Calc_Silicate_11,Hard_Negative,None,Calc_Silicate,21.4225,78.5951,0.482,0.562,0.434,35.3,54.1,0.256,237.1,433.0,0
-EASY_0060,EasyNeg_Quartzite_Marble_60,Easy_Negative,None,Quartzite_Marble,28.3345,72.8297,0.18,0.351,0.445,32.3,92.2,0.558,135.4,183.0,0
-EASY_0070,EasyNeg_Sedimentary_70,Easy_Negative,None,Sedimentary,10.3989,79.2423,0.24,0.239,0.453,28.5,99.4,0.51,20.5,147.0,0
-HARD_0013,HardNeg_Calc_Silicate_13,Hard_Negative,None,Calc_Silicate,21.7877,78.9185,0.62,0.574,0.382,35.5,44.6,0.335,189.1,357.0,0
-MN_011,Dongri Buzurg,MOIL_Official,Underground,Gondite_Braunite,21.135,79.215,0.7814632922875016,0.6912062316642116,0.2890164056081244,36.65386835583403,43.00591420415052,0.2728400296455255,594.1596355003079,396.7364889070062,1
-MN_001,Balaghat Mine,MOIL_Official,Underground,Gondite_Braunite,21.8167,80.1833,0.8398685661204492,0.691166254001159,0.29806978027542075,37.510127142036346,40.72951921524955,0.2696309949421614,535.6900729811925,406.98248146238575,1
-MN_019,Kheri Formation,GSI_Survey,Gondite_Series,Gondite_Series,21.9,80.25,0.7536790369791516,0.7344670515536347,0.28351198981164805,32.1953723430193,26.704358033568216,0.16525567327728072,439.8113330833014,379.63418537998564,1
-MN_032,Nagbhir Belt,GSI_Survey,Gondite_Series,Gondite_Series,20.55,79.51,0.8140911273803575,0.6471195951367866,0.348967733861732,32.24186676915941,44.21027658041474,0.33090211603251957,356.83686013398955,354.985895433602,1
-EASY_0055,EasyNeg_Alluvium_55,Easy_Negative,None,Alluvium,27.3004,81.2675,0.161,0.369,0.544,31.8,85.8,0.544,55.1,274.0,0
-EASY_0062,EasyNeg_Quartzite_Marble_62,Easy_Negative,None,Quartzite_Marble,28.3209,72.696,0.356,0.262,0.544,28.6,90.1,0.503,115.7,145.0,0
-EASY_0043,EasyNeg_Deccan_Basalt_43,Easy_Negative,None,Deccan_Basalt,16.3638,75.6523,0.451,0.162,0.456,27.9,116.7,0.474,36.4,260.0,0
-MN_005,Munsar Mine,MOIL_Official,Underground,Gondite_Braunite,21.15,79.25,0.7906338650110666,0.7278744494347649,0.16901274479551276,35.81388521058458,44.11859353098108,0.3932101499953771,480.81288399118444,408.07472566441436,1
-EASY_0046,EasyNeg_Deccan_Basalt_46,Easy_Negative,None,Deccan_Basalt,17.7327,74.2195,0.41,0.301,0.461,29.1,128.4,0.56,94.5,150.0,0
-MN_034,Betul Block MP,GSI_Survey,Gondite_Series,Gondite_Series,21.92,77.9,0.727691562841764,0.7044654410019053,0.29988613653891905,37.033793043424176,50.09382369779973,0.2909028611783629,453.95898373765544,376.04703127485027,1
-MN_013,Sausar South Block,GSI_Survey,Gondite_Series,Gondite_Series,21.58,78.72,0.7596784908626414,0.7022848890487566,0.4338947022370758,31.37830490595117,43.83970334105811,0.2856302652405876,412.8817085668531,350.38495801571827,1
-MN_027,Srikakulam Block,GSI_Survey,Gondite_Series,Gondite_Series,18.3,83.89,0.7139602569031079,0.6625736409334474,0.3648060138532288,36.67140743701507,57.86472191993388,0.3036470715820941,303.86858360040765,343.4620677323084,1
-EASY_0065,EasyNeg_Sedimentary_65,Easy_Negative,None,Sedimentary,12.5168,79.44,0.379,0.135,0.661,26.3,105.0,0.58,108.9,148.0,0
-HARD_0021,HardNeg_Laterite_Overburden_21,Hard_Negative,None,Laterite_Overburden,21.9021,80.2342,0.64,0.453,0.325,33.1,38.8,0.288,258.4,377.0,0
-MN_023,Keonjhar Belt,GSI_Survey,Gondite_Series,Gondite_Series,21.62,85.58,0.752701128187517,0.6476315049659515,0.32489734530613235,32.98425567599307,64.90314694808885,0.2892235063567317,380.0507327956716,336.5478793305905,1
-NEAR_0015,NearMiss_GonditeSurface_15,Near_Miss,SubEconomic,Braunite_Series,21.8081,79.7823,0.745,0.642,0.423,33.7,38.6,0.367,179.2,376.0,0
-HARD_0010,HardNeg_Calc_Silicate_10,Hard_Negative,None,Calc_Silicate,21.5505,78.5668,0.66,0.54,0.376,36.6,32.8,0.274,182.3,381.0,0
-NEAR_0011,NearMiss_GonditeSurface_11,Near_Miss,SubEconomic,Gondite_Braunite,22.0281,79.2849,0.767,0.625,0.444,34.1,41.0,0.345,165.5,361.0,0
-MN_016,Ramrama Deposit,GSI_Survey,Gondite_Series,Gondite_Series,21.45,79.15,0.7475084988303611,0.6929633587757918,0.3049121478207732,36.977579867607616,37.427782983683585,0.23320910287597874,469.0027768635315,358.0960429263288,1
-HARD_0008,HardNeg_Quartzite_Interbed_8,Hard_Negative,None,Quartzite_Interbed,21.0579,78.9702,0.489,0.59,0.411,33.4,32.1,0.305,194.6,427.0,0
-HARD_0006,HardNeg_Quartzite_Interbed_6,Hard_Negative,None,Quartzite_Interbed,21.3074,78.9548,0.536,0.638,0.471,35.3,45.8,0.267,238.6,363.0,0
-MN_010,Beldongri Mine,MOIL_Official,Underground,Gondite_Braunite,21.16,79.26,0.8417024017434386,0.6808591203853029,0.18062155426995538,35.919097588047194,39.56381607879823,0.19659223288044894,511.68433627238454,392.2094505106898,1
-EASY_0051,EasyNeg_Alluvium_51,Easy_Negative,None,Alluvium,24.302,84.7792,0.24,0.389,0.61,32.0,138.2,0.538,158.7,132.0,0
-MN_012,Sausar North Block,GSI_Survey,Gondite_Series,Gondite_Series,21.64,78.78,0.7413708098571897,0.6515744491616086,0.3678556285755873,34.513220575736895,54.15737851396371,0.30839425747441274,313.9730663333713,387.00366723779933,1
-EASY_0069,EasyNeg_Sedimentary_69,Easy_Negative,None,Sedimentary,12.9517,77.5007,0.211,0.235,0.756,26.5,55.8,0.334,34.2,39.0,0
-EASY_0044,EasyNeg_Deccan_Basalt_44,Easy_Negative,None,Deccan_Basalt,17.8703,73.5806,0.365,0.351,0.555,26.5,61.6,0.347,154.5,258.0,0
-MN_029,Nandgaon Deposit,GSI_Survey,Braunite_Series,Braunite_Series,21.38,80.48,0.7659744524032478,0.6621517350367732,0.32025567283212303,36.783981076587956,39.05534260796556,0.3032281231220942,438.2196090854225,392.15349591529383,1
-EASY_0045,EasyNeg_Deccan_Basalt_45,Easy_Negative,None,Deccan_Basalt,15.8684,74.3257,0.205,0.176,0.721,28.5,81.5,0.379,117.3,125.0,0
-MN_006,Chikla Mine,MOIL_Official,Underground,Gondite_Braunite,21.1,79.15,0.8206345217220328,0.7795386631998165,0.3110951252187612,32.0030719617524,42.381874461327726,0.2375400408659004,562.153614922197,402.0867406849743,1
-NEAR_0001,NearMiss_GonditeSurface_1,Near_Miss,SubEconomic,Gondite_Braunite,20.8514,79.0049,0.748,0.702,0.467,34.4,37.1,0.303,170.5,362.0,0
-HARD_0022,HardNeg_Laterite_Overburden_22,Hard_Negative,None,Laterite_Overburden,21.9617,80.0438,0.589,0.596,0.371,35.5,51.6,0.342,209.4,440.0,0
-HARD_0005,HardNeg_Quartzite_Interbed_5,Hard_Negative,None,Quartzite_Interbed,21.2379,79.3527,0.478,0.626,0.391,36.3,38.0,0.334,257.8,321.0,0
-HARD_0001,HardNeg_Quartzite_Interbed_1,Hard_Negative,None,Quartzite_Interbed,21.3231,79.2453,0.555,0.561,0.382,35.2,53.5,0.258,372.2,438.0,0
-MN_017,Bhagwanpura Block,GSI_Survey,Braunite_Series,Braunite_Series,21.85,80.0,0.789486755186623,0.7345967087833474,0.32577010588510374,34.32653136301315,57.38929413373708,0.2613839276594083,524.8926008592958,417.107119659073,1
-NEAR_0005,NearMiss_GonditeSurface_5,Near_Miss,SubEconomic,Gondite_Series,21.0427,80.2935,0.634,0.639,0.45,35.9,37.2,0.296,244.8,418.0,0
-MN_035,Chhindwara Node,GSI_Survey,Gondite_Series,Gondite_Series,22.05,78.93,0.8229017964841276,0.684195209815795,0.31193571441669954,32.422839208915114,46.320289591960226,0.48116388943928323,407.9866616824901,383.2202960470736,1
-MN_008,Tirodi Mine,MOIL_Official,Open_Cast,Gondite_Braunite,21.6,79.7,0.8006973891661163,0.6753740687044705,0.32504963247670665,35.05057552485256,32.154520642988686,0.2057464501163333,404.3431626966996,406.8323429551895,1
-HARD_0009,HardNeg_Quartzite_Interbed_9,Hard_Negative,None,Quartzite_Interbed,21.2178,78.9488,0.473,0.647,0.367,34.5,50.3,0.342,377.2,418.0,0
-NEAR_0007,NearMiss_GonditeSurface_7,Near_Miss,SubEconomic,Gondite_Series,21.0793,79.9725,0.715,0.67,0.511,32.8,45.1,0.37,134.5,393.0,0
-NEAR_0008,NearMiss_GonditeSurface_8,Near_Miss,SubEconomic,Gondite_Series,21.2712,78.7688,0.631,0.718,0.435,35.3,40.1,0.335,209.2,394.0,0
-MN_028,Shivrajpur Belt,GSI_Survey,Gondite_Series,Gondite_Series,22.42,73.18,0.7450279207338268,0.5957466010397588,0.3930527636089945,33.14424071568474,80.76151579184737,0.3849830745905166,350.3904441646242,357.4474562823244,1
-MN_020,Warora Belt Node,GSI_Survey,Braunite_Series,Braunite_Series,20.23,79.01,0.6835078519465884,0.6912399808998381,0.3956633716556678,35.56714273450068,61.878643303605955,0.31039085555107093,395.5818987020604,351.21147772910257,1
-EASY_0050,EasyNeg_Alluvium_50,Easy_Negative,None,Alluvium,26.3498,80.6464,0.386,0.278,0.612,29.6,97.2,0.519,36.5,114.0,0
-MN_026,Vizag Mn Zone,GSI_Survey,Gondite_Series,Gondite_Series,18.12,83.2,0.7744369035883947,0.6708330304861884,0.2668242525933941,32.923341422334666,50.95337112323798,0.281467241620897,440.5263560043105,399.61909933599173,1
-NEAR_0012,NearMiss_GonditeSurface_12,Near_Miss,SubEconomic,Braunite_Series,21.3481,79.5637,0.632,0.589,0.472,34.0,41.7,0.342,197.9,355.0,0
-HARD_0015,HardNeg_Calc_Silicate_15,Hard_Negative,None,Calc_Silicate,21.7898,79.289,0.639,0.534,0.356,36.3,47.1,0.224,362.2,427.0,0
-MN_014,Chorbaoli Deposit,GSI_Survey,Braunite_Series,Braunite_Series,21.72,79.35,0.7634687902136881,0.7737447315827385,0.24408648908631764,39.75705703628755,33.78704436593204,0.1491923769158957,469.4277857964657,438.65729142219345,1
-MN_025,Hospet Deposit,GSI_Survey,Braunite_Series,Braunite_Series,15.27,76.39,0.7982246910189926,0.7790218050848944,0.26039459234339213,37.5413108647095,35.56051355093186,0.09142178213016262,616.4774840196396,439.96110865929137,1
-MN_004,Kandri Mine,MOIL_Official,Open_Cast,Hematite_Gondite,21.2,79.3,0.8409211942563211,0.6368725580440627,0.40823218279070034,35.74387597680691,47.21560630238765,0.24412059000572264,459.3126063087609,414.4818136042164,1
-MN_018,Junewani Deposit,GSI_Survey,Gondite_Series,Gondite_Series,21.78,79.92,0.822569893303811,0.7029231199877616,0.3064375554829842,39.60698577734025,44.68599505094145,0.23284562464781225,449.50148499318124,357.3809898989639,1
-HARD_0004,HardNeg_Quartzite_Interbed_4,Hard_Negative,None,Quartzite_Interbed,21.2378,79.3841,0.717,0.503,0.367,36.1,38.5,0.34,351.7,376.0,0
-MN_009,Parsoda Mine,MOIL_Official,Open_Cast,Hematite_Gondite,21.18,79.28,0.771221024562602,0.6979558521764284,0.3245880388267751,41.65810528121322,49.263298787402775,0.27894834491459114,443.1586403476903,406.4869789082672,1
-EASY_0047,EasyNeg_Deccan_Basalt_47,Easy_Negative,None,Deccan_Basalt,18.2554,75.5547,0.161,0.394,0.509,30.3,69.1,0.329,69.8,225.0,0
-MN_007,Sitapatore Mine,MOIL_Official,Underground,Gondite_Braunite,21.12,79.2,0.8731685126202957,0.7368547312475988,0.2943523534119085,36.13371531137696,22.156591469463017,0.16857054661502305,467.2228653458093,421.76792920582164,1
-NEAR_0006,NearMiss_GonditeSurface_6,Near_Miss,SubEconomic,Braunite_Series,22.1651,79.4815,0.75,0.69,0.502,34.4,44.5,0.357,114.9,427.0,0
-HARD_0002,HardNeg_Quartzite_Interbed_2,Hard_Negative,None,Quartzite_Interbed,20.9881,78.9416,0.477,0.405,0.317,35.7,31.8,0.248,349.0,323.0,0
-EASY_0057,EasyNeg_Quartzite_Marble_57,Easy_Negative,None,Quartzite_Marble,26.1102,72.9811,0.363,0.247,0.468,32.8,113.8,0.498,151.6,162.0,0
-EASY_0049,EasyNeg_Deccan_Basalt_49,Easy_Negative,None,Deccan_Basalt,16.3988,74.5848,0.281,0.248,0.708,28.6,94.8,0.482,80.4,239.0,0
-HARD_0020,HardNeg_Laterite_Overburden_20,Hard_Negative,None,Laterite_Overburden,21.8081,80.3406,0.59,0.613,0.399,35.2,51.9,0.261,206.8,324.0,0
-HARD_0016,HardNeg_Calc_Silicate_16,Hard_Negative,None,Calc_Silicate,21.7799,79.0806,0.616,0.505,0.468,36.5,31.1,0.204,255.3,425.0,0
-NEAR_0009,NearMiss_GonditeSurface_9,Near_Miss,SubEconomic,Gondite_Series,21.3766,79.1977,0.787,0.691,0.544,32.9,49.6,0.371,110.8,346.0,0
-HARD_0012,HardNeg_Calc_Silicate_12,Hard_Negative,None,Calc_Silicate,21.4894,79.2706,0.453,0.642,0.308,36.6,43.2,0.349,194.8,392.0,0
-EASY_0066,EasyNeg_Sedimentary_66,Easy_Negative,None,Sedimentary,9.5643,77.8616,0.391,0.178,0.462,29.2,122.6,0.514,28.8,144.0,0
-HARD_0027,HardNeg_Laterite_Overburden_27,Hard_Negative,None,Laterite_Overburden,21.9225,80.3238,0.5,0.452,0.367,34.9,45.5,0.255,272.5,417.0,0
-EASY_0067,EasyNeg_Sedimentary_67,Easy_Negative,None,Sedimentary,10.6122,79.4336,0.365,0.229,0.622,29.6,130.2,0.458,90.6,131.0,0
-EASY_0063,EasyNeg_Quartzite_Marble_63,Easy_Negative,None,Quartzite_Marble,24.8037,72.3499,0.151,0.41,0.422,26.8,81.7,0.53,173.9,228.0,0
-HARD_0007,HardNeg_Quartzite_Interbed_7,Hard_Negative,None,Quartzite_Interbed,21.2026,79.3514,0.664,0.597,0.316,35.0,31.4,0.282,268.3,435.0,0
-HARD_0024,HardNeg_Laterite_Overburden_24,Hard_Negative,None,Laterite_Overburden,21.6512,79.9063,0.487,0.56,0.333,34.4,52.4,0.271,313.5,342.0,0
-HARD_0014,HardNeg_Calc_Silicate_14,Hard_Negative,None,Calc_Silicate,21.7802,79.2122,0.573,0.555,0.35,33.8,41.6,0.253,296.7,330.0,0
-EASY_0056,EasyNeg_Alluvium_56,Easy_Negative,None,Alluvium,27.119,79.0281,0.337,0.416,0.59,27.4,96.2,0.453,138.7,205.0,0
-HARD_0023,HardNeg_Laterite_Overburden_23,Hard_Negative,None,Laterite_Overburden,21.7968,79.9808,0.574,0.645,0.389,34.3,45.8,0.236,195.2,337.0,0
-NEAR_0014,NearMiss_GonditeSurface_14,Near_Miss,SubEconomic,Gondite_Braunite,21.4916,80.0093,0.639,0.641,0.444,34.1,47.1,0.31,171.8,384.0,0
-MN_033,Yavatmal Deposit,GSI_Survey,Braunite_Series,Braunite_Series,20.4,78.12,0.7594601110104826,0.720141315915681,0.3328642741736615,33.89484620948581,48.07477948703075,0.30082715705473256,417.72442755412055,358.9967468426181,1
-EASY_0064,EasyNeg_Sedimentary_64,Easy_Negative,None,Sedimentary,11.4528,79.0639,0.179,0.407,0.693,30.8,119.5,0.508,122.0,275.0,0
-HARD_0025,HardNeg_Laterite_Overburden_25,Hard_Negative,None,Laterite_Overburden,21.6769,79.8286,0.496,0.47,0.332,33.4,33.0,0.269,221.3,367.0,0
-NEAR_0002,NearMiss_GonditeSurface_2,Near_Miss,SubEconomic,Gondite_Braunite,21.8324,78.8646,0.722,0.693,0.395,34.4,39.7,0.288,160.6,372.0,0
-EASY_0054,EasyNeg_Alluvium_54,Easy_Negative,None,Alluvium,26.533,84.6231,0.43,0.157,0.736,30.8,114.8,0.557,120.0,114.0,0
-HARD_0003,HardNeg_Quartzite_Interbed_3,Hard_Negative,None,Quartzite_Interbed,21.2665,79.0691,0.482,0.574,0.413,36.5,48.4,0.321,236.4,343.0,0
-MN_030,Lohangi Block,GSI_Survey,Gondite_Series,Gondite_Series,21.52,79.56,0.768332250008269,0.7325010328957678,0.31827064333124266,32.90143941441549,34.95516602771012,0.16733983792257454,483.35950006583005,367.27737023428074,1
-EASY_0059,EasyNeg_Quartzite_Marble_59,Easy_Negative,None,Quartzite_Marble,27.4287,73.1283,0.359,0.268,0.626,32.3,89.4,0.52,87.5,118.0,0
-MN_002,Ukwa Mine,MOIL_Official,Underground,Gondite_Braunite,21.95,80.05,0.7844694279531527,0.7183545438001901,0.38690182832329845,40.51546475302632,57.685713051389136,0.24078011351267442,531.100453808127,390.87582033258565,1
-HARD_0018,HardNeg_Calc_Silicate_18,Hard_Negative,None,Calc_Silicate,21.4226,79.1918,0.669,0.65,0.479,35.2,49.2,0.342,349.9,352.0,0
-MN_022,Barajamda Block,GSI_Survey,Braunite_Series,Braunite_Series,22.1,85.15,0.7709689479805386,0.6664312990710944,0.37843224952664445,32.72365918717328,52.44501524490943,0.19696855382793202,454.7406365311889,406.48616955897455,1
-MN_003,Gumgaon Mine,MOIL_Official,Open_Cast,Gondite_Braunite,21.05,79.1,0.8759075415240277,0.691613195044809,0.2582086980445024,37.6364445320796,9.71020118526527,0.277212044629439,602.9300793571941,435.2000615113943,1
-MN_024,Sandur Mn Belt,GSI_Survey,Gondite_Series,Gondite_Series,15.1,76.55,0.7430100725514618,0.7332505372561425,0.2836168926701116,38.449128412719105,18.151812179779476,0.18349252310675998,470.67798435773824,418.39933269954525,1
-EASY_0053,EasyNeg_Alluvium_53,Easy_Negative,None,Alluvium,27.2213,86.8986,0.349,0.362,0.767,33.1,67.0,0.426,71.8,52.0,0
-EASY_0061,EasyNeg_Quartzite_Marble_61,Easy_Negative,None,Quartzite_Marble,28.2972,73.7849,0.465,0.161,0.594,28.0,100.9,0.362,154.6,242.0,0
-NEAR_0013,NearMiss_GonditeSurface_13,Near_Miss,SubEconomic,Gondite_Series,21.6681,79.5669,0.781,0.684,0.406,33.6,40.0,0.344,85.7,391.0,0
-EASY_0052,EasyNeg_Alluvium_52,Easy_Negative,None,Alluvium,26.2069,80.285,0.215,0.272,0.634,28.5,103.4,0.551,109.1,210.0,0
-EASY_0048,EasyNeg_Deccan_Basalt_48,Easy_Negative,None,Deccan_Basalt,16.3328,74.2703,0.22,0.275,0.771,29.4,102.4,0.544,105.6,76.0,0
-MN_021,Bonai Deposit,GSI_Survey,Gondite_Series,Gondite_Series,22.02,84.95,0.8186259507568622,0.707251204764648,0.354853877467402,39.97613906452494,37.30381995727214,0.29311904278373024,357.13350157272885,346.28325227052727,1
-HARD_0026,HardNeg_Laterite_Overburden_26,Hard_Negative,None,Laterite_Overburden,21.8014,80.2833,0.461,0.6,0.413,33.3,51.8,0.338,192.2,356.0,0
-NEAR_0010,NearMiss_GonditeSurface_10,Near_Miss,SubEconomic,Gondite_Braunite,20.8673,80.063,0.769,0.678,0.516,35.4,38.7,0.273,187.7,422.0,0
-MN_015,Mansar Lease Zone,GSI_Survey,Mansar_Formation,Mansar_Formation,21.5,79.02,0.7110032866994787,0.6294783937854906,0.2795753198553406,37.17983258171693,47.516869679584175,0.15910916651884813,426.7630660394755,396.6195108014401,1
-EASY_0058,EasyNeg_Quartzite_Marble_58,Easy_Negative,None,Quartzite_Marble,27.7602,74.2414,0.172,0.242,0.599,31.4,64.1,0.356,62.2,97.0,0
-HARD_0017,HardNeg_Calc_Silicate_17,Hard_Negative,None,Calc_Silicate,21.7949,78.6203,0.61,0.495,0.475,36.4,51.0,0.27,263.0,356.0,0
-EASY_0068,EasyNeg_Sedimentary_68,Easy_Negative,None,Sedimentary,10.8621,79.9119,0.328,0.318,0.686,29.9,91.3,0.548,86.8,145.0,0
-MN_036,Jagalur Davanagere Karnataka,GSI_Survey,Braunite_Series,Braunite_Series,14.58,76.2,0.805,0.728,0.252,34.8,38.2,0.21,482.0,410.0,1
-MN_037,Mansar Ore Horizon MOIL,MOIL_Official,Underground,Gondite_Braunite,21.3965,79.2848,0.835,0.742,0.235,35.2,41.5,0.23,520.0,388.0,1
-MN_038,Mansar Type Locality MOIL,MOIL_Official,Underground,Gondite_Braunite,21.39,79.26,0.832,0.738,0.240,35.0,42.0,0.22,518.0,385.0,1
-
+mine_id,name,source,deposit_type,rock_type,lat,lon,swir_b11_absorption,swir_b12_absorption,ndvi,land_surface_temp_c,rainfall_mm_weekly,soil_moisture,emag2_anomaly_nt,elevation_m,mn_grade_pct,ibm_ore_category,has_manganese
+MN_017_EXT,Bhagwanpura Block - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Braunite_Series,21.8263,80.0231,0.807,0.709,0.276,34.5,42.8,0.267,473.8,426.0,35.8,Marketable_Saleable,1
+MN_055,Ramgad Low-Grade Body,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,15.14,76.62,0.711,0.63,0.269,36.9,32.5,0.232,333.1,783.0,21.5,Beneficiable_MR_Ore,1
+WASTE_0101,IndoGangetic_Alluvium_Barren_19,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,27.4897,83.2003,0.317,0.271,0.452,32.3,46.6,0.416,75.1,192.0,1.7,Overburden_Waste,0
+WASTE_0120,Aravalli_Quartzite_Marble_16,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,26.6076,74.0432,0.221,0.202,0.637,32.0,67.5,0.387,75.3,366.0,3.0,Overburden_Waste,0
+WASTE_0015,Sausar_Calc_Silicate_Barren_15,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.5461,78.7932,0.417,0.377,0.462,29.8,40.5,0.431,164.9,366.0,3.5,Overburden_Waste,0
+MN_005_EXT,Munsar / Mansar Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Braunite,21.1405,79.2413,0.822,0.744,0.272,36.4,46.2,0.255,503.6,414.0,38.9,Marketable_Saleable,1
+WASTE_0007,Sausar_Calc_Silicate_Barren_7,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.5939,78.699,0.455,0.412,0.571,33.3,70.6,0.503,136.8,344.0,2.1,Overburden_Waste,0
+WASTE_0064,Deccan_Basalt_WesternGhats_2,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,17.1568,74.7564,0.232,0.211,0.409,32.5,69.8,0.542,58.2,646.0,3.4,Overburden_Waste,0
+WASTE_0005,Sausar_Calc_Silicate_Barren_5,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.5113,79.1966,0.426,0.375,0.467,35.8,54.4,0.447,179.3,358.0,3.3,Overburden_Waste,0
+WASTE_0016,Sausar_Calc_Silicate_Barren_16,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.7007,78.9956,0.429,0.371,0.358,30.7,63.5,0.37,171.9,393.0,6.6,Overburden_Waste,0
+WASTE_0082,Deccan_Basalt_WesternGhats_20,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,18.6221,73.7896,0.228,0.188,0.439,30.4,90.7,0.264,63.1,630.0,1.7,Overburden_Waste,0
+MN_047,Patmunda Beneficiable Ore,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,21.87,85.31,0.706,0.63,0.304,36.3,32.4,0.206,348.1,527.0,23.5,Beneficiable_MR_Ore,1
+WASTE_0083,IndoGangetic_Alluvium_Barren_1,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,28.4796,83.392,0.254,0.226,0.422,34.4,37.6,0.425,56.7,159.0,1.6,Overburden_Waste,0
+WASTE_0070,Deccan_Basalt_WesternGhats_8,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,18.1413,75.8268,0.373,0.315,0.523,33.1,94.8,0.369,61.6,688.0,1.9,Overburden_Waste,0
+MN_022,Netra Beneficiable Block,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,21.88,80.12,0.718,0.618,0.321,35.8,43.6,0.212,361.3,390.0,22.0,Beneficiable_MR_Ore,1
+WASTE_0071,Deccan_Basalt_WesternGhats_9,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,19.7453,75.0991,0.212,0.191,0.622,30.2,108.8,0.292,64.8,707.0,2.8,Overburden_Waste,0
+MN_034,Chhindwara Node,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,22.05,78.93,0.767,0.666,0.263,36.5,44.5,0.226,413.6,673.0,27.5,Marketable_Saleable,1
+MN_046,Koira Block,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,21.93,85.24,0.751,0.666,0.282,36.0,32.9,0.244,415.9,553.0,28.0,Marketable_Saleable,1
+MN_060_EXT,Vizag Mn Zone - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,18.108,83.2112,0.722,0.647,0.268,36.9,41.9,0.248,431.8,116.0,25.0,Marketable_Saleable,1
+WASTE_0003,Sausar_Calc_Silicate_Barren_3,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.5974,79.0802,0.433,0.4,0.528,35.3,50.8,0.437,162.2,370.0,6.9,Overburden_Waste,0
+WASTE_0123,Southern_Sedimentary_Barren_1,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,12.8528,78.0379,0.337,0.288,0.505,30.1,97.7,0.254,55.8,72.0,1.0,Overburden_Waste,0
+WASTE_0129,Southern_Sedimentary_Barren_7,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,13.8511,77.7041,0.227,0.192,0.584,32.6,46.0,0.493,64.1,174.0,0.6,Overburden_Waste,0
+WASTE_0067,Deccan_Basalt_WesternGhats_5,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,18.3869,74.7353,0.31,0.275,0.488,28.4,94.0,0.31,86.4,692.0,0.3,Overburden_Waste,0
+WASTE_0099,IndoGangetic_Alluvium_Barren_17,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,28.7605,80.405,0.258,0.216,0.639,31.1,37.9,0.259,42.5,206.0,0.9,Overburden_Waste,0
+MN_024,Waraseoni Low-Grade Horizon,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,21.75,80.02,0.69,0.616,0.247,34.3,45.8,0.216,318.0,385.0,19.5,Beneficiable_MR_Ore,1
+MN_039_EXT,Kasia Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,22.0532,85.4257,0.791,0.699,0.299,36.8,41.0,0.24,492.7,516.0,34.2,Marketable_Saleable,1
+MN_035,Tirodi South Beneficiation Wing,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,21.57,79.68,0.673,0.595,0.311,35.7,33.2,0.228,315.5,389.0,18.5,Beneficiable_MR_Ore,1
+MN_038_EXT,Barbil Deposit - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Braunite,22.1248,85.3886,0.783,0.721,0.357,34.0,45.7,0.285,490.2,481.0,34.1,Marketable_Saleable,1
+WASTE_0077,Deccan_Basalt_WesternGhats_15,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,18.9024,73.8788,0.315,0.271,0.607,29.8,97.8,0.334,37.7,502.0,2.4,Overburden_Waste,0
+WASTE_0138,Southern_Sedimentary_Barren_16,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,10.1796,79.5547,0.228,0.198,0.523,30.9,94.1,0.325,141.8,240.0,1.9,Overburden_Waste,0
+MN_023_EXT,Jamrapani Beneficiable Ore - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,21.9171,80.1794,0.712,0.633,0.322,33.9,35.3,0.266,422.8,383.0,22.9,Beneficiable_MR_Ore,1
+MN_056_EXT,Donimalai North Beneficiable - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,15.0749,76.6349,0.71,0.618,0.323,37.0,49.7,0.271,382.6,890.0,17.9,Beneficiable_MR_Ore,1
+MN_031,Nagbhir Belt,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,20.55,79.51,0.77,0.699,0.276,36.2,44.1,0.256,410.1,368.0,28.0,Marketable_Saleable,1
+WASTE_0078,Deccan_Basalt_WesternGhats_16,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,18.9286,75.5825,0.283,0.242,0.546,35.5,100.3,0.48,33.7,541.0,0.8,Overburden_Waste,0
+WASTE_0004,Sausar_Calc_Silicate_Barren_4,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.6842,79.0865,0.372,0.337,0.641,29.4,99.1,0.398,138.0,366.0,6.9,Overburden_Waste,0
+MN_016,Ramrama Deposit,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,21.45,79.15,0.756,0.689,0.289,35.0,40.3,0.192,411.3,383.0,32.5,Marketable_Saleable,1
+MN_012,Sausar North Block,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,21.64,78.78,0.75,0.681,0.302,36.3,35.1,0.24,403.3,366.0,28.5,Marketable_Saleable,1
+MN_013,Sausar South Block,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,21.58,78.72,0.762,0.674,0.312,35.8,40.1,0.224,386.8,369.0,26.5,Marketable_Saleable,1
+MN_064_EXT,Devada Low-Grade Body - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,18.2635,83.5892,0.673,0.626,0.305,34.2,46.7,0.265,362.6,73.0,14.8,Beneficiable_MR_Ore,1
+WASTE_0037,Nagpur_Quartzite_Interbed_15,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.1292,79.498,0.447,0.399,0.478,29.0,101.5,0.385,166.2,368.0,2.2,Overburden_Waste,0
+MN_040_EXT,Guruda Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,21.9862,85.3008,0.79,0.694,0.339,36.0,42.5,0.282,458.0,553.0,33.3,Marketable_Saleable,1
+WASTE_0125,Southern_Sedimentary_Barren_3,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,13.854,78.9014,0.292,0.251,0.643,29.0,36.3,0.481,127.3,154.0,2.0,Overburden_Waste,0
+WASTE_0098,IndoGangetic_Alluvium_Barren_16,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,25.584,81.8437,0.247,0.213,0.553,32.8,62.3,0.315,76.9,184.0,0.1,Overburden_Waste,0
+MN_061,Srikakulam Block,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,18.3,83.89,0.76,0.665,0.301,36.0,35.7,0.252,417.9,81.0,26.0,Marketable_Saleable,1
+WASTE_0057,Balaghat_Laterite_Overburden_15,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.8201,79.9032,0.463,0.403,0.571,36.0,105.0,0.443,182.1,426.0,2.6,Overburden_Waste,0
+WASTE_0106,Aravalli_Quartzite_Marble_2,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,27.443,74.6919,0.373,0.332,0.579,31.1,73.3,0.398,101.4,329.0,1.8,Overburden_Waste,0
+WASTE_0029,Nagpur_Quartzite_Interbed_7,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.3466,79.4562,0.397,0.366,0.577,29.0,97.0,0.485,166.1,320.0,3.4,Overburden_Waste,0
+MN_004,Kandri Mine,MOIL_GSI_Official,Marketable_Direct,Gondite_Braunite,21.2,79.3,0.791,0.696,0.269,35.4,35.8,0.248,447.5,392.0,40.5,Marketable_Saleable,1
+WASTE_0100,IndoGangetic_Alluvium_Barren_18,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,26.7804,78.2002,0.125,0.114,0.385,35.6,58.5,0.517,66.0,249.0,0.8,Overburden_Waste,0
+MN_037_EXT,Joda West Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Braunite,22.0154,85.4121,0.802,0.703,0.275,35.4,42.5,0.214,488.4,517.0,35.5,Marketable_Saleable,1
+MN_043,Barajamda Block,MOIL_GSI_Official,Marketable_Direct,Braunite_Series,22.1,85.15,0.766,0.683,0.304,34.5,40.1,0.232,419.8,488.0,28.5,Marketable_Saleable,1
+MN_029,Lohangi Block,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,21.52,79.56,0.765,0.672,0.309,37.3,43.9,0.207,390.8,363.0,25.5,Marketable_Saleable,1
+MN_013_EXT,Sausar South Block - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,21.569,78.6962,0.735,0.684,0.351,35.0,34.2,0.284,451.8,361.0,26.6,Marketable_Saleable,1
+MN_049_EXT,Chaibasa South Beneficiable - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,22.5384,85.8094,0.735,0.64,0.287,35.7,44.1,0.231,388.6,230.0,22.1,Beneficiable_MR_Ore,1
+WASTE_0008,Sausar_Calc_Silicate_Barren_8,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.7626,78.9683,0.498,0.42,0.509,35.5,38.0,0.287,147.0,346.0,1.7,Overburden_Waste,0
+MN_010_EXT,Beldongri Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Braunite,21.1419,79.2521,0.817,0.729,0.326,36.8,42.9,0.252,478.3,408.0,36.0,Marketable_Saleable,1
+MN_044,Keonjhar Main Belt,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,21.62,85.58,0.757,0.667,0.27,36.8,32.1,0.213,428.9,463.0,30.0,Marketable_Saleable,1
+MN_069_EXT,Sivnia Block Rajasthan - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,23.3766,74.5418,0.719,0.647,0.331,36.7,39.4,0.275,417.3,313.0,21.2,Beneficiable_MR_Ore,1
+WASTE_0045,Balaghat_Laterite_Overburden_3,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.6411,80.4775,0.458,0.418,0.386,32.9,93.1,0.443,198.2,383.0,6.5,Overburden_Waste,0
+MN_003_EXT,Gumgaon Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Braunite,21.0406,79.101,0.819,0.762,0.354,37.1,43.6,0.284,531.9,433.0,41.7,Marketable_Saleable,1
+MN_063,Kodur Manganese Horizon,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,18.28,83.55,0.678,0.591,0.327,35.2,40.9,0.255,293.6,98.0,18.0,Beneficiable_MR_Ore,1
+WASTE_0095,IndoGangetic_Alluvium_Barren_13,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,27.4048,77.328,0.145,0.128,0.604,33.5,67.2,0.452,105.6,222.0,0.6,Overburden_Waste,0
+WASTE_0055,Balaghat_Laterite_Overburden_13,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.9971,79.8651,0.496,0.436,0.518,32.5,80.3,0.453,166.5,424.0,6.6,Overburden_Waste,0
+WASTE_0033,Nagpur_Quartzite_Interbed_11,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.1884,79.3935,0.324,0.299,0.579,29.4,72.7,0.37,153.8,377.0,5.6,Overburden_Waste,0
+MN_008_EXT,Tirodi Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Braunite,21.5876,79.6999,0.826,0.727,0.31,33.7,38.5,0.283,528.2,378.0,42.2,Marketable_Saleable,1
+MN_006,Chikla Mine,MOIL_GSI_Official,Marketable_Direct,Gondite_Braunite,21.1,79.15,0.83,0.751,0.278,34.1,33.5,0.192,535.3,419.0,41.2,Marketable_Saleable,1
+WASTE_0018,Sausar_Calc_Silicate_Barren_18,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.8041,78.6948,0.508,0.42,0.496,30.1,56.4,0.342,155.2,351.0,7.1,Overburden_Waste,0
+MN_019_EXT,Kheri Formation - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,21.9002,80.2678,0.757,0.669,0.263,35.8,49.0,0.256,462.5,394.0,30.6,Marketable_Saleable,1
+MN_009,Parsoda Mine,MOIL_GSI_Official,Marketable_Direct,Hematite_Gondite,21.18,79.28,0.769,0.69,0.329,34.8,41.4,0.243,458.3,399.0,36.5,Marketable_Saleable,1
+WASTE_0073,Deccan_Basalt_WesternGhats_11,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,19.9014,74.7533,0.377,0.339,0.478,29.3,35.9,0.418,48.3,715.0,2.3,Overburden_Waste,0
+WASTE_0108,Aravalli_Quartzite_Marble_4,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,25.8174,75.9644,0.379,0.313,0.538,35.4,36.4,0.393,119.3,403.0,4.0,Overburden_Waste,0
+MN_034_EXT,Chhindwara Node - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,22.0474,78.9316,0.735,0.658,0.292,34.3,39.2,0.22,411.0,696.0,26.0,Marketable_Saleable,1
+WASTE_0133,Southern_Sedimentary_Barren_11,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,13.9248,79.6415,0.329,0.28,0.648,33.7,108.6,0.421,69.7,240.0,2.4,Overburden_Waste,0
+MN_064,Devada Low-Grade Body,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,18.25,83.58,0.664,0.577,0.252,36.7,32.3,0.192,276.3,82.0,15.5,Beneficiable_MR_Ore,1
+MN_070_EXT,Ghatia Horizon Banswara - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,23.288,74.3674,0.702,0.599,0.294,34.2,46.6,0.263,389.2,297.0,15.6,Beneficiable_MR_Ore,1
+WASTE_0130,Southern_Sedimentary_Barren_8,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,12.5438,78.548,0.292,0.248,0.491,35.1,88.1,0.269,141.7,108.0,0.9,Overburden_Waste,0
+WASTE_0054,Balaghat_Laterite_Overburden_12,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.7842,80.114,0.514,0.476,0.559,28.0,81.5,0.357,199.2,405.0,6.3,Overburden_Waste,0
+WASTE_0056,Balaghat_Laterite_Overburden_14,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,22.0025,79.9889,0.527,0.464,0.585,33.7,94.1,0.405,165.9,397.0,2.6,Overburden_Waste,0
+MN_010,Beldongri Mine,MOIL_GSI_Official,Marketable_Direct,Gondite_Braunite,21.16,79.26,0.785,0.72,0.26,36.3,34.4,0.238,503.5,428.0,38.0,Marketable_Saleable,1
+MN_058,Shimoga - Kumsi Belt,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,14.25,75.35,0.731,0.653,0.282,36.1,34.3,0.259,368.1,704.0,24.0,Beneficiable_MR_Ore,1
+WASTE_0069,Deccan_Basalt_WesternGhats_7,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,19.955,75.816,0.185,0.154,0.499,28.8,84.3,0.497,130.0,612.0,1.7,Overburden_Waste,0
+MN_042,Bonai Deposit,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,22.02,84.95,0.774,0.696,0.289,34.9,36.8,0.203,461.8,365.0,31.0,Marketable_Saleable,1
+WASTE_0061,Balaghat_Laterite_Overburden_19,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.9828,79.9112,0.499,0.418,0.371,28.5,56.2,0.329,225.7,465.0,7.4,Overburden_Waste,0
+MN_051_EXT,Sandur Mn Belt Core - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,15.0833,76.5619,0.75,0.654,0.289,34.9,45.5,0.234,427.5,785.0,26.3,Marketable_Saleable,1
+WASTE_0036,Nagpur_Quartzite_Interbed_14,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.3477,78.9347,0.425,0.399,0.441,28.8,86.9,0.269,122.8,323.0,1.8,Overburden_Waste,0
+MN_028_EXT,Nandgaon Deposit - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Braunite_Series,21.374,80.5035,0.763,0.666,0.287,33.7,47.8,0.275,432.0,360.0,26.9,Marketable_Saleable,1
+MN_055_EXT,Ramgad Low-Grade Body - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,15.1188,76.6298,0.722,0.617,0.314,36.7,39.1,0.26,390.5,806.0,20.4,Beneficiable_MR_Ore,1
+WASTE_0074,Deccan_Basalt_WesternGhats_12,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,18.5822,75.6581,0.358,0.297,0.596,32.3,88.3,0.344,50.6,707.0,2.6,Overburden_Waste,0
+MN_020,Warora Belt Node,MOIL_GSI_Official,Marketable_Direct,Braunite_Series,20.23,79.01,0.764,0.669,0.289,37.3,37.4,0.257,421.7,305.0,27.5,Marketable_Saleable,1
+WASTE_0025,Nagpur_Quartzite_Interbed_3,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.226,79.247,0.349,0.29,0.447,29.8,61.6,0.271,190.5,331.0,1.0,Overburden_Waste,0
+MN_047_EXT,Patmunda Beneficiable Ore - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,21.846,85.2902,0.722,0.66,0.27,34.5,45.6,0.278,409.3,534.0,24.2,Beneficiable_MR_Ore,1
+MN_029_EXT,Lohangi Block - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,21.5427,79.5653,0.74,0.657,0.271,36.2,42.3,0.272,412.4,373.0,23.9,Beneficiable_MR_Ore,1
+WASTE_0116,Aravalli_Quartzite_Marble_12,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,26.826,73.9499,0.299,0.256,0.575,30.5,35.0,0.403,139.3,293.0,0.8,Overburden_Waste,0
+WASTE_0001,Sausar_Calc_Silicate_Barren_1,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.6499,79.0754,0.389,0.365,0.554,28.6,37.3,0.327,185.0,362.0,7.3,Overburden_Waste,0
+WASTE_0041,Nagpur_Quartzite_Interbed_19,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.1068,79.371,0.461,0.43,0.481,30.0,98.1,0.262,138.4,386.0,4.8,Overburden_Waste,0
+MN_016_EXT,Ramrama Deposit - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,21.443,79.1314,0.789,0.683,0.269,33.7,42.5,0.253,470.4,379.0,32.1,Marketable_Saleable,1
+WASTE_0119,Aravalli_Quartzite_Marble_15,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,25.9814,74.3568,0.327,0.295,0.55,35.7,92.1,0.535,88.4,451.0,0.2,Overburden_Waste,0
+MN_040,Guruda Mine,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,21.98,85.32,0.764,0.697,0.285,34.8,44.6,0.217,464.0,553.0,32.0,Marketable_Saleable,1
+WASTE_0053,Balaghat_Laterite_Overburden_11,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.9805,79.8247,0.517,0.436,0.395,30.4,100.7,0.549,196.8,396.0,8.9,Overburden_Waste,0
+MN_063_EXT,Kodur Manganese Horizon - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,18.2894,83.5284,0.701,0.598,0.295,36.0,34.7,0.28,379.8,104.0,16.7,Beneficiable_MR_Ore,1
+WASTE_0103,IndoGangetic_Alluvium_Barren_21,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,27.3404,79.6046,0.236,0.198,0.471,36.0,101.0,0.437,96.4,204.0,0.8,Overburden_Waste,0
+MN_058_EXT,Shimoga - Kumsi Belt - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,14.2575,75.3554,0.72,0.638,0.279,36.6,39.6,0.215,405.2,709.0,23.6,Beneficiable_MR_Ore,1
+WASTE_0019,Sausar_Calc_Silicate_Barren_19,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.7614,78.9313,0.403,0.36,0.387,29.4,86.1,0.304,147.3,385.0,5.7,Overburden_Waste,0
+MN_057,Chitradurga - Jagalur Belt,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,14.58,76.22,0.708,0.637,0.261,34.4,37.0,0.21,355.4,646.0,23.0,Beneficiable_MR_Ore,1
+WASTE_0042,Nagpur_Quartzite_Interbed_20,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.3058,79.1769,0.415,0.373,0.37,32.1,46.3,0.471,167.3,378.0,5.4,Overburden_Waste,0
+MN_057_EXT,Chitradurga - Jagalur Belt - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,14.5571,76.1959,0.733,0.651,0.282,37.3,46.6,0.217,428.7,650.0,24.5,Beneficiable_MR_Ore,1
+WASTE_0026,Nagpur_Quartzite_Interbed_4,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.1336,78.9406,0.444,0.377,0.51,30.6,60.0,0.451,189.2,382.0,3.5,Overburden_Waste,0
+MN_035_EXT,Tirodi South Beneficiation Wing - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,21.5666,79.6614,0.69,0.623,0.296,37.4,43.7,0.229,381.6,369.0,17.1,Beneficiable_MR_Ore,1
+MN_059_EXT,Shankargudda Zone - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,14.0658,75.4362,0.709,0.633,0.269,37.0,38.2,0.22,395.3,726.0,19.4,Beneficiable_MR_Ore,1
+MN_002,Ukwa Mine,MOIL_GSI_Official,Marketable_Direct,Gondite_Braunite,21.95,80.05,0.804,0.723,0.253,35.0,37.1,0.222,497.5,393.0,39.8,Marketable_Saleable,1
+MN_053,Subbarayanahalli Block,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,15.02,76.51,0.722,0.66,0.312,36.4,35.8,0.231,377.6,812.0,24.5,Beneficiable_MR_Ore,1
+MN_039,Kasia Mine,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,22.07,85.41,0.777,0.707,0.292,36.9,34.0,0.246,472.1,509.0,34.0,Marketable_Saleable,1
+MN_059,Shankargudda Zone,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,14.05,75.45,0.712,0.633,0.33,34.6,37.5,0.243,339.4,704.0,21.0,Beneficiable_MR_Ore,1
+WASTE_0009,Sausar_Calc_Silicate_Barren_9,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.6035,79.2471,0.404,0.356,0.64,28.0,106.4,0.442,134.8,449.0,1.3,Overburden_Waste,0
+WASTE_0013,Sausar_Calc_Silicate_Barren_13,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.448,79.0263,0.52,0.429,0.585,32.5,90.4,0.514,160.7,436.0,7.4,Overburden_Waste,0
+MN_049,Chaibasa South Beneficiable,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,22.52,85.81,0.704,0.617,0.29,35.5,36.1,0.256,341.7,234.0,21.0,Beneficiable_MR_Ore,1
+WASTE_0031,Nagpur_Quartzite_Interbed_9,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.1703,79.2094,0.465,0.409,0.629,28.9,96.3,0.364,186.6,333.0,6.0,Overburden_Waste,0
+WASTE_0127,Southern_Sedimentary_Barren_5,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,12.5858,80.1303,0.328,0.27,0.487,31.2,57.7,0.27,128.3,206.0,2.3,Overburden_Waste,0
+WASTE_0044,Balaghat_Laterite_Overburden_2,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.7483,80.0448,0.521,0.468,0.548,34.1,54.9,0.256,177.4,371.0,3.3,Overburden_Waste,0
+WASTE_0088,IndoGangetic_Alluvium_Barren_6,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,26.5934,80.6153,0.159,0.142,0.352,28.1,51.4,0.261,58.6,207.0,0.5,Overburden_Waste,0
+MN_060,Vizag Mn Zone,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,18.12,83.2,0.764,0.681,0.313,36.3,39.7,0.196,394.3,109.0,25.5,Marketable_Saleable,1
+MN_038,Barbil Deposit,MOIL_GSI_Official,Marketable_Direct,Gondite_Braunite,22.12,85.39,0.789,0.697,0.329,35.1,43.3,0.208,498.9,499.0,35.0,Marketable_Saleable,1
+WASTE_0090,IndoGangetic_Alluvium_Barren_8,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,26.6392,80.8056,0.295,0.259,0.432,31.2,66.6,0.373,129.4,164.0,1.3,Overburden_Waste,0
+MN_015_EXT,Mansar Lease Zone - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Mansar_Formation,21.5006,79.0201,0.782,0.7,0.349,34.9,40.0,0.218,475.0,390.0,31.7,Marketable_Saleable,1
+WASTE_0107,Aravalli_Quartzite_Marble_3,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,26.2318,76.0295,0.396,0.344,0.637,29.6,43.2,0.506,154.1,418.0,3.8,Overburden_Waste,0
+WASTE_0080,Deccan_Basalt_WesternGhats_18,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,18.1412,76.4304,0.202,0.176,0.434,34.9,56.9,0.523,111.4,725.0,0.2,Overburden_Waste,0
+WASTE_0109,Aravalli_Quartzite_Marble_5,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,26.5632,75.5295,0.339,0.283,0.434,29.7,106.8,0.253,109.5,473.0,1.5,Overburden_Waste,0
+WASTE_0040,Nagpur_Quartzite_Interbed_18,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.1466,79.1726,0.452,0.376,0.571,31.8,63.2,0.368,123.5,346.0,3.2,Overburden_Waste,0
+MN_067,Vadodara Champaner Fringe,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,22.38,73.55,0.706,0.618,0.258,35.7,32.9,0.231,324.4,205.0,21.0,Beneficiable_MR_Ore,1
+WASTE_0020,Sausar_Calc_Silicate_Barren_20,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.6363,79.0672,0.368,0.327,0.592,32.4,38.3,0.44,216.3,393.0,2.7,Overburden_Waste,0
+WASTE_0046,Balaghat_Laterite_Overburden_4,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.8652,79.8294,0.546,0.5,0.525,34.0,95.9,0.447,258.0,426.0,4.1,Overburden_Waste,0
+MN_033_EXT,Betul Block MP - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,21.8981,77.8888,0.775,0.669,0.297,35.4,43.9,0.24,440.0,461.0,29.7,Marketable_Saleable,1
+WASTE_0028,Nagpur_Quartzite_Interbed_6,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.1411,78.958,0.381,0.347,0.628,29.9,64.9,0.296,169.8,397.0,2.4,Overburden_Waste,0
+MN_043_EXT,Barajamda Block - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Braunite_Series,22.1217,85.1713,0.739,0.691,0.272,37.2,47.9,0.252,454.2,486.0,27.8,Marketable_Saleable,1
+WASTE_0043,Balaghat_Laterite_Overburden_1,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.8561,80.2762,0.425,0.353,0.354,35.7,90.3,0.356,167.2,368.0,7.2,Overburden_Waste,0
+MN_007,Sitapatore Mine,MOIL_GSI_Official,Marketable_Direct,Gondite_Braunite,21.12,79.2,0.794,0.711,0.312,34.7,44.5,0.228,488.3,420.0,37.0,Marketable_Saleable,1
+MN_018_EXT,Junewani Deposit - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,21.7929,79.8957,0.754,0.67,0.33,35.4,35.6,0.249,473.3,408.0,31.0,Marketable_Saleable,1
+MN_015,Mansar Lease Zone,MOIL_GSI_Official,Marketable_Direct,Mansar_Formation,21.5,79.02,0.786,0.706,0.272,35.0,43.3,0.247,463.3,398.0,31.0,Marketable_Saleable,1
+WASTE_0132,Southern_Sedimentary_Barren_10,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,11.0988,79.6788,0.247,0.218,0.484,29.7,38.7,0.503,54.4,83.0,1.1,Overburden_Waste,0
+WASTE_0124,Southern_Sedimentary_Barren_2,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,11.5164,78.4108,0.154,0.129,0.509,32.8,35.7,0.389,99.3,131.0,1.1,Overburden_Waste,0
+MN_026_EXT,Parseoni Low-Grade Outcrop - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Braunite,21.3864,79.2042,0.716,0.644,0.349,35.3,43.9,0.232,437.3,372.0,24.1,Beneficiable_MR_Ore,1
+MN_048_EXT,Kalimati Low-Grade Zone - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,22.2263,85.6341,0.693,0.634,0.294,34.5,40.1,0.257,392.7,314.0,17.3,Beneficiable_MR_Ore,1
+WASTE_0038,Nagpur_Quartzite_Interbed_16,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,20.9876,79.1207,0.375,0.344,0.475,31.9,36.4,0.328,179.2,311.0,4.5,Overburden_Waste,0
+WASTE_0058,Balaghat_Laterite_Overburden_16,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.8106,80.2453,0.522,0.436,0.522,32.7,48.8,0.359,244.0,402.0,5.0,Overburden_Waste,0
+MN_021_EXT,Miragpur Beneficiable Ore - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,21.6925,79.8353,0.735,0.653,0.294,37.2,47.7,0.244,435.5,391.0,25.0,Marketable_Saleable,1
+WASTE_0092,IndoGangetic_Alluvium_Barren_10,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,25.6964,81.5285,0.257,0.215,0.386,31.4,91.3,0.271,81.1,191.0,0.7,Overburden_Waste,0
+WASTE_0047,Balaghat_Laterite_Overburden_5,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.664,80.0368,0.541,0.458,0.534,35.5,53.1,0.286,203.2,408.0,4.7,Overburden_Waste,0
+MN_069,Sivnia Block Rajasthan,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,23.4,74.52,0.722,0.646,0.312,34.7,34.3,0.197,372.3,333.0,23.5,Beneficiable_MR_Ore,1
+MN_014,Chorbaoli Deposit,MOIL_GSI_Official,Marketable_Direct,Braunite_Series,21.72,79.35,0.834,0.754,0.317,35.0,37.4,0.25,506.1,426.0,34.0,Marketable_Saleable,1
+WASTE_0134,Southern_Sedimentary_Barren_12,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,11.0382,78.6799,0.275,0.228,0.588,35.3,105.8,0.538,148.1,88.0,1.6,Overburden_Waste,0
+WASTE_0002,Sausar_Calc_Silicate_Barren_2,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.6082,79.1946,0.474,0.431,0.646,28.3,100.0,0.424,154.6,381.0,3.8,Overburden_Waste,0
+WASTE_0126,Southern_Sedimentary_Barren_4,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,13.2286,77.8246,0.206,0.169,0.454,31.0,35.1,0.34,127.3,154.0,0.8,Overburden_Waste,0
+MN_001,Balaghat Mine,MOIL_GSI_Official,Marketable_Direct,Gondite_Braunite,21.8167,80.1833,0.836,0.754,0.306,36.1,34.2,0.201,522.0,424.0,44.5,Marketable_Saleable,1
+WASTE_0105,Aravalli_Quartzite_Marble_1,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,26.1002,76.0449,0.226,0.207,0.613,35.6,46.2,0.389,157.4,346.0,0.7,Overburden_Waste,0
+MN_051,Sandur Mn Belt Core,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,15.1,76.55,0.773,0.695,0.256,37.2,37.9,0.217,443.2,771.0,28.5,Marketable_Saleable,1
+WASTE_0081,Deccan_Basalt_WesternGhats_19,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,19.2619,75.9147,0.184,0.172,0.434,35.0,43.4,0.461,63.5,699.0,2.6,Overburden_Waste,0
+WASTE_0076,Deccan_Basalt_WesternGhats_14,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,17.7196,73.9259,0.25,0.218,0.456,34.7,70.3,0.544,101.6,636.0,2.6,Overburden_Waste,0
+MN_050,Gua Low-Grade Horizon,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,22.21,85.38,0.66,0.585,0.287,34.6,35.8,0.191,297.0,453.0,16.0,Beneficiable_MR_Ore,1
+MN_019,Kheri Formation,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,21.9,80.25,0.77,0.698,0.276,36.2,40.9,0.193,463.1,401.0,30.5,Marketable_Saleable,1
+MN_031_EXT,Nagbhir Belt - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,20.5496,79.4979,0.771,0.669,0.323,34.5,35.2,0.22,430.9,344.0,27.3,Marketable_Saleable,1
+WASTE_0011,Sausar_Calc_Silicate_Barren_11,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.8365,78.5751,0.464,0.405,0.601,35.6,86.2,0.399,137.7,416.0,6.6,Overburden_Waste,0
+WASTE_0060,Balaghat_Laterite_Overburden_18,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,22.021,79.9303,0.524,0.459,0.568,32.0,67.8,0.469,173.3,369.0,5.5,Overburden_Waste,0
+WASTE_0084,IndoGangetic_Alluvium_Barren_2,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,28.7849,83.4177,0.224,0.186,0.378,35.3,85.2,0.499,93.9,163.0,1.5,Overburden_Waste,0
+WASTE_0065,Deccan_Basalt_WesternGhats_3,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,18.8256,74.5485,0.203,0.17,0.518,32.2,43.6,0.508,57.6,705.0,0.9,Overburden_Waste,0
+MN_006_EXT,Chikla Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Braunite,21.1004,79.1704,0.817,0.743,0.268,34.7,36.6,0.284,498.5,434.0,39.7,Marketable_Saleable,1
+WASTE_0137,Southern_Sedimentary_Barren_15,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,12.9154,77.7576,0.24,0.198,0.437,31.2,104.0,0.548,116.2,74.0,1.3,Overburden_Waste,0
+WASTE_0102,IndoGangetic_Alluvium_Barren_20,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,27.2876,82.7143,0.287,0.25,0.367,30.7,55.3,0.54,63.3,171.0,0.5,Overburden_Waste,0
+MN_014_EXT,Chorbaoli Deposit - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Braunite_Series,21.7228,79.3718,0.793,0.689,0.359,34.1,42.3,0.28,482.8,443.0,34.3,Marketable_Saleable,1
+WASTE_0136,Southern_Sedimentary_Barren_14,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,13.0865,78.847,0.153,0.125,0.54,29.8,59.1,0.504,142.6,96.0,1.0,Overburden_Waste,0
+MN_003,Gumgaon Mine,MOIL_GSI_Official,Marketable_Direct,Gondite_Braunite,21.05,79.1,0.856,0.758,0.251,35.7,32.5,0.254,554.1,452.0,42.0,Marketable_Saleable,1
+MN_062,Garbham Gondite Deposit,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,18.35,83.45,0.696,0.64,0.252,35.2,42.4,0.201,358.6,106.0,22.0,Beneficiable_MR_Ore,1
+MN_017,Bhagwanpura Block,MOIL_GSI_Official,Marketable_Direct,Braunite_Series,21.85,80.0,0.827,0.754,0.286,35.1,43.1,0.209,515.4,410.0,35.0,Marketable_Saleable,1
+WASTE_0034,Nagpur_Quartzite_Interbed_12,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,20.9659,79.1205,0.312,0.257,0.64,31.5,58.4,0.402,196.7,370.0,1.2,Overburden_Waste,0
+WASTE_0023,Nagpur_Quartzite_Interbed_1,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.2316,79.4177,0.339,0.282,0.514,29.9,64.3,0.428,167.8,377.0,0.6,Overburden_Waste,0
+WASTE_0039,Nagpur_Quartzite_Interbed_17,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.2421,78.9823,0.396,0.335,0.59,35.7,71.6,0.283,131.7,417.0,0.6,Overburden_Waste,0
+WASTE_0079,Deccan_Basalt_WesternGhats_17,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,19.3653,75.495,0.232,0.216,0.484,31.7,99.8,0.414,91.6,483.0,2.4,Overburden_Waste,0
+MN_070,Ghatia Horizon Banswara,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,23.31,74.38,0.672,0.581,0.314,35.6,41.0,0.227,305.6,287.0,17.5,Beneficiable_MR_Ore,1
+MN_032,Yavatmal Deposit,MOIL_GSI_Official,Marketable_Direct,Braunite_Series,20.4,78.12,0.74,0.659,0.298,34.6,36.8,0.253,396.6,387.0,26.5,Marketable_Saleable,1
+MN_068_EXT,Tambesra Deposit Banswara - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,23.3601,74.453,0.735,0.661,0.295,33.6,35.3,0.242,410.8,300.0,25.5,Marketable_Saleable,1
+MN_065,Shivrajpur Belt,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,22.42,73.18,0.767,0.705,0.299,35.0,45.3,0.201,435.1,194.0,30.5,Marketable_Saleable,1
+WASTE_0139,Southern_Sedimentary_Barren_17,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,12.2563,78.4682,0.288,0.244,0.502,29.8,37.9,0.261,141.8,70.0,0.6,Overburden_Waste,0
+WASTE_0093,IndoGangetic_Alluvium_Barren_11,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,25.7646,79.6608,0.308,0.278,0.353,33.1,103.5,0.434,72.6,215.0,1.2,Overburden_Waste,0
+MN_036,Gumgaon Low-Grade South Fringe,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,21.035,79.085,0.64,0.562,0.254,34.7,36.0,0.202,306.4,432.0,16.5,Beneficiable_MR_Ore,1
+WASTE_0121,Aravalli_Quartzite_Marble_17,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,25.1266,74.2905,0.274,0.226,0.605,29.7,84.3,0.392,115.8,477.0,3.5,Overburden_Waste,0
+MN_033,Betul Block MP,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,21.92,77.9,0.78,0.696,0.244,36.8,40.8,0.196,445.6,473.0,29.0,Marketable_Saleable,1
+MN_023,Jamrapani Beneficiable Ore,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,21.92,80.16,0.735,0.658,0.311,36.8,33.3,0.225,362.0,399.0,24.0,Beneficiable_MR_Ore,1
+WASTE_0085,IndoGangetic_Alluvium_Barren_3,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,28.4006,81.2883,0.223,0.195,0.531,35.1,68.3,0.432,79.1,235.0,0.6,Overburden_Waste,0
+WASTE_0017,Sausar_Calc_Silicate_Barren_17,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.6611,78.9269,0.453,0.413,0.355,29.6,35.6,0.444,191.8,445.0,6.3,Overburden_Waste,0
+MN_021,Miragpur Beneficiable Ore,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,21.68,79.82,0.709,0.646,0.297,37.1,42.3,0.246,354.9,374.0,23.5,Beneficiable_MR_Ore,1
+MN_062_EXT,Garbham Gondite Deposit - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,18.3504,83.4253,0.719,0.655,0.286,36.0,42.6,0.272,404.3,84.0,20.6,Beneficiable_MR_Ore,1
+WASTE_0086,IndoGangetic_Alluvium_Barren_4,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,27.5833,81.4377,0.261,0.221,0.496,33.2,106.3,0.43,49.4,192.0,0.9,Overburden_Waste,0
+WASTE_0014,Sausar_Calc_Silicate_Barren_14,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.5819,78.7616,0.463,0.425,0.595,29.0,75.8,0.252,199.8,388.0,6.0,Overburden_Waste,0
+MN_012_EXT,Sausar North Block - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,21.6523,78.7875,0.77,0.683,0.297,34.6,37.9,0.288,433.6,367.0,29.4,Marketable_Saleable,1
+WASTE_0091,IndoGangetic_Alluvium_Barren_9,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,28.4951,82.3552,0.242,0.207,0.35,33.1,38.8,0.327,126.0,240.0,1.5,Overburden_Waste,0
+WASTE_0087,IndoGangetic_Alluvium_Barren_5,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,27.9539,80.797,0.247,0.204,0.364,29.1,55.8,0.541,72.6,202.0,0.5,Overburden_Waste,0
+MN_041_EXT,Bolani Block - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,22.1421,85.3261,0.766,0.655,0.34,34.1,37.7,0.268,434.2,540.0,27.4,Marketable_Saleable,1
+MN_020_EXT,Warora Belt Node - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Braunite_Series,20.2085,78.99,0.723,0.666,0.292,36.9,34.4,0.275,407.9,305.0,25.1,Marketable_Saleable,1
+WASTE_0063,Deccan_Basalt_WesternGhats_1,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,19.7193,73.9177,0.286,0.249,0.549,35.7,77.0,0.531,129.0,457.0,1.3,Overburden_Waste,0
+WASTE_0115,Aravalli_Quartzite_Marble_11,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,26.2576,75.1867,0.214,0.193,0.591,32.4,74.0,0.293,148.5,477.0,1.2,Overburden_Waste,0
+MN_024_EXT,Waraseoni Low-Grade Horizon - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,21.7724,80.0443,0.706,0.616,0.316,35.2,48.5,0.219,406.6,377.0,20.0,Beneficiable_MR_Ore,1
+MN_048,Kalimati Low-Grade Zone,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,22.25,85.65,0.657,0.585,0.258,35.0,44.5,0.191,283.0,315.0,17.5,Beneficiable_MR_Ore,1
+WASTE_0094,IndoGangetic_Alluvium_Barren_12,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,28.3832,82.4298,0.144,0.134,0.354,31.4,57.1,0.396,88.1,166.0,0.1,Overburden_Waste,0
+WASTE_0111,Aravalli_Quartzite_Marble_7,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,26.4756,75.6814,0.369,0.33,0.472,31.3,40.0,0.355,123.6,299.0,0.6,Overburden_Waste,0
+WASTE_0062,Balaghat_Laterite_Overburden_20,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.7235,80.4344,0.452,0.386,0.37,31.9,37.5,0.269,205.0,445.0,7.5,Overburden_Waste,0
+WASTE_0022,Sausar_Calc_Silicate_Barren_22,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.5066,79.1244,0.397,0.364,0.537,31.6,79.0,0.3,186.8,351.0,3.8,Overburden_Waste,0
+MN_022_EXT,Netra Beneficiable Block - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,21.8555,80.1403,0.703,0.65,0.317,36.0,41.2,0.233,413.0,387.0,19.9,Beneficiable_MR_Ore,1
+WASTE_0006,Sausar_Calc_Silicate_Barren_6,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.5463,79.1188,0.372,0.349,0.401,32.2,60.3,0.499,143.6,348.0,3.9,Overburden_Waste,0
+WASTE_0051,Balaghat_Laterite_Overburden_9,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.9444,80.4113,0.503,0.458,0.424,33.8,109.4,0.28,206.2,361.0,3.2,Overburden_Waste,0
+WASTE_0072,Deccan_Basalt_WesternGhats_10,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,17.606,74.0527,0.359,0.322,0.375,35.1,95.3,0.402,78.4,635.0,0.6,Overburden_Waste,0
+MN_002_EXT,Ukwa Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Braunite,21.9507,80.0546,0.813,0.708,0.355,37.4,46.9,0.234,479.3,386.0,37.5,Marketable_Saleable,1
+MN_053_EXT,Subbarayanahalli Block - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,15.0409,76.4918,0.741,0.649,0.347,36.4,46.9,0.263,430.7,829.0,25.8,Marketable_Saleable,1
+MN_027_EXT,Bharweli Fringe Beneficiable - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Braunite,21.8205,80.2157,0.724,0.673,0.355,36.4,43.8,0.243,435.6,428.0,24.7,Beneficiable_MR_Ore,1
+MN_067_EXT,Vadodara Champaner Fringe - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,22.3705,73.5478,0.686,0.62,0.32,34.7,45.1,0.279,386.1,207.0,18.5,Beneficiable_MR_Ore,1
+MN_001_EXT,Balaghat Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Braunite,21.8218,80.1937,0.853,0.758,0.278,34.2,38.9,0.252,511.7,412.0,42.1,Marketable_Saleable,1
+WASTE_0097,IndoGangetic_Alluvium_Barren_15,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,26.7249,81.5081,0.261,0.236,0.393,35.1,60.9,0.296,55.0,197.0,0.7,Overburden_Waste,0
+MN_052_EXT,Hospet Deposit - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Braunite_Series,15.2476,76.3898,0.737,0.673,0.268,36.4,41.9,0.265,413.9,520.0,25.9,Marketable_Saleable,1
+MN_025_EXT,Khapa Beneficiable Belt - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,21.3881,78.9737,0.724,0.619,0.261,37.4,34.7,0.281,411.8,368.0,19.6,Beneficiable_MR_Ore,1
+WASTE_0024,Nagpur_Quartzite_Interbed_2,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.1235,79.4927,0.325,0.293,0.558,35.9,44.6,0.281,148.5,389.0,2.7,Overburden_Waste,0
+MN_041,Bolani Block,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,22.15,85.31,0.75,0.674,0.262,36.6,32.5,0.23,446.7,542.0,29.5,Marketable_Saleable,1
+WASTE_0066,Deccan_Basalt_WesternGhats_4,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,19.1684,73.703,0.322,0.285,0.4,35.6,98.7,0.451,80.4,595.0,0.4,Overburden_Waste,0
+MN_018,Junewani Deposit,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,21.78,79.92,0.793,0.724,0.306,35.9,40.6,0.219,483.7,405.0,33.0,Marketable_Saleable,1
+WASTE_0112,Aravalli_Quartzite_Marble_8,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,24.833,75.8288,0.39,0.323,0.373,32.0,94.6,0.462,127.5,352.0,4.3,Overburden_Waste,0
+MN_004_EXT,Kandri Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Braunite,21.2021,79.282,0.812,0.76,0.28,33.5,47.0,0.267,528.9,406.0,41.2,Marketable_Saleable,1
+WASTE_0032,Nagpur_Quartzite_Interbed_10,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.2951,79.4208,0.445,0.407,0.402,33.6,61.0,0.543,117.3,354.0,2.2,Overburden_Waste,0
+WASTE_0059,Balaghat_Laterite_Overburden_17,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.7673,79.8183,0.423,0.389,0.632,30.1,67.2,0.512,211.8,393.0,4.0,Overburden_Waste,0
+WASTE_0117,Aravalli_Quartzite_Marble_13,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,24.6406,73.9666,0.341,0.283,0.572,30.5,42.6,0.358,70.4,339.0,3.8,Overburden_Waste,0
+MN_056,Donimalai North Beneficiable,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,15.06,76.61,0.683,0.592,0.242,37.0,32.3,0.251,318.5,903.0,19.0,Beneficiable_MR_Ore,1
+MN_046_EXT,Koira Block - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,21.927,85.235,0.74,0.659,0.355,35.0,38.3,0.262,454.5,549.0,27.7,Marketable_Saleable,1
+MN_042_EXT,Bonai Deposit - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,22.015,84.9481,0.766,0.699,0.321,33.6,48.0,0.285,466.9,365.0,32.3,Marketable_Saleable,1
+MN_065_EXT,Shivrajpur Belt - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,22.416,73.1869,0.755,0.701,0.349,34.4,37.4,0.212,447.4,188.0,29.6,Marketable_Saleable,1
+MN_027,Bharweli Fringe Beneficiable,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Braunite,21.83,80.2,0.739,0.656,0.293,34.3,45.6,0.259,394.4,413.0,24.5,Beneficiable_MR_Ore,1
+MN_045_EXT,Tensa Deposit - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,21.8924,85.1757,0.755,0.654,0.267,36.5,37.4,0.282,424.2,572.0,24.3,Beneficiable_MR_Ore,1
+MN_005,Munsar / Mansar Mine,MOIL_GSI_Official,Marketable_Direct,Gondite_Braunite,21.15,79.25,0.818,0.717,0.272,34.4,44.1,0.234,486.6,394.0,38.5,Marketable_Saleable,1
+MN_007_EXT,Sitapatore Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Braunite,21.1109,79.1805,0.794,0.724,0.261,35.5,40.7,0.228,499.0,397.0,35.4,Marketable_Saleable,1
+MN_030_EXT,Bramhapuri Zone - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,20.606,79.8702,0.727,0.64,0.319,35.1,41.0,0.282,420.8,347.0,25.4,Marketable_Saleable,1
+MN_045,Tensa Deposit,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,21.91,85.18,0.762,0.666,0.292,36.2,32.2,0.236,396.2,594.0,26.5,Marketable_Saleable,1
+MN_066_EXT,Pani Deposit Gujarat - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,22.4972,73.7931,0.735,0.649,0.322,36.7,41.7,0.219,452.8,199.0,27.0,Marketable_Saleable,1
+MN_009_EXT,Parsoda Mine - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Hematite_Gondite,21.1734,79.2866,0.804,0.7,0.292,34.2,34.7,0.257,504.3,400.0,36.5,Marketable_Saleable,1
+WASTE_0027,Nagpur_Quartzite_Interbed_5,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.3474,79.2971,0.4,0.363,0.637,29.4,86.8,0.31,115.4,372.0,3.1,Overburden_Waste,0
+MN_037,Joda West Mine,MOIL_GSI_Official,Marketable_Direct,Gondite_Braunite,22.015,85.425,0.823,0.732,0.291,35.0,42.8,0.203,506.3,521.0,37.5,Marketable_Saleable,1
+WASTE_0135,Southern_Sedimentary_Barren_13,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,12.0858,80.1387,0.309,0.259,0.542,33.3,47.2,0.42,121.8,99.0,1.2,Overburden_Waste,0
+MN_068,Tambesra Deposit Banswara,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,23.35,74.45,0.756,0.689,0.249,34.8,45.8,0.2,422.5,315.0,28.0,Marketable_Saleable,1
+WASTE_0110,Aravalli_Quartzite_Marble_6,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,27.4935,75.3689,0.366,0.313,0.572,29.1,91.5,0.481,151.2,480.0,0.3,Overburden_Waste,0
+WASTE_0089,IndoGangetic_Alluvium_Barren_7,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,25.8565,79.5415,0.281,0.249,0.469,28.7,81.3,0.284,66.4,252.0,0.9,Overburden_Waste,0
+WASTE_0128,Southern_Sedimentary_Barren_6,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,10.9129,78.1658,0.252,0.229,0.633,34.3,109.3,0.413,55.8,242.0,1.2,Overburden_Waste,0
+MN_032_EXT,Yavatmal Deposit - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Braunite_Series,20.3836,78.1046,0.721,0.645,0.269,34.0,41.4,0.227,406.9,378.0,24.2,Beneficiable_MR_Ore,1
+WASTE_0104,IndoGangetic_Alluvium_Barren_22,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,27.3789,81.655,0.16,0.139,0.418,35.7,103.2,0.467,82.8,210.0,0.1,Overburden_Waste,0
+MN_028,Nandgaon Deposit,MOIL_GSI_Official,Marketable_Direct,Braunite_Series,21.38,80.48,0.771,0.666,0.242,35.3,43.3,0.259,385.3,345.0,26.0,Marketable_Saleable,1
+MN_054_EXT,Kumaraswamy Beneficiable Wing - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,15.0313,76.564,0.738,0.623,0.29,37.2,49.5,0.286,413.9,862.0,21.8,Beneficiable_MR_Ore,1
+MN_026,Parseoni Low-Grade Outcrop,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Braunite,21.38,79.2,0.725,0.627,0.29,37.4,39.3,0.234,374.4,381.0,23.0,Beneficiable_MR_Ore,1
+WASTE_0122,Aravalli_Quartzite_Marble_18,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,27.1405,73.7551,0.336,0.3,0.572,30.5,83.4,0.369,85.0,436.0,1.5,Overburden_Waste,0
+WASTE_0035,Nagpur_Quartzite_Interbed_13,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.0978,78.9634,0.415,0.351,0.368,34.2,69.5,0.267,168.5,327.0,3.9,Overburden_Waste,0
+WASTE_0114,Aravalli_Quartzite_Marble_10,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,25.9293,73.7911,0.328,0.308,0.387,35.1,72.7,0.385,109.4,435.0,2.8,Overburden_Waste,0
+WASTE_0050,Balaghat_Laterite_Overburden_8,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.963,80.3724,0.448,0.394,0.527,32.1,57.3,0.42,233.3,420.0,8.1,Overburden_Waste,0
+MN_008,Tirodi Mine,MOIL_GSI_Official,Marketable_Direct,Gondite_Braunite,21.6,79.7,0.835,0.763,0.269,35.8,41.8,0.215,559.0,399.0,43.5,Marketable_Saleable,1
+WASTE_0068,Deccan_Basalt_WesternGhats_6,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,17.7759,73.9941,0.246,0.224,0.614,35.0,52.9,0.385,52.5,713.0,1.9,Overburden_Waste,0
+WASTE_0048,Balaghat_Laterite_Overburden_6,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.6987,80.4208,0.504,0.431,0.626,30.0,91.6,0.388,246.1,453.0,7.9,Overburden_Waste,0
+WASTE_0030,Nagpur_Quartzite_Interbed_8,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Interbed,21.2189,78.9217,0.355,0.302,0.516,30.4,64.8,0.384,117.9,413.0,2.5,Overburden_Waste,0
+MN_030,Bramhapuri Zone,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,20.6,79.86,0.771,0.682,0.29,37.1,37.6,0.199,401.0,359.0,27.0,Marketable_Saleable,1
+MN_025,Khapa Beneficiable Belt,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,21.365,78.98,0.685,0.619,0.245,34.4,33.6,0.235,351.1,370.0,21.0,Beneficiable_MR_Ore,1
+WASTE_0096,IndoGangetic_Alluvium_Barren_14,IBM_Sterilization_Survey,Overburden_Gangue,Alluvium,26.4088,79.2974,0.278,0.243,0.625,31.4,58.9,0.425,114.0,244.0,1.4,Overburden_Waste,0
+WASTE_0113,Aravalli_Quartzite_Marble_9,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,24.6507,73.2552,0.281,0.24,0.629,31.2,103.0,0.346,100.9,473.0,1.2,Overburden_Waste,0
+MN_011_EXT,Dongri Buzurg - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Braunite,21.1544,79.229,0.814,0.729,0.321,33.5,35.6,0.263,536.3,389.0,41.6,Marketable_Saleable,1
+WASTE_0021,Sausar_Calc_Silicate_Barren_21,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.8281,78.9813,0.489,0.453,0.473,34.7,102.5,0.356,141.2,407.0,2.5,Overburden_Waste,0
+WASTE_0052,Balaghat_Laterite_Overburden_10,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,21.8007,80.36,0.447,0.396,0.457,34.3,76.6,0.252,221.6,381.0,7.3,Overburden_Waste,0
+WASTE_0118,Aravalli_Quartzite_Marble_14,IBM_Sterilization_Survey,Overburden_Gangue,Quartzite_Marble,25.3112,75.9495,0.263,0.24,0.463,35.7,41.7,0.456,117.7,498.0,4.0,Overburden_Waste,0
+WASTE_0010,Sausar_Calc_Silicate_Barren_10,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.7906,78.8638,0.438,0.385,0.442,33.6,50.1,0.452,134.0,343.0,5.3,Overburden_Waste,0
+MN_066,Pani Deposit Gujarat,MOIL_GSI_Official,Marketable_Direct,Gondite_Series,22.48,73.78,0.756,0.691,0.283,37.4,34.6,0.251,417.2,219.0,27.0,Marketable_Saleable,1
+WASTE_0012,Sausar_Calc_Silicate_Barren_12,IBM_Sterilization_Survey,Overburden_Gangue,Calc_Silicate,21.678,79.1951,0.447,0.368,0.415,33.3,64.5,0.445,189.0,414.0,7.1,Overburden_Waste,0
+MN_050_EXT,Gua Low-Grade Horizon - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,22.2138,85.3687,0.693,0.623,0.261,34.0,48.4,0.28,359.0,466.0,15.7,Beneficiable_MR_Ore,1
+MN_044_EXT,Keonjhar Main Belt - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,21.641,85.5723,0.77,0.676,0.305,34.1,36.8,0.25,436.0,460.0,28.9,Marketable_Saleable,1
+WASTE_0075,Deccan_Basalt_WesternGhats_13,IBM_Sterilization_Survey,Overburden_Gangue,Deccan_Basalt,18.4135,75.9649,0.272,0.235,0.402,33.7,96.9,0.28,121.1,551.0,1.8,Overburden_Waste,0
+MN_061_EXT,Srikakulam Block - Extension Zone,GSI_Extension_Survey,Marketable_Direct,Gondite_Series,18.3175,83.9084,0.76,0.672,0.322,36.5,36.5,0.28,439.2,91.0,26.3,Marketable_Saleable,1
+WASTE_0140,Southern_Sedimentary_Barren_18,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,10.7009,79.8403,0.209,0.196,0.505,34.1,56.2,0.356,93.7,166.0,1.5,Overburden_Waste,0
+MN_011,Dongri Buzurg,MOIL_GSI_Official,Marketable_Direct,Gondite_Braunite,21.135,79.215,0.818,0.742,0.321,36.2,36.7,0.214,530.4,416.0,41.5,Marketable_Saleable,1
+WASTE_0049,Balaghat_Laterite_Overburden_7,IBM_Sterilization_Survey,Overburden_Gangue,Laterite_Overburden,22.021,80.3099,0.521,0.468,0.631,28.3,47.4,0.29,214.5,468.0,3.3,Overburden_Waste,0
+MN_036_EXT,Gumgaon Low-Grade South Fringe - Extension Zone,GSI_Extension_Survey,Beneficiable_SubEconomic,Gondite_Series,21.0362,79.0805,0.684,0.617,0.347,36.8,38.1,0.224,402.2,448.0,17.9,Beneficiable_MR_Ore,1
+MN_054,Kumaraswamy Beneficiable Wing,MOIL_GSI_Official,Beneficiable_SubEconomic,Gondite_Series,15.01,76.58,0.72,0.622,0.284,34.8,45.8,0.256,336.4,868.0,22.0,Beneficiable_MR_Ore,1
+WASTE_0131,Southern_Sedimentary_Barren_9,IBM_Sterilization_Survey,Overburden_Gangue,Sedimentary,10.5892,77.5212,0.282,0.247,0.423,32.0,86.0,0.273,145.8,156.0,0.4,Overburden_Waste,0
+MN_052,Hospet Deposit,MOIL_GSI_Official,Marketable_Direct,Braunite_Series,15.27,76.39,0.749,0.675,0.324,36.6,35.0,0.192,409.2,525.0,26.0,Marketable_Saleable,1

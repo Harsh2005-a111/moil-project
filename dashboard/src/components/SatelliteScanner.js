@@ -142,9 +142,11 @@ export default function SatelliteScanner({
       // Auto-synchronize evaluated scene with portal
       const pred = data.prediction || {};
       const feat = data.extracted_features || {};
+      const estGrade = pred.estimated_grade_pct !== undefined ? pred.estimated_grade_pct : 0.0;
       const isBarrenZone =
+        estGrade < 10.0 ||
         pred.total_available_reserves_kt === 0 ||
-        pred.manganese_probability_pct < 50 ||
+        pred.decision?.includes("MINERAL WASTE") ||
         pred.decision?.includes("BARREN") ||
         pred.decision?.includes("STERILIZED");
 
@@ -235,9 +237,11 @@ export default function SatelliteScanner({
       // Auto-synchronize evaluated uploaded scene with portal
       const pred = data.prediction || {};
       const feat = data.extracted_features || {};
+      const estGrade = pred.estimated_grade_pct !== undefined ? pred.estimated_grade_pct : 0.0;
       const isBarrenZone =
+        estGrade < 10.0 ||
         pred.total_available_reserves_kt === 0 ||
-        pred.manganese_probability_pct < 50 ||
+        pred.decision?.includes("MINERAL WASTE") ||
         pred.decision?.includes("BARREN") ||
         pred.decision?.includes("STERILIZED");
 
@@ -279,24 +283,30 @@ export default function SatelliteScanner({
     }
   };
 
+  const estGrade = analysisResult?.prediction?.estimated_grade_pct !== undefined
+    ? analysisResult.prediction.estimated_grade_pct
+    : 0.0;
   const isZeroOrBarren =
     !analysisResult ||
+    estGrade < 10.0 ||
     analysisResult.prediction?.total_available_reserves_kt === 0 ||
-    analysisResult.prediction?.manganese_probability_pct < 50 ||
+    analysisResult.prediction?.decision?.includes("MINERAL WASTE") ||
     analysisResult.prediction?.decision?.includes("BARREN") ||
     analysisResult.prediction?.decision?.includes("STERILIZED");
 
   const handleAutoFillSliders = () => {
     if (!analysisResult || !analysisResult.extracted_features) return;
     const pred = analysisResult.prediction;
+    const grade = pred.estimated_grade_pct !== undefined ? pred.estimated_grade_pct : 0.0;
 
     if (
+      grade < 10.0 ||
       pred.total_available_reserves_kt === 0 ||
-      pred.manganese_probability_pct < 50 ||
+      pred.decision?.includes("MINERAL WASTE") ||
       pred.decision?.includes("BARREN") ||
       pred.decision?.includes("STERILIZED")
     ) {
-      setErrorMsg("Cannot auto-fill sliders: Ground classified as Barren Country Rock or Urban Terrain (Reserves: 0.0 kt).");
+      setErrorMsg("Cannot auto-fill sliders: Ground classified as Mineral Waste / Overburden (<10% Mn) or Urban Terrain (Reserves: 0.0 kt).");
       return;
     }
 
@@ -346,9 +356,11 @@ export default function SatelliteScanner({
     const regionTitle = saveRegionName.trim() || `Sat-Deposit-${Date.now().toString().slice(-4)}`;
     const feat = analysisResult.extracted_features || {};
     const pred = analysisResult.prediction || {};
+    const estGrade = pred.estimated_grade_pct !== undefined ? pred.estimated_grade_pct : 0.0;
     const isBarrenZone =
+      estGrade < 10.0 ||
       pred.total_available_reserves_kt === 0 ||
-      pred.manganese_probability_pct < 50 ||
+      pred.decision?.includes("MINERAL WASTE") ||
       pred.decision?.includes("BARREN") ||
       pred.decision?.includes("STERILIZED");
 
@@ -358,7 +370,7 @@ export default function SatelliteScanner({
         region_name: regionTitle,
         latitude: parseFloat(customLat) || 21.8167,
         longitude: parseFloat(customLon) || 80.1833,
-        host_lithology: feat.host_lithology || (isBarrenZone ? "Sterilized Country Rock / Alluvium" : "Gondite / Braunite Series"),
+        host_lithology: feat.host_lithology || (isBarrenZone ? "Sterilized Overburden / Country Rock" : "Gondite / Braunite Series"),
         swir_b11_absorption: feat.swir_b11_absorption || 0.35,
         swir_b12_absorption: feat.swir_b12_absorption || 0.38,
         ndvi: feat.ndvi || 0.35,
@@ -372,7 +384,7 @@ export default function SatelliteScanner({
         total_available_reserves_kt: isBarrenZone ? 0.0 : (pred.total_available_reserves_kt || 0.0),
         viable_extractable_tonnage_kt: isBarrenZone ? 0.0 : (pred.viable_extractable_tonnage_kt || 0.0),
         extraction_recovery_pct: isBarrenZone ? 0.0 : (pred.extraction_recovery_pct || 0.0),
-        unfc_classification: isBarrenZone ? "UNFC 777 (Sterilized / Non-Mineralized Ground)" : (pred.unfc_classification || "UNFC 333"),
+        unfc_classification: isBarrenZone ? "UNFC 777 (Sterilized Overburden / Waste)" : (pred.unfc_classification || "UNFC 334"),
         image_preview: analysisResult.images?.heatmap_overlay || imagePreview,
         notes: isBarrenZone
           ? `Sterilized Non-Mineralized Land (UNFC 777). Mn Probability: ${pred.manganese_probability_pct}%. Cataloged in exploration registry to exclude from future mining concessions.`
@@ -1372,7 +1384,8 @@ export default function SatelliteScanner({
 
                 const isBarrenOrUrban =
                   totalReservesKt === 0 ||
-                  probPct < 50 ||
+                  estimatedGrade < 10.0 ||
+                  analysisResult.prediction.decision?.includes("MINERAL WASTE") ||
                   analysisResult.prediction.decision?.includes("BARREN") ||
                   analysisResult.prediction.decision?.includes("STERILIZED");
 
@@ -1423,6 +1436,8 @@ export default function SatelliteScanner({
                       inferred_tonnage_footprint_kt: analysisResult.prediction?.total_available_reserves_kt,
                       viable_extractable_tonnage_kt: analysisResult.prediction?.viable_extractable_tonnage_kt,
                       indicative_grade_pct: analysisResult.prediction?.estimated_grade_pct,
+                      ibm_grade_classification: analysisResult.prediction?.ibm_grade_classification,
+                      ibm_tier: analysisResult.prediction?.ibm_tier,
                       extraction_recovery_pct: analysisResult.prediction?.extraction_recovery_pct,
                     },
                     data_provenance: analysisResult.provenance || {
@@ -1432,7 +1447,7 @@ export default function SatelliteScanner({
                     },
                     multi_spectral_indicators: analysisResult.extracted_features,
                     geological_notes: analysisResult.prediction?.geo_notes,
-                    statutory_disclaimer: analysisResult.prediction?.statutory_disclaimer || "UNFC G4 Reconnaissance Screening only. Drilling required for UNFC 111 reserve certification per IBM MCDR 2017.",
+                    statutory_disclaimer: analysisResult.prediction?.statutory_disclaimer || "IBM Statutory MCDR 2017 Compliance: Minimum threshold cutoff is 10% Mn. Ore between 10-25% Mn is classified as Mineral Rejects (MR Ore). Drilling required for UNFC 111 reserve certification.",
                     compliance: {
                       statutory_standard: "UNFC 1997 / 2009 & Indian Bureau of Mines (MCDR 2017)",
                       status: "Certified AI Exploration Screening (G4 Stage)",
@@ -1451,6 +1466,67 @@ export default function SatelliteScanner({
 
                 return (
                   <>
+                    {/* IBM Statutory Grade Classification Banner */}
+                    <div
+                      style={{
+                        background:
+                          estimatedGrade >= 25.0
+                            ? "linear-gradient(135deg, rgba(6, 78, 59, 0.9) 0%, rgba(6, 95, 70, 0.8) 100%)"
+                            : estimatedGrade >= 10.0
+                            ? "linear-gradient(135deg, rgba(120, 53, 15, 0.9) 0%, rgba(146, 64, 14, 0.8) 100%)"
+                            : "linear-gradient(135deg, rgba(71, 85, 105, 0.9) 0%, rgba(51, 65, 85, 0.8) 100%)",
+                        border:
+                          estimatedGrade >= 25.0
+                            ? "1px solid #10B981"
+                            : estimatedGrade >= 10.0
+                            ? "1px solid #F59E0B"
+                            : "1px solid #64748B",
+                        borderRadius: 10,
+                        padding: "10px 14px",
+                        marginBottom: 10,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        flexWrap: "wrap",
+                        gap: 8,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 16 }}>
+                          {estimatedGrade >= 25.0 ? "🟢" : estimatedGrade >= 10.0 ? "🟡" : "⚪"}
+                        </span>
+                        <div>
+                          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.05em", color: "#CBD5E1" }}>
+                            INDIAN BUREAU OF MINES (IBM) STATUTORY GRADING • MCDR 2017
+                          </div>
+                          <div style={{ fontSize: 13, fontWeight: 800, color: "#FFFFFF" }}>
+                            {analysisResult.prediction.ibm_grade_classification || (
+                              estimatedGrade >= 25.0
+                                ? "Marketable / Saleable Ore (>25% Mn)"
+                                : estimatedGrade >= 10.0
+                                ? "Low-Grade / Beneficiable Ore (10-25% Mn - Mineral Reject)"
+                                : "Mineral Waste / Overburden (<10% Mn)"
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          background: "rgba(0, 0, 0, 0.35)",
+                          padding: "4px 10px",
+                          borderRadius: 6,
+                          color: estimatedGrade >= 25.0 ? "#6EE7B7" : estimatedGrade >= 10.0 ? "#FCD34D" : "#CBD5E1",
+                        }}
+                      >
+                        {estimatedGrade >= 25.0
+                          ? "Direct Blast Furnace Feed"
+                          : estimatedGrade >= 10.0
+                          ? "Beneficiable Mineral Rejects (MR)"
+                          : "Non-Economic Overburden"}
+                      </div>
+                    </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                       {/* Total Inferred Tonnage Footprint */}
                       <div

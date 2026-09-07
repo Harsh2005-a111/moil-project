@@ -135,8 +135,13 @@ export default function GlobalKPIBar({
       const lomYears = (reservesKt / Math.max(10, annualCapacityKt)).toFixed(1);
 
       reservesDisplay = `${reservesKt.toLocaleString()} kt`;
-      gradeBadge = `${grade}% Mn`;
-      lomSubtitle = `Life of Mine (LOM): ${lomYears} Yrs (@ ${annualCapacityMt} MT/yr)`;
+      const gradeCategory = grade >= 25.0 ? "Marketable" : grade >= 10.0 ? "Beneficiable (MR)" : "Waste";
+      gradeBadge = `${grade}% Mn • ${gradeCategory}`;
+      lomSubtitle = grade >= 25.0
+        ? `Life of Mine (LOM): ${lomYears} Yrs (Direct Saleable Ore)`
+        : grade >= 10.0
+        ? `Beneficiable Ore (10-25% Mn - Mandatory Conservation per IBM MCDR 2017)`
+        : `Mineral Waste / Overburden (<10% Mn Statutory Cutoff)`;
     }
   }
 
