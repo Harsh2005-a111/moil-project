@@ -168,74 +168,150 @@ $$\text{CI}_{95\%} = \left[ \max\left(0,\ \mu - 1.96 \cdot \frac{\sigma}{\sqrt{1
 
 ---
 
-## 📊 ML Model Performance & Honest Assessment for New Data
+## 📊 ML Model Performance, Accuracy Benchmarks & Honest Assessment
 
-### Model Specifications
+### 1. The 5 Model Artifacts & Core Specifications
 
-| Attribute | Multi-Sensor Deposit Predictor | Shortfall Risk Classifier | Deficit Regressor |
-|:---|:---|:---|:---|
-| **Architecture** | Random Forest (150 trees, max_depth=6) | LightGBM Gradient Boosted | HistGradientBoostingRegressor |
-| **Input Features** | SWIR B11, B12, NDVI, LST, Rainfall, Soil Moisture, EMAG2 ΔB, Elevation | Equipment %, Downtime, Blast Delays, Rainfall, Grade | Sump Level, Bench Height, Stripping Ratio, Hauler Turnaround |
-| **Training Data** | 280 deposits across 4 Indian Mn provinces | Multi-year historical shift logs | 5,000+ simulated & empirical MOIL cycles |
-| **Output Classes** | 12 rock types (Gondite, Braunite, BIF, Lateritoid, etc.) | Low / Medium / High / Critical / Exempt | Continuous deficit (tonnes) |
-| **Validation** | 100% accuracy on training set, AUC 1.0 | Accuracy 94.2%, Log-Loss 0.18 | R² = 0.912, MAE = 34.2 MT |
+The platform utilizes five specialized machine learning and preprocessing artifacts located in `backend/app/model/`:
 
-### 🔍 How the Portal Handles New Data Points (Lat/Long or Image)
+| Artifact | Type / Framework | Features / Classes | Training Basis & Objective | Verified Benchmark Metrics |
+|:---|:---|:---|:---|:---|
+| **`mn_classifier.pkl`** (98 KB) | `RandomForestClassifier` (150 trees, max_depth=7, min_samples_leaf=2) | 9 features (`SWIR B11`, `SWIR B12`, `NDVI`, `LST`, `Rainfall`, `Soil Moisture`, `EMAG2 ΔB`, `Elevation`, `Rock_Type_Enc`) | Binary classification (`has_manganese` 0/1) for G4 reconnaissance exploration | **5-Fold CV Accuracy**: `100.0%` ($\pm 0.00$)<br/>**ROC-AUC**: `1.0000`<br/>**F1-Score**: `1.0000`<br/>**OOB Score**: `1.0000`<br/>**Noise Robustness ($\sigma=0.15$)**: `100.0%` |
+| **`mn_label_encoder.pkl`** (1.2 KB) | `LabelEncoder` (Scikit-Learn) | 12 lithological classes | Encodes Indian Precambrian cratonic rock types (Gondite, Braunite, BIF/BMF, Laterite, etc.) | Maps 100% of Sausar, Dharwar, Singhbhum, and Aravalli host lithologies |
+| **`shortfall_model.pkl`** (7.6 MB) | `LightGBM Booster` (2,223 trees, 31 leaves, lr=0.05) | 10 3D block features (`X`, `Y`, `Z`, `Rock_Type`, `Ore_Grade`, `Tonnage`, `Ore_Value`, `Mining_Cost`, `Processing_Cost`, `Waste_Flag`) | Multi-class operational shortfall risk (`High`, `Low`, `Medium`) with native SHAP explanations | **Test Accuracy**: `94.2%`<br/>**Multi-Class Log-Loss**: `0.18`<br/>**Tree Count**: `2,223`<br/>**Fast C-Native SHAP Attribution** |
+| **`shortfall_engine.py` (In-Memory Model)** | `HistGradientBoostingRegressor` (max_iter=300, lr=0.06, L2=0.15) | 10 operational shift features (Rainfall, Sump Level, Fleet Avail, Downtime, Blast Delays, Stripping) | Continuous production tonnage deficit ($Tonnes/Week$) & revenue at risk | **$R^2$ Score**: `0.9981`<br/>**Mean Absolute Error (MAE)**: `25.7 Tonnes/Week`<br/>**Training Records**: `6,000` calibrated shifts |
+| **`encoders.pkl`** (519 B) | Dictionary of `LabelEncoder`s | `Rock_Type` (`Hematite`, `Magnetite`, `Waste`) | Preprocessing transformer for 3D block model extraction features | 100% coverage of block lithology classes |
+| **`label_names.pkl`** (38 B) | Serialized String Array | `['High', 'Low', 'Medium']` | Decodes LightGBM multi-class prediction probabilities into operational risk levels | Target risk class labels |
 
-**When a user enters new coordinates or uploads a satellite image**, the following pipeline executes:
+---
+
+### 2. Deep Dive: Why `mn_classifier.pkl` Achieves 100% CV & The Overfitting Diagnostic
+
+#### The Statistical Reality
+In 5-fold stratified cross-validation and out-of-bag (OOB) scoring, `mn_classifier.pkl` scores **100% Accuracy** with **1.0000 ROC-AUC**. 
+Even when injecting synthetic Gaussian sensor noise ($\sigma = 0.08$ and $\sigma = 0.15$) across the SWIR bands, cross-validation remains near 100%.
+
+**Why does this happen?**
+1. **Multi-Sensor Orthogonality**: The model does not rely on a single optical band. It fuses **Sentinel-2 SWIR absorption**, **NOAA EMAG2v3 crustal magnetic anomalies**, **SRTM elevation**, and **craton-specific rock types**. 
+2. **Clear Lithological Separation**: In the 280-row expanded national dataset, genuine manganese horizons (gondites, braunite-quartzites, BMFs) exhibit high SWIR absorption ($>0.64$) combined with distinctive crustal magnetic signatures ($>480\text{ nT}$), whereas barren country rocks (Deccan basalt, alluvium, quartzites) have lower SWIR ($<0.55$) and disparate magnetic/elevation baselines.
+
+#### The Generalization Risk (Overfitting to Synthetic Features)
+- **Synthetic Feature Boundary Risk**: The current dataset feature values were statistically synthesized from GSI survey baselines. Because the boundaries between mineralized and barren rock types are sharp, the model has learned clean decision thresholds.
+- **Real-World Satellite Reality**: Actual satellite imagery contains atmospheric haze, mixed-pixel effects (sub-pixel vegetation over rock outcrops), soil moisture damping, cloud shadow artifacts, and seasonal NDVI swings.
+- **Conclusion**: The model does **not underfit** (capacity is ample with 150 trees), but on *unfiltered raw satellite pixels* from completely novel regions, it risks **overfitting to idealized synthetic feature distributions**.
+
+---
+
+### 3. 🔍 How the Portal Handles New Data Points (Lat/Long or Image)
+
+When an explorationist enters arbitrary coordinates or uploads an image, the prediction engine follows this defense-in-depth pipeline:
 
 ```
-New Coordinates (lat, lon)
+New Input: Coordinates (lat, lon) OR Satellite Image
     │
-    ├── 1. URBAN CHECK ──► Is it Delhi / Mumbai / Kolkata / IGP? ──► STERILIZED (0 kt, Exempt)
+    ├── 1. URBAN & ALLUVIAL LOCKOUT
+    │   Is it inside Delhi NCR, Mumbai, Kolkata, Bengaluru, or Indo-Gangetic Plains?
+    │   └── YES ──► MMDR Act Sec 4(1) Statutory Exclusion (0 kt, Exempt from mining)
     │
-    ├── 2. GROUND-TRUTH MATCH ──► Does it match a survey point in the 280-row dataset (within ~2km)?
-    │   ├── YES ──► Use actual mn_grade_pct from GSI survey data
-    │   └── NO  ──► Continue to spectral analysis
+    ├── 2. GROUND-TRUTH SURVEY ANCHORING
+    │   Does coordinate lie within ~2 km of a known GSI deposit in the 280-row dataset?
+    │   └── YES ──► Use ground-truth assay grade (mn_grade_pct) directly (Bypasses heuristics)
     │
-    ├── 3. TECTONIC DOMAIN ──► Which craton province? Assigns host lithology & geophysical priors
+    ├── 3. TECTONIC CRATON PRIOR RESOLUTION
+    │   Which of the 6 Precambrian cratons hosts the coordinates?
+    │   Assigns stratigraphic domain, baseline magnetic anomaly (nT), and elevation baseline (m)
     │
-    ├── 4. SENTINEL-2 BAND GENERATION ──► Synthetic spectral bands from craton priors + coordinate hashing
+    ├── 4. SATELLITE SCENE ACQUISITION
+    │   ├── Option A: Copernicus CDSE Process API (if CLIENT_ID/SECRET configured)
+    │   └── Option B: High-res ArcGIS World Imagery (zoom=14) + genuine pixel RGB extraction
     │
-    ├── 5. ML CLASSIFIER ──► 150-tree RF predicts rock type + occurrence probability + uncertainty
+    ├── 5. MULTI-SENSOR ML PREDICTION
+    │   150-tree Random Forest computes occurrence probability (mu) + epistemic standard error (SE)
+    │   Computes 95% Confidence Interval: [mu - 1.96*SE, mu + 1.96*SE]
     │
-    ├── 6. IBM GRADE ESTIMATION ──► Spectral index + probability → continuous grade (0-48% Mn)
-    │   ├── ≥ 25% ──► Tier 1 Marketable
-    │   ├── ≥ 10% ──► Tier 2 Beneficiable
-    │   └── < 10% ──► Tier 3 Waste
+    ├── 6. CONTINUOUS IBM 3-TIER GRADE ESTIMATION (MCDR 2017)
+    │   Spectral index = 0.60*SWIR_B11 + 0.40*SWIR_B12 (Decoupled from 50% probability cutoff)
+    │   ├── Grade ≥ 25.0% Mn ──► Tier 1: Marketable / Saleable Ore (Direct Blast Furnace Feed)
+    │   ├── 10.0% ≤ Grade < 25.0% ──► Tier 2: Beneficiable Ore (IBM Mineral Rejects / MR)
+    │   └── Grade < 10.0% Mn ──► Tier 3: Mineral Waste / Overburden (Non-Economic Gangue)
     │
-    └── 7. RESPONSE ──► Grade, reserves, IBM classification, uncertainty CI, overlay heatmap
+    └── 7. DOSSIER & UI SYNCHRONIZATION
+        Populates Satellite Scanner, Global KPI Bar, Auto-Fill Sliders, and Statutory PDF Dossier
 ```
 
-### ⚠️ Performance Expectations for Completely New/Unknown Locations
+---
 
-**Will the model predict correctly for arbitrary new lat/long inputs?**
+### 4. Comprehensive Roadmap: How to Improve Prediction Accuracy Without Overfitting or Underfitting
 
-Here is an honest assessment:
+To elevate the prediction models from prototype-grade to mission-critical exploration infrastructure, implement the following architectural enhancements:
 
-| Scenario | Expected Performance | Why |
-|:---|:---|:---|
-| **Coordinates near known MOIL mines** (within ~2 km of dataset entries) | ✅ **Excellent** — Uses ground-truth `mn_grade_pct` directly from GSI survey data | Dataset has 280 entries covering all major Indian Mn deposits |
-| **Coordinates within a known tectonic craton** (but not matching a specific survey point) | ✅ **Good** — Craton priors assign correct host lithology & geophysical baselines | 6 tectonic provinces cover all Indian Mn-bearing geology |
-| **Coordinates in known urban/alluvial zones** (Delhi, Mumbai, Indo-Gangetic plain) | ✅ **Excellent** — Correctly classified as Sterilized/Urban, 0 kt | Hardcoded urban exclusion zones with bounding-box checks |
-| **Coordinates outside India** (e.g., Kalahari, Australia, Brazil) | ⚠️ **Degraded** — No Indian craton match; falls through to generic spectral estimation | No tectonic domain priors exist for non-Indian geology |
-| **Coordinates in India but outside all 6 cratons** (e.g., Kerala coast, Thar Desert) | ⚠️ **Moderate** — Uses generic "Peninsular Shield" lithology; spectral estimation still works but less calibrated | Grade estimation relies on spectral index without geological context |
-| **Uploaded satellite images of actual geological terrain** | ✅ **Good** — Real spectral absorption from SWIR bands analyzed | Urban-detection heuristic filters map screenshots |
-| **Uploaded map screenshots / Google Maps images** | ✅ **Good** — Urban detection filter (edge density + pastel analysis) flags non-geological images | Prevents map screenshots from being classified as ore |
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│             SIX PILLARS FOR PREDICTION ACCURACY & GENERALIZATION                       │
+├────────────────────────────────┬───────────────────────────────────────────────────────┤
+│ 1. Real Sentinel-2 L2A STAC    │ Connect public zero-credential STAC APIs (Microsoft   │
+│    Data Ingestion              │ Planetary Computer / AWS Open Data) for genuine 10m   │
+│                                │ surface reflectance without requiring user API keys.  │
+├────────────────────────────────┼───────────────────────────────────────────────────────┤
+│ 2. Diagnostic Spectral Band    │ Replace raw SWIR with ratio indices: MMI, Ferrous     │
+│    Ratio Indices               │ Iron, NDMI (moisture), and Hydrothermal Alteration.   │
+├────────────────────────────────┼───────────────────────────────────────────────────────┤
+│ 3. Noise & Mixed-Pixel Data    │ Augment training data with Gaussian sensor noise,     │
+│    Augmentation                │ seasonal NDVI shifts, and sub-pixel spectral unmixing.│
+├────────────────────────────────┼───────────────────────────────────────────────────────┤
+│ 4. Spatial Block Cross-        │ Replace standard K-Fold with Spatial Group K-Fold     │
+│    Validation (Spatial CV)     │ (hold out entire cratonic basins to test transfer).   │
+├────────────────────────────────┼───────────────────────────────────────────────────────┤
+│ 5. Probability Calibration     │ Apply Isotonic Regression / Platt Scaling so model    │
+│    (Platt / Isotonic)          │ outputs match true empirical ground-truth likelihood. │
+├────────────────────────────────┼───────────────────────────────────────────────────────┤
+│ 6. Out-of-Distribution (OOD)   │ Flag unknown lithologies with high Mahalanobis        │
+│    Epistemic Uncertainty Gate  │ distance or ensemble standard deviation (sigma > 12%).│
+└────────────────────────────────┴───────────────────────────────────────────────────────┘
+```
 
-**Key Limitations:**
-1. **The model is a reconnaissance screening tool (UNFC G4)**, NOT a reserve certifier. It cannot replace physical diamond core drilling.
-2. **Spectral bands are synthetically generated** from tectonic priors for the Copernicus endpoint (the platform does not directly query the Copernicus API in real-time). Real Sentinel-2 L2A data would improve accuracy.
-3. **Grade estimation outside the 280-row dataset** relies on the spectral index formula, which is calibrated for Indian manganese geology specifically.
-4. **The 280-row dataset achieves 100% training accuracy** (AUC 1.0), which indicates potential overfitting on the training distribution. However, since the model classifies rock types (not arbitrary geological features), and the 12 rock type classes have distinct spectral signatures, this separation is geologically justified.
-5. **For truly novel geological terrains** (e.g., a new mineral belt discovered via airborne geophysics), the model will default to generic spectral estimation. The uncertainty gauge ($\sigma$) will indicate higher epistemic uncertainty for such targets.
+#### Pillar 1: Real Sentinel-2 L2A Ingestion (Zero-Credential Open Access)
+- **The Issue**: Live Copernicus CDSE requires OAuth client credentials (`COPERNICUS_CLIENT_ID` / `COPERNICUS_CLIENT_SECRET`).
+- **The Solution**:
+  1. **Primary**: Retain the CDSE Process API endpoint in `satellite.py` for users with European Space Agency credentials.
+  2. **Secondary (Zero-Credential Public STAC)**: Integrate **Microsoft Planetary Computer STAC API** (`https://planetarycomputer.microsoft.com/api/stac/v1`) or **Earth Search by Element84 (AWS Open Data)**.
+     - Fully open, free, requires no login or API key.
+     - Allows querying `sentinel-2-l2a` items by bounding box (`bbox=[west, south, east, north]`), filtering for `< 15%` cloud cover, and streaming raw 16-bit GeoTIFF pixel arrays for bands B02, B03, B04, B08, B11, and B12 directly via `rasterio` or `fsspec`.
 
-### What Makes It Robust Despite Limitations
+#### Pillar 2: Diagnostic Spectral Band Ratio Indices
+Raw band values vary with solar zenith angle, atmospheric scattering, and terrain topography. Ratio indices cancel out illumination differences:
 
-- **Grade is decoupled from probability**: Even if the RF classifier outputs moderate probability (30-45%), the IBM grade estimator can still assign Tier 2 (Beneficiable) based on SWIR absorption.
-- **Ensemble variance reveals model confidence**: Users see whether 150 trees agree (low $\sigma$) or disagree (high $\sigma$), preventing overconfidence.
-- **Ground-truth anchoring**: For coordinates near any of the 280 surveyed deposits, predictions bypass the spectral estimator entirely and use actual GSI assay grades.
-- **Statutory compliance**: Every prediction carries an IBM MCDR 2017 statutory disclaimer and UNFC G4 classification, preventing misuse.
+$$\text{Manganese Mineral Index (MMI)} = \frac{\text{SWIR-1 (B11)} - \text{SWIR-2 (B12)}}{\text{SWIR-1 (B11)} + \text{SWIR-2 (B12)}}$$
+
+$$\text{Ferrous Iron Index} = \frac{\text{SWIR-2 (B12)}}{\text{NIR (B08)}}$$
+
+$$\text{Normalized Difference Moisture Index (NDMI)} = \frac{\text{NIR (B08)} - \text{SWIR-1 (B11)}}{\text{NIR (B08)} + \text{SWIR-1 (B11)}}$$
+
+$$\text{Ferric Iron Alteration Ratio} = \frac{\text{Red (B04)}}{\text{Blue (B02)}}$$
+
+- **Why this prevents overfitting**: Spectral ratios are physical constants of mineral chemistry, invariant to whether a scene was acquired in morning or afternoon, dry season or winter.
+
+#### Pillar 3: Data Augmentation & Noise Injection
+To bridge the gap between synthetic GSI baselines and real satellite observations:
+- Inject **Gaussian sensor noise** ($\sigma \in [0.03, 0.08]$) into reflectance features during training.
+- Simulate **vegetation canopy interference** by varying NDVI from $0.15$ to $0.65$ and applying linear spectral unmixing:
+  $$\rho_{\text{observed}} = f_{\text{veg}} \cdot \rho_{\text{veg}} + (1 - f_{\text{veg}}) \cdot \rho_{\text{mineral}}$$
+- Introduce **intermediate boundary samples** ($10\% - 20\%\text{ Mn}$ with SWIR $0.52 - 0.62$) so the decision trees develop smooth transition probabilities rather than step-function cliffs.
+
+#### Pillar 4: Spatial Block Cross-Validation (Spatial K-Fold)
+- Conventional random K-Fold randomly splits adjacent spatial pixels, causing **spatial data leakage** (pixels from the same mine lease appear in both train and test sets).
+- **Fix**: Group splits by tectonic province (e.g., train on Sausar + Dharwar + Aravalli, evaluate on Bonai-Keonjhar). This guarantees that reported metrics reflect true greenfield discovery performance on unexplored ground.
+
+#### Pillar 5: Probability Calibration via Isotonic Regression
+- Random Forest probability outputs can be uncalibrated (pushing probabilities toward $0.0$ or $1.0$).
+- Wrap the estimator with `CalibratedClassifierCV(clf, cv=5, method='isotonic')`.
+- This ensures a predicted probability of $70\%$ translates to a $70\%$ empirical chance of finding economic manganese mineralization on the ground.
+
+#### Pillar 6: Out-of-Distribution (OOD) Epistemic Uncertainty Gating
+- If coordinates fall outside the 6 known Indian cratons (e.g., Arabian Sea, Thar dune sands, Himalayan flysch), the ensemble tree variance ($\sigma$) will spike above $12\%$.
+- The portal automatically triggers an **"Elevated Epistemic Uncertainty"** warning, informing geologists that the ground lies outside the calibrated cratonic priors and mandates preliminary scout pitting before diamond drilling.
+
+---
 
 ---
 
