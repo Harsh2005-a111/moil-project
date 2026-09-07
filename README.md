@@ -62,9 +62,9 @@ flowchart TD
 
     subgraph Stream4 ["Stream 4: IBM 3-Tier Grade Classification"]
         CI --> IBM_GRADE{"IBM / GSI<br/>Grade Estimator"}
-        IBM_GRADE -->|">= 25% Mn"| TIER1["Tier 1: Marketable<br/>Saleable Ore"]
+        IBM_GRADE -->|"25%+ Mn"| TIER1["Tier 1: Marketable<br/>Saleable Ore"]
         IBM_GRADE -->|"10-25% Mn"| TIER2["Tier 2: Beneficiable<br/>MR Ore"]
-        IBM_GRADE -->|"< 10% Mn"| TIER3["Tier 3: Mineral Waste<br/>Overburden"]
+        IBM_GRADE -->|"Below 10% Mn"| TIER3["Tier 3: Mineral Waste<br/>Overburden"]
     end
 
     subgraph Stream5 ["Stream 5: Operations, Shortfall & Logistics"]
@@ -73,15 +73,15 @@ flowchart TD
         LIGHTGBM --> NSR["Pit-to-Smelter<br/>NSR Optimizer"]
     end
 
-    subgraph Output ["Command-Center Dashboard"]
-        CI --> UI_GAUGE["Uncertainty Gauge<br/>& Provenance Badges"]
+    subgraph Dashboard ["Command-Center Dashboard"]
+        CI --> UI_GAUGE["Uncertainty Gauge<br/>and Provenance Badges"]
         TIER1 --> UI_BADGE["IBM Grade<br/>Classification Banner"]
         TIER2 --> UI_BADGE
         TIER3 --> UI_BADGE
         SHAP --> UI_SOP["Corrective Action SOPs"]
         NSR --> UI_LOGIS["Freight Route Optimizer"]
         URBAN --> UI_LOCKOUT["Non-Mining Exclusion Card"]
-        Output --> PDF["IBM Statutory PDF Dossier"]
+        UI_BADGE --> PDF["IBM Statutory PDF Dossier"]
     end
 ```
 
