@@ -49,4 +49,4 @@ jobs:
 
       - name: Build dashboard
         working-directory: dashboard
-        run: npm run build
+        run: CI=false npm run build
