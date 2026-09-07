@@ -18,6 +18,26 @@ import {
   MapPin,
   Sparkles,
 } from "lucide-react";
+import { PRELOADED_SATELLITE_SCENES } from "../data/demoScenes";
+
+// Helper to construct real File from base64 data URL
+function dataUrlToFile(dataUrl, filename) {
+  try {
+    const arr = dataUrl.split(",");
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : "image/png";
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  } catch (e) {
+    console.warn("dataUrlToFile error:", e);
+    return null;
+  }
+}
 
 export default function SatelliteScanner({
   mines,
@@ -32,6 +52,8 @@ export default function SatelliteScanner({
   const [activeMode, setActiveMode] = useState("coordinates"); // "coordinates" or "upload"
   const [file, setFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [sceneMetadata, setSceneMetadata] = useState(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -44,16 +66,115 @@ export default function SatelliteScanner({
   const [customLat, setCustomLat] = useState(selectedMine?.lat || 21.8167);
   const [customLon, setCustomLon] = useState(selectedMine?.lon || 80.1833);
 
-  // Auto-sync custom coordinates and name when selectedMine changes from parent dropdown/selector
+  // Load an authentic pre-cached Sentinel-2 satellite scene
+  const loadPreloadedScene = (sceneKey, isUserAction = false) => {
+    const scene = PRELOADED_SATELLITE_SCENES?.[sceneKey];
+    if (!scene) return;
+
+    setCustomLat(scene.lat);
+    setCustomLon(scene.lon);
+    setSaveRegionName(scene.region_name || scene.name);
+    setImagePreview(scene.image_url);
+    setSceneMetadata(scene);
+
+    const demoFile = dataUrlToFile(scene.image_url, `${sceneKey}_sentinel2_l2a.png`);
+    if (demoFile) {
+      setFile(demoFile);
+    }
+
+    if (isUserAction) {
+      setSuccessMsg(`✓ Loaded ${scene.name} (${scene.dimensions.width}×${scene.dimensions.height} px, ~${scene.dimensions.coverage}).`);
+    }
+  };
+
+  // Fetch geocoded Sentinel-2 / Planetary Computer preview for any coordinates
+  const fetchCoordinateScenePreview = async (lat, lon, regionName) => {
+    const nLat = parseFloat(lat);
+    const nLon = parseFloat(lon);
+    if (isNaN(nLat) || isNaN(nLon)) return;
+
+    // Check if close to preloaded mines (< 5 km)
+    if (Math.abs(nLat - 21.81) < 0.05 && Math.abs(nLon - 80.19) < 0.05) {
+      loadPreloadedScene("balaghat");
+      return;
+    }
+    if (Math.abs(nLat - 21.95) < 0.05 && Math.abs(nLon - 80.05) < 0.05) {
+      loadPreloadedScene("ukwa");
+      return;
+    }
+    if (Math.abs(nLat - 21.55) < 0.05 && Math.abs(nLon - 79.72) < 0.05) {
+      loadPreloadedScene("dongri");
+      return;
+    }
+    if (Math.abs(nLat - 21.40) < 0.05 && Math.abs(nLon - 79.28) < 0.05) {
+      loadPreloadedScene("mansar");
+      return;
+    }
+
+    try {
+      setLoadingPreview(true);
+      const res = await fetch(
+        `${API_BASE || ""}/api/satellite/scene-preview?lat=${nLat}&lon=${nLon}&region_name=${encodeURIComponent(regionName || "")}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.image_data) {
+          setImagePreview(data.image_data);
+          const meta = {
+            name: regionName || `Scene (${nLat.toFixed(4)}°N, ${nLon.toFixed(4)}°E)`,
+            region_name: regionName,
+            lat: nLat,
+            lon: nLon,
+            dimensions: {
+              width: data.dimensions.width,
+              height: data.dimensions.height,
+              resolution: "10 m/pixel (Sentinel-2 L2A Native)",
+              coverage: data.dimensions.coverage_km,
+            },
+            provider: data.metadata?.provider || "Microsoft Planetary Computer STAC / Sentinel-2 L2A",
+            sensor: data.metadata?.sensor,
+            craton: data.metadata?.craton_province,
+            nearest_belt: data.metadata?.nearest_belt,
+            belt_distance_km: data.metadata?.distance_to_belt_km,
+          };
+          setSceneMetadata(meta);
+          const dynamicFile = dataUrlToFile(data.image_data, `sentinel2_${nLat.toFixed(4)}_${nLon.toFixed(4)}.png`);
+          if (dynamicFile) {
+            setFile(dynamicFile);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Scene preview fetch error:", e);
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
+  // Auto-sync custom coordinates and satellite image when selectedMine changes from parent dropdown/selector
   useEffect(() => {
     if (selectedMine) {
-      if (selectedMine.lat !== undefined && selectedMine.lat !== null) {
-        setCustomLat(selectedMine.lat);
-      }
-      if (selectedMine.lon !== undefined && selectedMine.lon !== null) {
-        setCustomLon(selectedMine.lon);
-      }
+      const lat = selectedMine.lat !== undefined && selectedMine.lat !== null ? selectedMine.lat : 21.8167;
+      const lon = selectedMine.lon !== undefined && selectedMine.lon !== null ? selectedMine.lon : 80.1833;
+      setCustomLat(lat);
+      setCustomLon(lon);
       setSaveRegionName(`${selectedMine.name} Sector Extension`);
+
+      const mineNameLower = (selectedMine.name || "").toLowerCase();
+      if (mineNameLower.includes("balaghat")) {
+        loadPreloadedScene("balaghat");
+      } else if (mineNameLower.includes("ukwa")) {
+        loadPreloadedScene("ukwa");
+      } else if (mineNameLower.includes("dongri")) {
+        loadPreloadedScene("dongri");
+      } else if (mineNameLower.includes("mansar")) {
+        loadPreloadedScene("mansar");
+      } else {
+        fetchCoordinateScenePreview(lat, lon, selectedMine.name);
+      }
+    } else {
+      // Default to Balaghat Mine on initial mount
+      loadPreloadedScene("balaghat");
     }
   }, [selectedMine]);
 
@@ -66,14 +187,17 @@ export default function SatelliteScanner({
 
   const handleSyncSelectedMineCoords = () => {
     if (selectedMine) {
-      setCustomLat(selectedMine.lat || 21.8167);
-      setCustomLon(selectedMine.lon || 80.1833);
+      const lat = selectedMine.lat || 21.8167;
+      const lon = selectedMine.lon || 80.1833;
+      setCustomLat(lat);
+      setCustomLon(lon);
       setSaveRegionName(`${selectedMine.name} Sector Extension`);
+      fetchCoordinateScenePreview(lat, lon, selectedMine.name);
     }
   };
 
   const handleFileChange = (e) => {
-    const selected = e.target.files[0];
+    const selected = e.target.files?.[0];
     if (!selected) return;
 
     setFile(selected);
@@ -83,7 +207,29 @@ export default function SatelliteScanner({
 
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setImagePreview(ev.target.result);
+      const dataUrl = ev.target.result;
+      setImagePreview(dataUrl);
+
+      // Measure natural dimensions of uploaded image
+      const img = new Image();
+      img.onload = () => {
+        setSceneMetadata({
+          name: selected.name,
+          region_name: selected.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
+          lat: parseFloat(customLat) || 21.8167,
+          lon: parseFloat(customLon) || 80.1833,
+          dimensions: {
+            width: img.naturalWidth,
+            height: img.naturalHeight,
+            resolution: "Uploaded Multi-Spectral / Optical Scene",
+            coverage: `Native ${img.naturalWidth} × ${img.naturalHeight} px (${(selected.size / 1024).toFixed(1)} KB)`,
+          },
+          provider: "Local Satellite Scene Ingestion (User Upload)",
+          sensor: "User Provided Optical / Multi-Spectral",
+          isUserUpload: true,
+        });
+      };
+      img.src = dataUrl;
     };
     reader.readAsDataURL(selected);
 
@@ -700,6 +846,7 @@ export default function SatelliteScanner({
                           setCustomLat(preset.lat);
                           setCustomLon(preset.lon);
                           setSaveRegionName(`${preset.name} Satellite Sector`);
+                          fetchCoordinateScenePreview(preset.lat, preset.lon, preset.name);
                           if (onSelectMine && mines) {
                             const matched = mines.find((m) =>
                               (m.lat && Math.abs(m.lat - preset.lat) < 0.1 && Math.abs(m.lon - preset.lon) < 0.1) ||
@@ -769,6 +916,7 @@ export default function SatelliteScanner({
                       e.target.style.background = "#F8FAFC";
                       e.target.style.borderColor = "#E2E8F0";
                       e.target.style.boxShadow = "none";
+                      fetchCoordinateScenePreview(customLat, customLon, saveRegionName);
                     }}
                   />
                 </div>
@@ -810,6 +958,7 @@ export default function SatelliteScanner({
                       e.target.style.background = "#F8FAFC";
                       e.target.style.borderColor = "#E2E8F0";
                       e.target.style.boxShadow = "none";
+                      fetchCoordinateScenePreview(customLat, customLon, saveRegionName);
                     }}
                   />
                 </div>
@@ -820,10 +969,10 @@ export default function SatelliteScanner({
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
                   <label style={{ fontSize: 11, fontWeight: 800, color: "#0F2C59", display: "flex", alignItems: "center", gap: 5 }}>
                     <Layers size={13} color="#7E22CE" />
-                    <span>PROPOSED LEASE / EXPLORATION BLOCK NAME</span>
+                    <span>EXPLORATION SECTOR / BLOCK NAME</span>
                   </label>
-                  <span style={{ fontSize: 9.5, color: "#059669", background: "#ECFDF5", padding: "1px 6px", borderRadius: 4, fontWeight: 700 }}>
-                    REGISTRY IDENTIFIER
+                  <span style={{ fontSize: 9.5, color: "#64748B", background: "#F3E8FF", padding: "1px 5px", borderRadius: 4 }}>
+                    Concession Registry
                   </span>
                 </div>
                 <input
@@ -916,6 +1065,91 @@ export default function SatelliteScanner({
                 )}
               </div>
 
+              {/* Option 1 Geocoded Satellite Scene Preview */}
+              {imagePreview && (
+                <div
+                  style={{
+                    border: "1px solid #CBD5E1",
+                    borderRadius: 10,
+                    padding: 10,
+                    background: "#0F172A",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7, paddingInline: 2 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: "#38BDF8", display: "flex", alignItems: "center", gap: 5 }}>
+                        <Satellite size={13} color="#38BDF8" />
+                        {loadingPreview ? "FETCHING PLANETARY SCENE..." : (sceneMetadata?.provider || "SENTINEL-2 L2A SCENE")}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", gap: 5 }}>
+                      <span style={{ fontSize: 9.5, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "#1E293B", color: "#10B981" }}>
+                        📐 {sceneMetadata?.dimensions?.width || 512} × {sceneMetadata?.dimensions?.height || 512} px
+                      </span>
+                      <span style={{ fontSize: 9.5, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "#1E293B", color: "#FCD34D" }}>
+                        📏 {sceneMetadata?.dimensions?.coverage || "~5.1 km × 5.1 km"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      position: "relative",
+                      width: "100%",
+                      height: 220,
+                      borderRadius: 6,
+                      overflow: "hidden",
+                      background: "#000",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: "inset 0 0 10px rgba(0,0,0,0.5)",
+                    }}
+                  >
+                    <img
+                      src={analysisResult && showOverlay ? (analysisResult.images?.heatmap_overlay || imagePreview) : imagePreview}
+                      alt="Sentinel Scene"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        imageRendering: "auto",
+                      }}
+                    />
+
+                    {/* Coordinates & Stratigraphy Label */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        insetInline: 0,
+                        padding: "6px 10px",
+                        background: "linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, transparent 100%)",
+                        color: "#FFFFFF",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-end",
+                        fontSize: 10.5,
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: 800, color: "#FFFFFF" }}>
+                          {sceneMetadata?.name || saveRegionName || "Sentinel-2 Multi-Spectral Scene"}
+                        </div>
+                        <div style={{ color: "#94A3B8", marginTop: 2 }}>
+                          📍 {Number(customLat).toFixed(4)}°N, {Number(customLon).toFixed(4)}°E
+                          {sceneMetadata?.craton && ` • 🌍 ${typeof sceneMetadata.craton === "string" ? sceneMetadata.craton : sceneMetadata.craton.name || "Craton"}`}
+                        </div>
+                      </div>
+                      <span style={{ fontSize: 9.5, color: "#38BDF8", background: "rgba(14,165,233,0.2)", padding: "1px 6px", borderRadius: 3, border: "1px solid rgba(56,189,248,0.3)" }}>
+                        10m BOA Optical
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Primary Ingestion Flowing Button */}
               <button
                 onClick={handleFetchFromCopernicus}
@@ -967,27 +1201,37 @@ export default function SatelliteScanner({
                 </div>
               </div>
 
-              {/* ── Animated Cyber Dropzone ── */}
+              {/* ── Animated Cyber Dropzone / Satellite Scene Image Window ── */}
               <div
-                onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = "#7C3AED"; e.currentTarget.style.background = "linear-gradient(135deg, rgba(124,58,237,0.06), rgba(14,165,233,0.06))"; }}
-                onDragLeave={(e) => { e.currentTarget.style.borderColor = "#93C5FD"; e.currentTarget.style.background = "linear-gradient(135deg, #F0F9FF, #FAF5FF)"; }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.style.borderColor = "#7C3AED";
+                  e.currentTarget.style.background = "linear-gradient(135deg, rgba(124,58,237,0.06), rgba(14,165,233,0.06))";
+                }}
+                onDragLeave={(e) => {
+                  e.currentTarget.style.borderColor = imagePreview ? "#CBD5E1" : "#93C5FD";
+                  e.currentTarget.style.background = imagePreview ? "#0F172A" : "linear-gradient(135deg, #F0F9FF, #FAF5FF)";
+                }}
                 onDrop={(e) => {
                   e.preventDefault();
-                  e.currentTarget.style.borderColor = "#93C5FD";
-                  e.currentTarget.style.background = "linear-gradient(135deg, #F0F9FF, #FAF5FF)";
+                  e.currentTarget.style.borderColor = imagePreview ? "#CBD5E1" : "#93C5FD";
+                  e.currentTarget.style.background = imagePreview ? "#0F172A" : "linear-gradient(135deg, #F0F9FF, #FAF5FF)";
                   if (e.dataTransfer.files?.[0]) handleFileChange({ target: { files: e.dataTransfer.files } });
                 }}
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => {
+                  if (!imagePreview) fileInputRef.current?.click();
+                }}
                 style={{
-                  border: "2px dashed #93C5FD",
+                  border: imagePreview ? "1px solid #CBD5E1" : "2px dashed #93C5FD",
                   borderRadius: 14,
-                  padding: "30px 18px",
-                  background: "linear-gradient(135deg, #F0F9FF, #FAF5FF)",
+                  padding: imagePreview ? 12 : "30px 18px",
+                  background: imagePreview ? "#0F172A" : "linear-gradient(135deg, #F0F9FF, #FAF5FF)",
                   textAlign: "center",
-                  cursor: "pointer",
+                  cursor: imagePreview ? "default" : "pointer",
                   transition: "all 0.3s ease",
                   position: "relative",
                   overflow: "hidden",
+                  boxShadow: imagePreview ? "0 4px 16px rgba(0,0,0,0.12)" : "none",
                 }}
               >
                 <input
@@ -997,73 +1241,309 @@ export default function SatelliteScanner({
                   accept="image/*,.tif,.tiff"
                   style={{ display: "none" }}
                 />
-                {/* Pulsing ring behind icon */}
-                <div style={{ position: "relative", width: 56, height: 56, margin: "0 auto 10px auto" }}>
-                  <div style={{ position: "absolute", inset: -4, borderRadius: "50%", border: "2px solid rgba(14,165,233,0.2)", animation: "pulse-ring-anim 2s ease-in-out infinite" }} />
-                  <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #0EA5E9, #7C3AED)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(14,165,233,0.3)" }}>
-                    <UploadCloud size={28} color="#FFFFFF" />
-                  </div>
-                </div>
-                {file ? (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 8, background: "#DCFCE7", border: "1px solid #86EFAC" }}>
-                      <CheckCircle2 size={14} color="#16A34A" />
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#15803D" }}>{file.name}</span>
+
+                {imagePreview ? (
+                  <div>
+                    {/* Top Description & Dimension Bar */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 8,
+                        paddingInline: 2,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 800,
+                            color: "#38BDF8",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
+                        >
+                          <Satellite size={13} color="#38BDF8" />
+                          {sceneMetadata?.provider || "Microsoft Planetary Computer STAC / Sentinel-2 L2A"}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            padding: "2px 7px",
+                            borderRadius: 4,
+                            background: "#1E293B",
+                            color: "#10B981",
+                          }}
+                        >
+                          📐 {sceneMetadata?.dimensions?.width || 512} × {sceneMetadata?.dimensions?.height || 512} px
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            padding: "2px 7px",
+                            borderRadius: 4,
+                            background: "#1E293B",
+                            color: "#FCD34D",
+                          }}
+                        >
+                          📏 {sceneMetadata?.dimensions?.coverage || "~5.1 km × 5.1 km"}
+                        </span>
+                      </div>
                     </div>
-                    <span style={{ fontSize: 11, color: "#64748B" }}>{(file.size / 1024).toFixed(1)} KB — Ready for spectral analysis</span>
+
+                    {/* Image Viewport Container */}
+                    <div
+                      style={{
+                        position: "relative",
+                        width: "100%",
+                        height: 270,
+                        borderRadius: 8,
+                        overflow: "hidden",
+                        background: "#000",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "inset 0 0 12px rgba(0,0,0,0.6)",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Click to browse or drop another satellite image to replace"
+                    >
+                      <img
+                        src={
+                          analysisResult && showOverlay
+                            ? analysisResult.images?.heatmap_overlay || imagePreview
+                            : imagePreview
+                        }
+                        alt="Satellite Scene"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          imageRendering: "auto",
+                        }}
+                      />
+
+                      {/* Geological & Spatial Overlay Label */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          padding: "8px 12px",
+                          background:
+                            "linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.6) 70%, transparent 100%)",
+                          textAlign: "left",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-end",
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 800, color: "#FFFFFF" }}>
+                            {file?.name || sceneMetadata?.name || saveRegionName || "Sentinel-2 Multi-Spectral Scene"}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 10.5,
+                              color: "#94A3B8",
+                              marginTop: 2,
+                              display: "flex",
+                              gap: 8,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <span>
+                              📍 {Number(customLat).toFixed(4)}°N, {Number(customLon).toFixed(4)}°E
+                            </span>
+                            {sceneMetadata?.craton && (
+                              <span>
+                                🌍{" "}
+                                {typeof sceneMetadata.craton === "string"
+                                  ? sceneMetadata.craton
+                                  : sceneMetadata.craton.name || "Sausar / Bastar Shield"}
+                              </span>
+                            )}
+                            {sceneMetadata?.nearest_belt && (
+                              <span>🪨 {sceneMetadata.nearest_belt}</span>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fileInputRef.current?.click();
+                          }}
+                          style={{
+                            fontSize: 10,
+                            padding: "3px 8px",
+                            borderRadius: 4,
+                            background: "rgba(255, 255, 255, 0.15)",
+                            color: "#FFFFFF",
+                            border: "1px solid rgba(255, 255, 255, 0.25)",
+                            cursor: "pointer",
+                            fontWeight: 600,
+                          }}
+                        >
+                          🔄 Replace
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Bottom Status / File Info */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginTop: 8,
+                        fontSize: 11,
+                        paddingInline: 2,
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#10B981",
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
+                        <CheckCircle2 size={13} color="#10B981" />
+                        {file
+                          ? `${file.name} (${(file.size / 1024).toFixed(1)} KB) — Ready for spectral analysis`
+                          : "Authentic Sentinel-2 L2A Scene Loaded"}
+                      </span>
+                      <span
+                        onClick={() => fileInputRef.current?.click()}
+                        style={{
+                          color: "#38BDF8",
+                          textDecoration: "underline",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Drop or browse file to change
+                      </span>
+                    </div>
                   </div>
                 ) : (
                   <>
+                    {/* Pulsing ring behind icon */}
+                    <div style={{ position: "relative", width: 56, height: 56, margin: "0 auto 10px auto" }}>
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: -4,
+                          borderRadius: "50%",
+                          border: "2px solid rgba(14,165,233,0.2)",
+                          animation: "pulse-ring-anim 2s ease-in-out infinite",
+                        }}
+                      />
+                      <div
+                        style={{
+                          width: 56,
+                          height: 56,
+                          borderRadius: "50%",
+                          background: "linear-gradient(135deg, #0EA5E9, #7C3AED)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "0 4px 16px rgba(14,165,233,0.3)",
+                        }}
+                      >
+                        <UploadCloud size={28} color="#FFFFFF" />
+                      </div>
+                    </div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
                       Drop satellite imagery here or <span style={{ color: "#7C3AED", textDecoration: "underline" }}>browse files</span>
                     </div>
                     <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 4 }}>
-                      Sentinel-2 GeoTIFF, JPG, or PNG — optimal 5 km × 5 km scene
+                      Sentinel-2 GeoTIFF, JPG, or PNG — optimal 5 km × 5 km scene (512 × 512 px)
                     </div>
                   </>
                 )}
               </div>
 
               {/* ── Quick Demo Loaders ── */}
-              <div style={{ background: "linear-gradient(135deg, #F8FAFC, #F0F9FF)", borderRadius: 10, padding: "10px 14px", border: "1px solid #E2E8F0" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
+              <div
+                style={{
+                  background: "linear-gradient(135deg, #F8FAFC, #F0F9FF)",
+                  borderRadius: 10,
+                  padding: "10px 14px",
+                  border: "1px solid #E2E8F0",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#475569",
+                    marginBottom: 6,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                  }}
+                >
                   <Layers size={12} color="#0EA5E9" />
-                  Quick Demo Scenes (1-click load)
+                  <span>Quick Demo Scenes (1-click load from Planetary Computer / Sentinel-2):</span>
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {[
-                    { name: "Balaghat Sentinel-2 Tile", icon: "\uD83D\uDEF0\uFE0F" },
-                    { name: "Ukwa High-Moisture Scene", icon: "\uD83C\uDF27\uFE0F" },
-                    { name: "Dongri Buzurg Ridge", icon: "\u26F0\uFE0F" },
-                  ].map((demo) => (
-                    <button
-                      key={demo.name}
-                      onClick={() => {
-                        const blob = new Blob(["demo"], { type: "image/png" });
-                        const demoFile = new File([blob], `${demo.name.replace(/\s+/g, "_")}.png`, { type: "image/png" });
-                        handleFileChange({ target: { files: [demoFile] } });
-                      }}
-                      style={{
-                        padding: "5px 12px",
-                        borderRadius: 20,
-                        border: "1px solid #CBD5E1",
-                        background: "#FFFFFF",
-                        color: "#334155",
-                        fontSize: 11,
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                        transition: "all 0.2s ease",
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = "#EFF6FF"; e.currentTarget.style.borderColor = "#0EA5E9"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "#FFFFFF"; e.currentTarget.style.borderColor = "#CBD5E1"; }}
-                    >
-                      <span>{demo.icon}</span>
-                      <span>{demo.name}</span>
-                    </button>
-                  ))}
+                    { key: "balaghat", name: "Balaghat Sentinel-2 Tile", icon: "🛰️" },
+                    { key: "ukwa", name: "Ukwa High-Moisture Scene", icon: "🌧️" },
+                    { key: "dongri", name: "Dongri Buzurg Ridge", icon: "⛰️" },
+                    { key: "mansar", name: "Mansar Belt Horizon", icon: "🪨" },
+                  ].map((demo) => {
+                    const isCurrent =
+                      (sceneMetadata?.name && sceneMetadata.name.toLowerCase().includes(demo.key)) ||
+                      (saveRegionName && saveRegionName.toLowerCase().includes(demo.key));
+                    return (
+                      <button
+                        key={demo.key}
+                        onClick={() => loadPreloadedScene(demo.key, true)}
+                        style={{
+                          padding: "5px 12px",
+                          borderRadius: 20,
+                          border: isCurrent ? "1px solid #0EA5E9" : "1px solid #CBD5E1",
+                          background: isCurrent ? "linear-gradient(135deg, #EFF6FF 0%, #E0F2FE 100%)" : "#FFFFFF",
+                          color: isCurrent ? "#0369A1" : "#334155",
+                          fontSize: 11,
+                          fontWeight: isCurrent ? 800 : 600,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                          transition: "all 0.2s ease",
+                          boxShadow: isCurrent ? "0 2px 6px rgba(14,165,233,0.25)" : "none",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isCurrent) {
+                            e.currentTarget.style.background = "#EFF6FF";
+                            e.currentTarget.style.borderColor = "#0EA5E9";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isCurrent) {
+                            e.currentTarget.style.background = "#FFFFFF";
+                            e.currentTarget.style.borderColor = "#CBD5E1";
+                          }
+                        }}
+                      >
+                        <span>{demo.icon}</span>
+                        <span>{demo.name}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1079,19 +1559,44 @@ export default function SatelliteScanner({
                   lineHeight: 1.6,
                 }}
               >
-                <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}>
-                  \uD83D\uDCD0 Recommended Image Specifications
+                <div
+                  style={{
+                    fontWeight: 700,
+                    marginBottom: 6,
+                    fontSize: 12,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  📐 Recommended Image Specifications
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "3px 12px" }}>
-                  <span style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>\uD83D\uDCCF Coverage:</span>
-                  <span>~2 km × 2 km to 5 km × 5 km per scene</span>
-                  <span style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>\uD83D\uDD2C Resolution:</span>
-                  <span>10 m/pixel (Sentinel-2 native) to 30 m/pixel</span>
-                  <span style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>\uD83D\uDCC1 Formats:</span>
+                  <span style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                    📏 Coverage:
+                  </span>
+                  <span>~2 km × 2 km to 5 km × 5 km per scene (optimal 512 × 512 px)</span>
+                  <span style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                    🔬 Resolution:
+                  </span>
+                  <span>10 m/pixel (Sentinel-2 L2A native BOA reflectance) to 30 m/pixel</span>
+                  <span style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                    📁 Formats:
+                  </span>
                   <span>GeoTIFF (.tif), JPEG (.jpg), PNG (.png)</span>
                 </div>
-                <div style={{ marginTop: 6, fontSize: 11, color: "#78350F", fontStyle: "italic", padding: "4px 8px", background: "rgba(255,255,255,0.5)", borderRadius: 6 }}>
-                  \uD83D\uDCA1 Tip: Upload a focused geological section (e.g., a specific ridge), not an entire city/district screenshot.
+                <div
+                  style={{
+                    marginTop: 6,
+                    fontSize: 11,
+                    color: "#78350F",
+                    fontStyle: "italic",
+                    padding: "4px 8px",
+                    background: "rgba(255,255,255,0.5)",
+                    borderRadius: 6,
+                  }}
+                >
+                  💡 Tip: When you select any prefilled region above, the exact Sentinel-2 multi-spectral scene is automatically retrieved from Microsoft Planetary Computer STAC.
                 </div>
               </div>
 
