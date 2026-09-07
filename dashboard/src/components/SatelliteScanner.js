@@ -246,6 +246,11 @@ export default function SatelliteScanner({
     setAnalyzing(true);
     setErrorMsg(null);
     setSuccessMsg(null);
+    // Prevent a previously selected mine scene from being shown for new coordinates.
+    setAnalysisResult(null);
+    setImagePreview(null);
+    setSceneMetadata(null);
+    setFile(null);
 
     try {
       const payload = {
@@ -281,6 +286,9 @@ export default function SatelliteScanner({
       const data = await res.json();
       setAnalysisResult(data);
       setImagePreview(data.images?.raw_preview);
+      if (data.prediction?.is_urban) {
+        setShowOverlay(false);
+      }
       setSuccessMsg(
         `✓ Sentinel-2 scene fetched via ${data.data_source}! Multi-spectral bands (B02, B03, B04, B08, B11, B12) extracted & ML reserve model evaluated.`
       );
@@ -338,7 +346,12 @@ export default function SatelliteScanner({
       }
     } catch (err) {
       console.error("Copernicus error:", err);
-      setErrorMsg(`Copernicus execution failed: ${err.message}. If the backend was sleeping, please retry in 5 seconds.`);
+      const isNetworkError = err instanceof TypeError && err.message.toLowerCase().includes("fetch");
+      setErrorMsg(
+        isNetworkError
+          ? "Unable to reach the mining backend. Confirm the Render service is running and retry."
+          : `Copernicus execution failed: ${err.message}`
+      );
     } finally {
       setAnalyzing(false);
     }

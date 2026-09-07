@@ -336,6 +336,8 @@ def extract_spectral_and_ml_predict(
 
     min_dist_km, nearest_belt_name = get_distance_to_nearest_belt(latitude, longitude)
     is_urban = is_urban_override or is_known_urban_or_alluvial_zone(latitude, longitude)
+    is_ood = False
+    ood_warning = None
 
     # 1. Compute NDVI = (B08 - B04) / (B08 + B04)
     with np.errstate(divide="ignore", invalid="ignore"):
@@ -878,6 +880,27 @@ def fetch_copernicus_live_scene(req: CopernicusFetchRequest):
       Tier B: Microsoft Planetary Computer STAC API (zero-credential open access)
       Tier C: High-resolution ArcGIS World Imagery + cratonic multi-spectral synthesis
     """
+    # Urban/alluvial coordinates are deterministic exclusion zones. Do not call
+    # external satellite services for locations where manganese is impossible.
+    if is_known_urban_or_alluvial_zone(req.latitude, req.longitude):
+        urban_shape = (240, 240)
+        urban_bands = {
+            "B02": np.full(urban_shape, 0.18, dtype=np.float32),
+            "B03": np.full(urban_shape, 0.24, dtype=np.float32),
+            "B04": np.full(urban_shape, 0.29, dtype=np.float32),
+            "B08": np.full(urban_shape, 0.42, dtype=np.float32),
+            "B11": np.full(urban_shape, 0.35, dtype=np.float32),
+            "B12": np.full(urban_shape, 0.32, dtype=np.float32),
+        }
+        return extract_spectral_and_ml_predict(
+            urban_bands,
+            req.latitude,
+            req.longitude,
+            req.region_name,
+            source_type="Urban / Alluvium Exclusion (no ore overlay)",
+            is_urban_override=True,
+        )
+
     client_id = req.client_id or os.environ.get("COPERNICUS_CLIENT_ID")
     client_secret = req.client_secret or os.environ.get("COPERNICUS_CLIENT_SECRET")
     

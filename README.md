@@ -7,6 +7,7 @@
 [![Sentinel-2](https://img.shields.io/badge/Earth%20Observation-Copernicus%20Sentinel--2%20L2A-005B94?style=for-the-badge&logo=satellite&logoColor=white)](https://sentinels.copernicus.eu/)
 [![IBM](https://img.shields.io/badge/Standard-IBM%20MCDR%202017%20%2F%20UNFC--2009-388E3C?style=for-the-badge)](https://ibm.gov.in/)
 [![Deployment](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://moil-project.vercel.app)
+[![CI](https://github.com/Harsh2005-a111/moil-project/actions/workflows/ci.yml/badge.svg)](https://github.com/Harsh2005-a111/moil-project/actions/workflows/ci.yml)
 
 ---
 
@@ -474,6 +475,10 @@ moil-project/
 ---
 
 ## ⚙️ Getting Started
+
+## 🚀 CI/CD
+
+GitHub Actions runs the backend import and Python compilation checks plus the production dashboard build on every push to `main` and every pull request. Continuous deployment is handled by the deployment providers: `vercel.json` configures the dashboard deployment on Vercel, while `render.yaml` configures the FastAPI service on Render.
 
 ### Prerequisites
 - **Python 3.10+**
