@@ -465,7 +465,6 @@ moil-project/
 ├── scripts/                                   # Utility scripts
 ├── render.yaml                                # Render backend deployment config
 ├── vercel.json                                # Vercel frontend deployment config
-├── MOIL_AI_Space_Platform_Comprehensive_Manual.docx   # Operational technical guide
 ├── MOIL_Portal_Notations_and_Architecture_Guide.docx  # Mathematical notation reference
 ├── MOIL_Statutory_Government_Exploration_Dossier.docx # Ministry exploration report
 ├── PORTAL_USER_GUIDE.md                            # Comprehensive operational user manual
