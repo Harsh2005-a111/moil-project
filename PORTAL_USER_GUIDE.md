@@ -46,6 +46,12 @@ The platform integrates multi-sensor Earth observation, geostatistical interpola
 
 ## 2. Module 1: Satellite Mineral Exploration
 
+### Commodity Context and Non-Mn Sites
+
+The portal first checks whether the submitted coordinates match a registered commodity context. A verified non-Mn site, such as Gevra Coal Mine, is shown as **Manganese analysis not applicable** and does not receive an Mn grade or reserve estimate. This guard is separate from the Sentinel-2 spectral model because SWIR/NIR signatures can overlap between Mn ore, coal overburden, iron-bearing material, laterite, soil, and exposed mine surfaces.
+
+For coordinates without authoritative commodity context, the portal reports an exploration-screening result only. Satellite indicators and ML probability do not certify reserves; drilling and laboratory assays are required for a statutory resource or reserve declaration.
+
 Access the **Satellite Mineral Exploration** tab from the top navigation bar.
 
 ### Workflow A: Regional Preset & Coordinate Scanning (Option 1)

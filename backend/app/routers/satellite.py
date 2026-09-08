@@ -18,6 +18,7 @@ from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Query
 from pydantic import BaseModel, Field
 from PIL import Image, ImageEnhance, ImageFilter
+from app.commodity_context import classify_commodity_context
 
 router = APIRouter(prefix="/api", tags=["Satellite Intelligence & Regions"])
 
@@ -26,12 +27,48 @@ MODEL_DIR = Path(__file__).parent.parent / "model"
 CLASSIFIER_PATH = MODEL_DIR / "mn_classifier.pkl"
 LABEL_ENCODER_PATH = MODEL_DIR / "mn_label_encoder.pkl"
 CALIBRATED_PATH = MODEL_DIR / "mn_calibrated_classifier.pkl"
+OOD_REFERENCE_PATH = MODEL_DIR / "mn_ood_reference.json"
 REGIONS_FILE = Path(__file__).parent.parent / "data" / "regions.json"
 
 # Global lazy loaded models
 mn_model = None
 mn_encoder = None
 mn_calibrated = None
+ood_reference = None
+
+
+def get_ood_reference():
+    global ood_reference
+    if ood_reference is None:
+        try:
+            if OOD_REFERENCE_PATH.exists():
+                with open(OOD_REFERENCE_PATH, "r", encoding="utf-8") as file:
+                    ood_reference = json.load(file)
+            else:
+                ood_reference = {}
+        except Exception as error:
+            print(f"Warning: Could not load OOD reference: {error}")
+            ood_reference = {}
+    return ood_reference
+
+
+def is_feature_vector_ood(feature_row: np.ndarray) -> bool:
+    """Identify feature vectors outside the observed 1st-99th percentile range."""
+    reference = get_ood_reference()
+    if not reference:
+        return False
+    feature_names = [
+        "swir_b11_absorption", "swir_b12_absorption", "ndvi",
+        "land_surface_temp_c", "rainfall_mm_weekly", "soil_moisture",
+        "emag2_anomaly_nt", "elevation_m", "rock_type_enc",
+    ]
+    return any(
+        name in reference and (
+            float(value) < reference[name]["low"] or
+            float(value) > reference[name]["high"]
+        )
+        for name, value in zip(feature_names, feature_row[0])
+    )
 
 def get_ml_models():
     global mn_model, mn_encoder, mn_calibrated
@@ -335,6 +372,7 @@ def extract_spectral_and_ml_predict(
     b12 = bands_dict["B12"].astype(float)  # SWIR-2
 
     min_dist_km, nearest_belt_name = get_distance_to_nearest_belt(latitude, longitude)
+    commodity_context = classify_commodity_context(latitude, longitude, region_name)
     is_urban = is_urban_override or is_known_urban_or_alluvial_zone(latitude, longitude)
     is_ood = False
     ood_warning = None
@@ -491,6 +529,7 @@ def extract_spectral_and_ml_predict(
                     elevation_m,
                     rock_enc,
                 ]])
+                feature_space_ood = is_feature_vector_ood(feature_row)
                 tree_preds = [tree.predict_proba(feature_row)[0][1] for tree in clf.estimators_]
                 raw_mean_p = float(np.mean(tree_preds))
                 std_p = float(np.std(tree_preds))
@@ -514,11 +553,11 @@ def extract_spectral_and_ml_predict(
                 confidence_range = [lower_ci, upper_ci]
 
                 # Out-of-Distribution (OOD) Epistemic Uncertainty Gating
-                if uncertainty_pct > 12.0 or (min_dist_km > 120.0 and craton_prov_ref is None):
+                if feature_space_ood or uncertainty_pct > 12.0 or (min_dist_km > 120.0 and craton_prov_ref is None):
                     is_ood = True
                     ood_warning = (
                         f"Elevated Epistemic Uncertainty (sigma = {uncertainty_pct}%). Target lies {min_dist_km:.1f} km from calibrated "
-                        f"GSI manganese basins. High tree variance detected. Statutory scout pitting and geochemical trenching "
+                        f"GSI manganese basins or outside validated feature support. Statutory scout pitting and geochemical trenching "
                         f"are strictly recommended prior to scout core drilling."
                     )
             except Exception as e:
@@ -607,6 +646,43 @@ def extract_spectral_and_ml_predict(
                 f"(SWIR B11: {swir_b11_val:.2f}, Indicative Grade: {est_grade}% Mn). "
                 f"Grade is below the statutory 10.0% Mn IBM threshold cutoff grade. Economically unviable for excavation or mineral conservation under IBM MCDR 2017."
             )
+
+    if commodity_context["status"] == "NON_MN_COMMODITY":
+        prob_pct = 0.0
+        uncertainty_pct = 0.0
+        confidence_range = [0.0, 0.0]
+        is_ood = False
+        ood_warning = None
+        decision = "MANGANESE ANALYSIS NOT APPLICABLE"
+        est_grade = 0.0
+        ibm_category = "Non-Mn commodity context"
+        ibm_tier = 3
+        total_reserves_kt = 0.0
+        viable_extractable_kt = 0.0
+        recovery_pct = 0.0
+        unfc = "Non-Manganese Commodity Context (UNFC 777)"
+        gsi_stage = "Non-Mn site; prospectivity not evaluated"
+        is_greenfield = False
+        geo_notes = (
+            f"{commodity_context['matched_site']} is registered as a "
+            f"{commodity_context['commodity']} location. Mn reserves are not estimated "
+            "from spectral signals at this site."
+        )
+
+    if is_ood and commodity_context["status"] == "UNKNOWN":
+        decision = "INCONCLUSIVE / OUT-OF-DISTRIBUTION"
+        est_grade = 0.0
+        ibm_category = "Unknown context - field validation required"
+        ibm_tier = 3
+        total_reserves_kt = 0.0
+        viable_extractable_kt = 0.0
+        recovery_pct = 0.0
+        unfc = "Unclassified Exploration Anomaly"
+        gsi_stage = "Unknown / outside validated feature support"
+        geo_notes = (
+            "The target is outside the validated training feature support or has high model uncertainty. "
+            "No Mn grade or tonnage is estimated; collect geological and assay evidence before classification."
+        )
 
     # 6. Build True Color RGB image (B04 Red, B03 Green, B02 Blue)
     rgb_disp = np.stack([
@@ -711,8 +787,15 @@ def extract_spectral_and_ml_predict(
             "nearest_belt_name": nearest_belt_name,
             "geo_notes": geo_notes,
             "confidence": "High" if prob_pct >= 70 else "Moderate" if prob_pct >= 30 else "Non-Prospective / Waste",
+            "prediction_status": (
+                "NON_MN_COMMODITY" if commodity_context["status"] == "NON_MN_COMMODITY"
+                else "UNKNOWN_OOD" if is_ood and commodity_context["status"] == "UNKNOWN"
+                else "EVALUATED"
+            ),
+            "resource_type": "Indicative exploration target; not a certified reserve",
             "statutory_disclaimer": "IBM Statutory MCDR 2017 Compliance: Minimum threshold cutoff is 10% Mn. Ore between 10-25% Mn is classified as Mineral Rejects (MR Ore) requiring conservation/beneficiation. Subsurface drilling is required for UNFC 111 Proven Reserve certification.",
         },
+        "commodity_context": commodity_context,
         "provenance": {
             "optical_multispectral": source_type,
             "magnetic_anomaly": "NOAA EMAG2 v3 (2-arc-minute Global Earth Magnetic Anomaly)",

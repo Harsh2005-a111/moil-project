@@ -13,6 +13,12 @@
 
 ## 📌 Project Overview & The Engineering Challenge
 
+### Commodity Context Guard
+
+The Mn exploration model is not a universal mine-commodity classifier. Before Mn scoring, the backend checks the coordinate against the commodity-context registry. Verified non-Mn sites such as Gevra Coal Mine return `NON_MN_COMMODITY`, zero Mn grade, and zero Mn tonnage even when submitted spectral bands look Mn-like. The current point registry is a transitional mechanism; authoritative lease polygons from GSI/IBM/State mining GIS should replace or extend it.
+
+Satellite outputs are reconnaissance indicators, not certified mineral reserves. Reserve certification requires geological mapping, drilling, sampling, assay results, and a compliant resource/reserve estimate.
+
 **Manganese Ore India Limited (MOIL)**, operating under the Ministry of Steel (Government of India), produces over 50% of India's manganese ore. This platform was built to solve critical operational bottlenecks in modern manganese mining:
 
 | Challenge | How This Platform Solves It |

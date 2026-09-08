@@ -201,6 +201,7 @@ export default function ReserveIngestionHub({
 
   const [prospectResults, setProspectResults] = useState(null);
   const [prospectLoading, setProspectLoading] = useState(false);
+  const isNonMnContext = prospectResults?.prediction_status === "NON_MN_COMMODITY";
 
   // Target Grade Goal-Seek Sync State
   const [syncTargetGrade, setSyncTargetGrade] = useState(inputs?.ore_grade_pct || 40.0);
@@ -263,6 +264,8 @@ export default function ReserveIngestionHub({
         is_barren: isBarren,
         expected_grade_pct: expGrade,
         expected_tonnage_kt: expTonnage,
+        latitude: selectedMine?.lat,
+        longitude: selectedMine?.lon,
       }),
     })
       .then((r) => r.json())
@@ -274,8 +277,8 @@ export default function ReserveIngestionHub({
     setProspectLoading(true);
     const payload = {
       region_name: selectedMine?.name || "Central India Sausar Exploration Zone",
-      latitude: selectedMine?.lat || 21.80,
-      longitude: selectedMine?.lon || 80.15,
+      latitude: selectedMine?.lat ?? 21.80,
+      longitude: selectedMine?.lon ?? 80.15,
       swir_mn_absorption_index: parseFloat(swirAbsorption),
       ndvi: parseFloat(ndvi),
       land_surface_temp_c: parseFloat(landTemp),
@@ -295,7 +298,7 @@ export default function ReserveIngestionHub({
       .then((r) => r.json())
       .then((data) => {
         setProspectResults(data);
-        if (data?.predicted_ore_grade_pct) {
+        if (data?.predicted_ore_grade_pct !== undefined) {
           onChangeInput("ore_grade_pct", data.predicted_ore_grade_pct);
           setSyncTargetGrade(data.predicted_ore_grade_pct);
         }
@@ -1018,7 +1021,7 @@ export default function ReserveIngestionHub({
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>AI Assessment</span>
                 <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 4, background: "#DCFCE7", color: "#166534" }}>
-                  {prospectResults?.resource_classification || "Proven"}
+                  {prospectResults?.resource_classification ?? "Proven"}
                 </span>
               </div>
 
@@ -1026,24 +1029,24 @@ export default function ReserveIngestionHub({
                 <div style={{ padding: 12, background: "#F0FDF4", borderRadius: 8, border: "1px solid #86EFAC" }}>
                   <div style={{ fontSize: 10.5, fontWeight: 700, color: "#166534" }}>PREDICTED GRADE</div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: "#16A34A", marginTop: 2 }}>
-                    {prospectResults?.predicted_ore_grade_pct || syncTargetGrade}% Mn
+                    {(prospectResults?.predicted_ore_grade_pct ?? syncTargetGrade)}% Mn
                   </div>
                 </div>
 
                 <div style={{ padding: 12, background: "#EFF6FF", borderRadius: 8, border: "1px solid #93C5FD" }}>
                   <div style={{ fontSize: 10.5, fontWeight: 700, color: "#1E40AF" }}>PROBABILITY</div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: "#185FA5", marginTop: 2 }}>
-                    {((prospectResults?.manganese_reserve_probability || 0.75) * 100).toFixed(0)}%
+                    {((prospectResults?.manganese_reserve_probability ?? 0.75) * 100).toFixed(0)}%
                   </div>
                 </div>
               </div>
 
-              {/* Total Available In-Situ Reserves vs Viable Extraction Yield */}
+              {/* Indicative exploration target scale; not a certified reserve */}
               <div style={{ padding: 12, background: "#F8FAFC", borderRadius: 8, border: "1px solid #E2E8F0", marginBottom: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 4 }}>
-                  <span>RESERVE EXTRACTION RECOVERY</span>
+                  <span>INDICATIVE TARGET YIELD</span>
                   <strong style={{ color: "#0D9488" }}>
-                    {reservesData?.viable_block_ratio_pct || ((prospectResults?.manganese_reserve_probability || 0.75) * 88).toFixed(1)}% Yield
+                    {(reservesData?.viable_block_ratio_pct ?? ((prospectResults?.manganese_reserve_probability ?? 0.75) * 88).toFixed(1))}% Yield
                   </strong>
                 </div>
 
@@ -1051,7 +1054,7 @@ export default function ReserveIngestionHub({
                   <div
                     style={{
                       height: "100%",
-                      width: `${reservesData?.viable_block_ratio_pct || ((prospectResults?.manganese_reserve_probability || 0.75) * 88).toFixed(1)}%`,
+                      width: `${reservesData?.viable_block_ratio_pct ?? ((prospectResults?.manganese_reserve_probability ?? 0.75) * 88).toFixed(1)}%`,
                       background: "linear-gradient(90deg, #10B981, #0D9488)",
                       borderRadius: 4,
                       transition: "width 0.3s ease",
@@ -1061,10 +1064,10 @@ export default function ReserveIngestionHub({
 
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748B" }}>
                   <span>
-                    Total In-Situ: <strong>{reservesData?.total_estimated_tonnage_kt || (prospectResults?.estimated_tonnage_kt ? Math.round(prospectResults.estimated_tonnage_kt * 1.3) : 1550)} kt</strong>
+                    Target scale: <strong>{reservesData?.total_estimated_tonnage_kt ?? (prospectResults?.estimated_tonnage_kt !== undefined ? Math.round(prospectResults.estimated_tonnage_kt * 1.3) : 1550)} kt</strong>
                   </span>
                   <span>
-                    Extractable: <strong style={{ color: "#065F46" }}>{reservesData?.economically_viable_tonnage_kt || prospectResults?.estimated_tonnage_kt || 1220} kt</strong>
+                    Indicative extractable: <strong style={{ color: "#065F46" }}>{reservesData?.economically_viable_tonnage_kt ?? prospectResults?.estimated_tonnage_kt ?? 1220} kt</strong>
                   </span>
                 </div>
               </div>
@@ -1080,7 +1083,7 @@ export default function ReserveIngestionHub({
               </div>
 
               <div style={{ padding: 10, background: "#FFFBEB", borderRadius: 8, border: "1px solid #FDE68A", fontSize: 11.5, color: "#92400E" }}>
-                📌 <strong>Recommendation:</strong> {prospectResults?.exploration_recommendation}
+                📌 <strong>Recommendation:</strong> {prospectResults?.recommendation ?? prospectResults?.exploration_recommendation ?? "Awaiting model evaluation."}
               </div>
             </div>
 
@@ -1089,8 +1092,11 @@ export default function ReserveIngestionHub({
                 onSubmitEvaluation();
                 setActiveTab("operations");
               }}
+              disabled={isNonMnContext}
               style={{
                 marginTop: 12,
+                opacity: isNonMnContext ? 0.5 : 1,
+                cursor: isNonMnContext ? "not-allowed" : "pointer",
                 padding: "10px",
                 borderRadius: 8,
                 border: "none",
@@ -1098,7 +1104,6 @@ export default function ReserveIngestionHub({
                 color: "#FFFFFF",
                 fontSize: 12.5,
                 fontWeight: 700,
-                cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

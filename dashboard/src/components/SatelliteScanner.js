@@ -451,7 +451,8 @@ export default function SatelliteScanner({
     analysisResult.prediction?.total_available_reserves_kt === 0 ||
     analysisResult.prediction?.decision?.includes("MINERAL WASTE") ||
     analysisResult.prediction?.decision?.includes("BARREN") ||
-    analysisResult.prediction?.decision?.includes("STERILIZED");
+    analysisResult.prediction?.decision?.includes("STERILIZED") ||
+    analysisResult.prediction?.decision?.includes("NOT APPLICABLE");
 
   const handleAutoFillSliders = () => {
     if (!analysisResult || !analysisResult.extracted_features) return;
@@ -463,7 +464,8 @@ export default function SatelliteScanner({
       pred.total_available_reserves_kt === 0 ||
       pred.decision?.includes("MINERAL WASTE") ||
       pred.decision?.includes("BARREN") ||
-      pred.decision?.includes("STERILIZED")
+      pred.decision?.includes("STERILIZED") ||
+      pred.decision?.includes("NOT APPLICABLE")
     ) {
       setErrorMsg("Cannot auto-fill sliders: Ground classified as Mineral Waste / Overburden (<10% Mn) or Urban Terrain (Reserves: 0.0 kt).");
       return;
@@ -521,7 +523,8 @@ export default function SatelliteScanner({
       pred.total_available_reserves_kt === 0 ||
       pred.decision?.includes("MINERAL WASTE") ||
       pred.decision?.includes("BARREN") ||
-      pred.decision?.includes("STERILIZED");
+      pred.decision?.includes("STERILIZED") ||
+      pred.decision?.includes("NOT APPLICABLE");
 
     setSavingRegion(true);
     try {
@@ -545,9 +548,9 @@ export default function SatelliteScanner({
         extraction_recovery_pct: isBarrenZone ? 0.0 : (pred.extraction_recovery_pct || 0.0),
         unfc_classification: isBarrenZone ? "UNFC 777 (Sterilized Overburden / Waste)" : (pred.unfc_classification || "UNFC 334"),
         image_preview: analysisResult.images?.heatmap_overlay || imagePreview,
-        notes: isBarrenZone
+          notes: isBarrenZone
           ? `Sterilized Non-Mineralized Land (UNFC 777). Mn Probability: ${pred.manganese_probability_pct}%. Cataloged in exploration registry to exclude from future mining concessions.`
-          : `Copernicus Sentinel-2 prospect. Total available: ${pred.total_available_reserves_kt} kt. Grade: ${pred.estimated_grade_pct}% Mn.`,
+          : `Copernicus Sentinel-2 indicative exploration target. Target scale: ${pred.total_available_reserves_kt} kt. Grade: ${pred.estimated_grade_pct}% Mn.`,
       };
 
       // 1. Post to backend

@@ -1,4 +1,5 @@
 import os
+import json
 import joblib
 import numpy as np
 import pandas as pd
@@ -22,12 +23,57 @@ DATA_PATH = REPO_ROOT / "backend" / "app" / "data" / "final_dataset.csv"
 BACKEND_MODEL_DIR = REPO_ROOT / "backend" / "app" / "model"
 PREDICTOR_MODEL_DIR = REPO_ROOT / "mn-reserve-predictor" / "models"
 PREDICTOR_DATA_PATH = REPO_ROOT / "mn-reserve-predictor" / "data" / "final_dataset.csv"
+REAL_CONTEXT_PATH = REPO_ROOT / "mn-reserve-predictor" / "data" / "real_context_features.csv"
+OOD_REFERENCE_PATH = BACKEND_MODEL_DIR / "mn_ood_reference.json"
 
 np.random.seed(42)
 
 # 1. Load existing dataset
 df_orig = pd.read_csv(DATA_PATH)
 print(f"Current dataset rows: {len(df_orig)}")
+
+# Preserve provenance even for the existing augmented prototype rows. These
+# rows remain useful for development, but are not mislabeled as field surveys.
+if "commodity" not in df_orig.columns:
+    df_orig["commodity"] = np.where(df_orig["has_manganese"].eq(1), "manganese", "unknown_non_mn")
+if "label_confidence" not in df_orig.columns:
+    df_orig["label_confidence"] = np.where(df_orig["has_manganese"].eq(1), "prototype_positive", "synthetic_or_unverified")
+if "region_group" not in df_orig.columns:
+    df_orig["region_group"] = df_orig.get("craton_province", "unknown_region")
+if "source_url" not in df_orig.columns:
+    df_orig["source_url"] = ""
+if "is_synthetic" not in df_orig.columns:
+    df_orig["is_synthetic"] = True
+
+if REAL_CONTEXT_PATH.exists():
+    real_context = pd.read_csv(REAL_CONTEXT_PATH)
+    required_real = [
+        "swir_b11_absorption", "swir_b12_absorption", "ndvi",
+        "land_surface_temp_c", "rainfall_mm_weekly", "soil_moisture",
+        "emag2_anomaly_nt", "elevation_m", "rock_type",
+    ]
+    available_required = [column for column in required_real if column in real_context.columns]
+    complete_real = real_context[
+        real_context.get("training_ready", pd.Series(False, index=real_context.index)).eq(True)
+    ].copy()
+    if len(available_required) != len(required_real):
+        complete_real = complete_real.iloc[0:0]
+    else:
+        complete_real = complete_real.dropna(subset=required_real)
+    if not complete_real.empty:
+        complete_real["lat"] = complete_real["latitude"]
+        complete_real["lon"] = complete_real["longitude"]
+        complete_real["has_manganese"] = complete_real["mn_label"].astype(int)
+        complete_real["deposit_type"] = complete_real["commodity"]
+        complete_real["mn_grade_pct"] = np.nan
+        complete_real["ibm_ore_category"] = "Exploration target only"
+        complete_real["craton_province"] = complete_real["region_group"]
+        complete_real["source"] = complete_real["source_url"]
+        complete_real["is_synthetic"] = False
+        df_orig = pd.concat([df_orig, complete_real[df_orig.columns.intersection(complete_real.columns)]], ignore_index=True)
+        print(f"Added {len(complete_real)} complete real-context rows")
+    else:
+        print("No complete real-context rows admitted to training; raw records remain audit-only.")
 
 # Assign craton province based on coordinates if missing
 def assign_craton(lat, lon):
@@ -151,6 +197,12 @@ if len(df_orig) < 360:
 else:
     df_aug = df_orig
 
+# Persist the provenance schema even when no synthetic row augmentation is
+# needed. This keeps the training CSV honest and reproducible.
+df_aug.to_csv(DATA_PATH, index=False)
+if PREDICTOR_DATA_PATH.parent.exists():
+    df_aug.to_csv(PREDICTOR_DATA_PATH, index=False)
+
 print(f"Working with dataset: {len(df_aug)} rows")
 print(f"Class balance: {df_aug['has_manganese'].value_counts().to_dict()}")
 
@@ -180,6 +232,8 @@ FEATURES = [
 X = df_aug[FEATURES].values
 y = df_aug["has_manganese"].values
 groups = df_aug["craton_province"].values
+if "region_group" in df_aug.columns:
+    groups = df_aug["region_group"].fillna("unknown_region").values
 
 # 150-tree Random Forest with regularization against boundary noise
 base_rf = RandomForestClassifier(
@@ -216,6 +270,21 @@ for m in scoring:
     vals = spatial_results[f"test_{m}"]
     print(f"  Spatial {m:10s}: {vals.mean():.4f} +/- {vals.std():.4f}")
 
+    # Save robust feature-space bounds for inference-time abstention. This is not
+    # a second classifier: it only identifies inputs outside observed training
+    # support, where probability-to-grade conversion is not defensible.
+    ood_reference = {}
+    for feature in FEATURES:
+        values = pd.to_numeric(df_aug[feature], errors="coerce").dropna()
+        ood_reference[feature] = {
+            "low": float(values.quantile(0.01)),
+            "high": float(values.quantile(0.99)),
+            "mean": float(values.mean()),
+            "std": float(values.std() or 1.0),
+        }
+    BACKEND_MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    OOD_REFERENCE_PATH.write_text(json.dumps(ood_reference, indent=2), encoding="utf-8")
+
 # Calibrated Classifier (Platt Sigmoid Scaling)
 calibrated_clf = CalibratedClassifierCV(
     estimator=base_rf,
@@ -244,3 +313,4 @@ print("\nSuccessfully trained & saved models to:")
 print(f"  -> {BACKEND_MODEL_DIR / 'mn_classifier.pkl'}")
 print(f"  -> {BACKEND_MODEL_DIR / 'mn_calibrated_classifier.pkl'}")
 print(f"  -> {BACKEND_MODEL_DIR / 'mn_label_encoder.pkl'}")
+print(f"  -> {OOD_REFERENCE_PATH}")

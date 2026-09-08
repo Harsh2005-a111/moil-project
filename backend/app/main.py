@@ -43,6 +43,7 @@ app.include_router(satellite_router)
 
 from app.shortfall_engine import predict_production_shortfall, compute_smelter_logistics
 from app.borehole_engine import MOIL_BOREHOLE_PRESETS, analyze_borehole_log, parse_borehole_csv_string
+from app.commodity_context import classify_commodity_context
 
 MODEL_PATH = Path(__file__).parent / "model" / "shortfall_model.pkl"
 ENCODERS_PATH = Path(__file__).parent / "model" / "encoders.pkl"
@@ -169,6 +170,8 @@ class ReserveEstimateRequest(BaseModel):
     is_barren: Optional[bool] = False
     expected_grade_pct: Optional[float] = None
     expected_tonnage_kt: Optional[float] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 
 class ScenarioSimulateRequest(BaseModel):
@@ -626,6 +629,21 @@ def estimate_reserves(req: ReserveEstimateRequest):
     Dynamically mirrors scanned satellite imagery and GSI field parameters.
     """
     grid_size = 12
+    if req.latitude is not None and req.longitude is not None:
+        commodity_context = classify_commodity_context(req.latitude, req.longitude, req.region_name)
+        if commodity_context["status"] == "NON_MN_COMMODITY":
+            return {
+                "region_name": req.region_name,
+                "grid_size": grid_size,
+                "probability_grid": np.full((grid_size, grid_size), 0.01).tolist(),
+                "total_estimated_tonnage_kt": 0.0,
+                "economically_viable_tonnage_kt": 0.0,
+                "viable_block_ratio_pct": 0.0,
+                "top_zones": [],
+                "depth_slices": [],
+                "prediction_status": "NON_MN_COMMODITY",
+                "commodity_context": commodity_context,
+            }
     is_barren_eval = (
         req.is_barren
         or (req.expected_grade_pct is not None and req.expected_grade_pct == 0.0)
@@ -816,6 +834,24 @@ def prospect_manganese_reserve(req: SatelliteProspectorInputs):
     Returns Mn reserve probability, predicted grade %, UNFC classification,
     and a transparent data-source breakdown for each indicator used.
     """
+    commodity_context = classify_commodity_context(req.latitude, req.longitude, req.region_name)
+    if commodity_context["status"] == "NON_MN_COMMODITY":
+        return {
+            "region_name": req.region_name,
+            "coordinates": {"lat": req.latitude, "lon": req.longitude},
+            "prediction_status": "NON_MN_COMMODITY",
+            "commodity_context": commodity_context,
+            "manganese_reserve_probability": 0.0,
+            "predicted_ore_grade_pct": 0.0,
+            "confidence_interval_pct_mn": [0.0, 0.0],
+            "resource_classification": "Non-Manganese Commodity Context (UNFC 777)",
+            "confidence_level": "Not applicable",
+            "estimated_tonnage_kt": 0.0,
+            "scoring_mode": "Commodity context gate",
+            "recommendation": "Do not run Mn reserve estimation for this commodity context.",
+            "satellite_indicators": [],
+        }
+
     # -----------------------------------------------------------------------
     # 1. Lithology prior (from GSI geological map — free)
     # -----------------------------------------------------------------------
@@ -924,7 +960,9 @@ def prospect_manganese_reserve(req: SatelliteProspectorInputs):
     upper_ci = round(min(52.0, predicted_grade + ci_half), 1)
 
     # Estimated tonnage (rough block model: 500m × 500m × depth)
-    estimated_tonnage = round(250000.0 * 3.6 * (final_probability * 0.09) / 1000.0, 1)
+    # Satellite-only screening does not support a reserve tonnage claim.
+    # Keep a target-scale proxy only for stronger follow-up candidates.
+    estimated_tonnage = round(250000.0 * 3.6 * (final_probability * 0.09) / 1000.0, 1) if final_probability >= 0.50 else 0.0
 
     # -----------------------------------------------------------------------
     # UNFC Classification
@@ -971,6 +1009,8 @@ def prospect_manganese_reserve(req: SatelliteProspectorInputs):
         "resource_classification": unfc_class,
         "confidence_level": confidence_label,
         "estimated_tonnage_kt": estimated_tonnage,
+        "prediction_status": "INDICATIVE_EXPLORATION_TARGET" if final_probability >= 0.50 else "INCONCLUSIVE_SCREENING",
+        "resource_type": "Indicative exploration target; not a certified reserve",
         "scoring_mode": "Satellite + Ground Survey" if ground_survey_used else "Satellite-Only (Free Data)",
         "primary_satellite_score": round(primary_probability, 3),
         "ground_survey_boost": round(ground_boost, 3),

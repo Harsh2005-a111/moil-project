@@ -1,0 +1,13 @@
+site_id,name,latitude,longitude,commodity,mn_label,label_confidence,region_group,rock_type,source,source_url,notes
+MN_BALAGHAT,Balaghat manganese mine,21.8167,80.1833,manganese,1,high,Central_India,Gondite_Braunite,MOIL reference,https://moil.nic.in/,Known Mn reference site; broad host class
+MN_UKWA,Ukwa manganese mine,21.9500,80.0500,manganese,1,high,Central_India,Gondite_Braunite,MOIL reference,https://moil.nic.in/,Known Mn reference site; broad host class
+MN_DONGRI,Dongri Buzurg manganese mine,21.1350,79.2150,manganese,1,high,Central_India,Gondite_Braunite,MOIL reference,https://moil.nic.in/,Known Mn reference site; broad host class
+MN_SANDUR,Sandur manganese belt,15.1000,76.5500,manganese,1,medium,Dharwar,Gondite_Braunite,Public geological reference,https://ibm.gov.in/,Mn belt reference; verify lease geometry
+MN_KEONJHAR,Keonjhar manganese belt,21.6200,85.5800,manganese,1,medium,Odisha,Gondite_Braunite,Public geological reference,https://ibm.gov.in/,Mn belt reference; verify lease geometry
+COAL_GEVRA,Gevra coal mine,22.336312,82.545748,coal,0,high,Central_India,Coal_Measures,Public mine reference,https://www.gem.wiki/Gevra_Coal_Mine,Coal context; point is approximate until lease polygon is loaded
+COAL_KORBA,Korba coal basin,22.3500,82.6800,coal,0,medium,Central_India,Coal_Measures,Public geological reference,https://coal.gov.in/,Coal basin context; not a lease boundary
+COAL_SINGRAULI,Singrauli coal basin,24.2000,82.6500,coal,0,medium,East_Central_India,Coal_Measures,Public geological reference,https://coal.gov.in/,Coal basin context; not a lease boundary
+IRON_BAILADILA,Bailadila iron ore complex,18.7000,81.2000,iron_ore,0,high,Bastar,Hematite_Iron_Formation,Public geological reference,https://ibm.gov.in/,Iron ore context; point is approximate until lease polygon is loaded
+IRON_DANTEWADA,Dantewada iron ore district,18.9000,81.3500,iron_ore,0,medium,Bastar,Hematite_Iron_Formation,Public geological reference,https://ibm.gov.in/,District-level reference; do not treat as a full district exclusion
+IRON_BARABIL,Barabil iron ore region,22.1000,85.1500,iron_ore,0,medium,Odisha,Hematite_Iron_Formation,Public geological reference,https://ibm.gov.in/,Iron-rich region near Mn occurrences; requires polygon/depth context
+OTHER_BASTAR_BASALT,Bastar non-mineral reference,19.0500,81.8500,other_or_barren,0,medium,Bastar,Deccan_Basalt,Stratified reference sample,https://geodataindia.gov.in/,Use as non-Mn context only after real features are downloaded
