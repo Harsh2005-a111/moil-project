@@ -8,13 +8,14 @@ import PrescriptiveActions from "./components/PrescriptiveActions";
 import ScenarioSimulator from "./components/ScenarioSimulator";
 import GlobalKPIBar from "./components/GlobalKPIBar";
 import LandingPage from "./components/LandingPage";
-import SectionBackButton from "./components/SectionBackButton";
+import SectionHomeButton from "./components/SectionHomeButton";
 import { MOIL_MINES } from "./data/moilData";
 import { API_BASE, numberOr } from "./config";
 import "./App.css";
 
 export default function App() {
   const [showLanding, setShowLanding] = useState(true);
+  const [landingKey, setLandingKey] = useState(0);
   const [activeSection, setActiveSection] = useState("kpis");
   const [isSidebarPinned, setIsSidebarPinned] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
@@ -261,8 +262,13 @@ export default function App() {
     if (match) setSelectedMine(match);
   };
 
+  const goHome = () => {
+    setLandingKey((k) => k + 1);
+    setShowLanding(true);
+  };
+
   if (showLanding) {
-    return <LandingPage onEnterDashboard={() => setShowLanding(false)} />;
+    return <LandingPage key={landingKey} onEnterDashboard={() => setShowLanding(false)} />;
   }
 
   return (
@@ -384,9 +390,7 @@ export default function App() {
             />
           )}
 
-          {activeSection !== "kpis" && (
-            <SectionBackButton onBack={() => setActiveSection("kpis")} />
-          )}
+          <SectionHomeButton onHome={goHome} />
         </main>
       </div>
     </div>

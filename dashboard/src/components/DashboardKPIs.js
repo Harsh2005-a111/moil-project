@@ -13,7 +13,6 @@ import {
   Legend,
 } from "recharts";
 import SectionReportButton from "./SectionReportButton";
-import ArchitectureDiagram from "./ArchitectureDiagram";
 
 export default function DashboardKPIs({
   mines,
@@ -433,8 +432,6 @@ export default function DashboardKPIs({
           </table>
         </div>
       </div>
-
-      <ArchitectureDiagram />
     </div>
   );
 }

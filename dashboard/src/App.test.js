@@ -13,11 +13,17 @@ test('enters dashboard from landing page', () => {
   expect(screen.getByText(/strictly for India and its constituent mine locations/i)).toBeInTheDocument();
 });
 
-test('shows back to dashboard from a module section', () => {
+test('Home returns to landing page with logo flip from every section', () => {
   render(<App />);
   fireEvent.click(screen.getByRole('button', { name: /enter dashboard/i }));
-  fireEvent.click(screen.getByRole('button', { name: /shortfall risk/i }));
-  expect(screen.getByRole('button', { name: /back to dashboard/i })).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: /back to dashboard/i }));
-  expect(screen.getByText(/national mining intelligence/i)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /^home$/i })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: /^home$/i }));
+  expect(screen.getByRole('button', { name: /enter dashboard/i })).toBeInTheDocument();
+  expect(screen.getByAltText(/minesight ai logo/i)).toBeInTheDocument();
+});
+
+test('does not render the architecture diagram section', () => {
+  render(<App />);
+  fireEvent.click(screen.getByRole('button', { name: /enter dashboard/i }));
+  expect(screen.queryByText(/system architecture & planetary data fusion/i)).not.toBeInTheDocument();
 });
