@@ -63,9 +63,9 @@ export default function SatelliteScanner({
   const [savingRegion, setSavingRegion] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
 
-  // Coordinate inputs
-  const [customLat, setCustomLat] = useState(selectedMine?.lat || 21.8167);
-  const [customLon, setCustomLon] = useState(selectedMine?.lon || 80.1833);
+  // Coordinate inputs — blank until a lease is selected or the user types coords
+  const [customLat, setCustomLat] = useState(selectedMine?.lat ?? "");
+  const [customLon, setCustomLon] = useState(selectedMine?.lon ?? "");
 
   // Load an authentic pre-cached Sentinel-2 satellite scene
   const loadPreloadedScene = (sceneKey, isUserAction = false) => {
@@ -174,8 +174,13 @@ export default function SatelliteScanner({
         fetchCoordinateScenePreview(lat, lon, selectedMine.name);
       }
     } else {
-      // Default to Balaghat Mine on initial mount
-      loadPreloadedScene("balaghat");
+      // Default to blank India exploration coords — do NOT auto-load Balaghat.
+      setCustomLat("");
+      setCustomLon("");
+      setSaveRegionName("");
+      setImagePreview(null);
+      setSceneMetadata(null);
+      setFile(null);
     }
   }, [selectedMine]);
 
@@ -827,19 +832,21 @@ export default function SatelliteScanner({
                 </div>
                 <button
                   onClick={handleSyncSelectedMineCoords}
+                  disabled={!selectedMine}
                   className="flowing-btn"
                   style={{
                     fontSize: 11.5,
                     fontWeight: 700,
-                    color: "#0284C7",
-                    background: "#F0F9FF",
-                    border: "1px solid #BAE6FD",
+                    color: selectedMine ? "#0284C7" : "#94A3B8",
+                    background: selectedMine ? "#F0F9FF" : "#F8FAFC",
+                    border: `1px solid ${selectedMine ? "#BAE6FD" : "#E2E8F0"}`,
                     padding: "4px 10px",
                     borderRadius: 6,
-                    cursor: "pointer",
+                    cursor: selectedMine ? "pointer" : "not-allowed",
+                    opacity: selectedMine ? 1 : 0.7,
                   }}
                 >
-                  📍 Use {selectedMine?.name || "Balaghat"} Coords
+                  {selectedMine ? `📍 Use ${selectedMine.name} Coords` : "📍 Select a lease to sync coords"}
                 </button>
               </div>
 

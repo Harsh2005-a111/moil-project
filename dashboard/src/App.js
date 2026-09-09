@@ -8,6 +8,7 @@ import PrescriptiveActions from "./components/PrescriptiveActions";
 import ScenarioSimulator from "./components/ScenarioSimulator";
 import GlobalKPIBar from "./components/GlobalKPIBar";
 import LandingPage from "./components/LandingPage";
+import SectionBackButton from "./components/SectionBackButton";
 import { MOIL_MINES } from "./data/moilData";
 import { API_BASE, numberOr } from "./config";
 import "./App.css";
@@ -137,6 +138,7 @@ export default function App() {
   useEffect(() => {
     if (!inputs && !selectedMine) {
       setPrediction(null);
+      setTrend([]);
       return;
     }
     const timer = setTimeout(() => {
@@ -149,6 +151,7 @@ export default function App() {
   const runEvaluation = () => {
     if (!inputs && !selectedMine) {
       setPrediction(null);
+      setTrend([]);
       return;
     }
     setLoading(true);
@@ -223,6 +226,7 @@ export default function App() {
     } else {
       setInputs(null);
       setPrediction(null);
+      setTrend([]);
     }
   };
 
@@ -378,6 +382,10 @@ export default function App() {
               selectedMine={selectedMine}
               inputs={inputs}
             />
+          )}
+
+          {activeSection !== "kpis" && (
+            <SectionBackButton onBack={() => setActiveSection("kpis")} />
           )}
         </main>
       </div>

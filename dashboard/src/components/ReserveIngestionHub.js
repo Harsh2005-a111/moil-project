@@ -534,7 +534,9 @@ export default function ReserveIngestionHub({
               MODULE A + INGESTION HUB
             </span>
             <span style={{ fontSize: 13, color: "#64748B", fontWeight: 600 }}>
-              {selectedMine?.name} ({selectedMine?.state})
+              {selectedMine
+                ? `${selectedMine.name} (${selectedMine.state})`
+                : "No lease selected — choose a region above or load a preset"}
             </span>
           </div>
           <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "#0F172A" }}>

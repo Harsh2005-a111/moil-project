@@ -13,6 +13,7 @@ import {
   Legend,
 } from "recharts";
 import SectionReportButton from "./SectionReportButton";
+import ArchitectureDiagram from "./ArchitectureDiagram";
 
 export default function DashboardKPIs({
   mines,
@@ -22,14 +23,14 @@ export default function DashboardKPIs({
   onSelectMine,
   onNavigateSection,
 }) {
-  const currentRisk = prediction?.risk_level || "Medium";
+  const currentRisk = prediction?.risk_level || (selectedMine ? "Medium" : null);
 
-  const lastWeek = trend && trend.length ? trend[trend.length - 1] : { expected: 1110, actual: 1106 };
-  const targetOutput = lastWeek.expected;
-  const actualOutput = lastWeek.actual;
-  const gap = Math.max(0, targetOutput - actualOutput);
+  const lastWeek = selectedMine && trend && trend.length ? trend[trend.length - 1] : null;
+  const targetOutput = lastWeek?.expected ?? null;
+  const actualOutput = lastWeek?.actual ?? null;
+  const gap = targetOutput != null && actualOutput != null ? Math.max(0, targetOutput - actualOutput) : 0;
 
-  // Constraint impact metrics
+  // Constraint impact metrics — only meaningful for an active lease
   const constraintImpact = prediction?.constraint_impact || {
     equipment_impact_pct: 28.5,
     weather_impact_pct: 35.0,
@@ -216,28 +217,50 @@ export default function DashboardKPIs({
                 12-Week Production Trajectory: Target vs Tracked vs AI Optimized
               </h3>
               <p style={{ margin: 0, fontSize: 12, color: "#64748B" }}>
-                Continuous monitoring surfaces early shortfall deviations before they affect dispatch quotas.
+                {selectedMine
+                  ? "Continuous monitoring surfaces early shortfall deviations before they affect dispatch quotas."
+                  : "Select a MOIL lease to load lease-specific production trajectory. National overview does not invent Balaghat defaults."}
               </p>
             </div>
-            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 4, background: "#EFF6FF", color: "#1D4ED8", fontWeight: 600 }}>
-              Real-Time Feed
+            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 4, background: selectedMine ? "#EFF6FF" : "#F1F5F9", color: selectedMine ? "#1D4ED8" : "#64748B", fontWeight: 600 }}>
+              {selectedMine ? "Real-Time Feed" : "Awaiting Lease"}
             </span>
           </div>
 
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={trend} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-              <XAxis dataKey="week" tick={{ fontSize: 11, fill: "#64748B" }} />
-              <YAxis domain={["auto", "auto"]} tick={{ fontSize: 11, fill: "#64748B" }} />
-              <Tooltip
-                contentStyle={{ background: "#0F172A", border: "none", borderRadius: 8, color: "#fff", fontSize: 12 }}
-                formatter={(val, name) => [`${val} Tonnes`, name]}
-              />
-              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-              <Line type="monotone" dataKey="expected" name="Weekly Target (Planned)" stroke="#94A3B8" strokeDasharray="4 4" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="actual" name="Actual Production (Tracked)" stroke="#185FA5" strokeWidth={2.5} />
-            </LineChart>
-          </ResponsiveContainer>
+          {selectedMine && trend && trend.length > 0 ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={trend} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                <XAxis dataKey="week" tick={{ fontSize: 11, fill: "#64748B" }} />
+                <YAxis domain={["auto", "auto"]} tick={{ fontSize: 11, fill: "#64748B" }} />
+                <Tooltip
+                  contentStyle={{ background: "#0F172A", border: "none", borderRadius: 8, color: "#fff", fontSize: 12 }}
+                  formatter={(val, name) => [`${val} Tonnes`, name]}
+                />
+                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+                <Line type="monotone" dataKey="expected" name="Weekly Target (Planned)" stroke="#94A3B8" strokeDasharray="4 4" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="actual" name="Actual Production (Tracked)" stroke="#185FA5" strokeWidth={2.5} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div
+              style={{
+                height: 260,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 10,
+                background: "#F8FAFC",
+                border: "1px dashed #CBD5E1",
+                color: "#64748B",
+                fontSize: 13,
+                textAlign: "center",
+                padding: 24,
+              }}
+            >
+              No lease selected — production trajectory stays empty until you pick a mine from the dropdown or cluster table.
+            </div>
+          )}
         </div>
 
         {/* Constraint Breakdown */}
@@ -257,27 +280,50 @@ export default function DashboardKPIs({
               Operational Constraint Breakdown
             </h3>
             <p style={{ margin: 0, fontSize: 12, color: "#64748B" }}>
-              Relative weight of active shortfall drivers.
+              {selectedMine ? "Relative weight of active shortfall drivers." : "Constraint weights appear after a lease is selected and evaluated."}
             </p>
           </div>
 
-          <ResponsiveContainer width="100%" height={190}>
-            <BarChart data={constraintData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#F1F5F9" />
-              <XAxis type="number" domain={[0, 100]} unit="%" tick={{ fontSize: 10, fill: "#64748B" }} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#334155" }} width={110} />
-              <Tooltip formatter={(v) => `${v}% impact`} />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                {constraintData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          {selectedMine ? (
+            <>
+              <ResponsiveContainer width="100%" height={190}>
+                <BarChart data={constraintData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#F1F5F9" />
+                  <XAxis type="number" domain={[0, 100]} unit="%" tick={{ fontSize: 10, fill: "#64748B" }} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#334155" }} width={110} />
+                  <Tooltip formatter={(v) => `${v}% impact`} />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                    {constraintData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
 
-          <div style={{ marginTop: 8, padding: 8, background: "#F8FAFC", borderRadius: 6, fontSize: 11.5, color: "#475569" }}>
-            💡 <strong>Top Constraint:</strong> Weather & precipitation contribute 35% to current risk. Pit dewatering playbooks ready.
-          </div>
+              <div style={{ marginTop: 8, padding: 8, background: "#F8FAFC", borderRadius: 6, fontSize: 11.5, color: "#475569" }}>
+                💡 <strong>Top Constraint:</strong> Weather & precipitation contribute {constraintImpact.weather_impact_pct}% to current risk. Pit dewatering playbooks ready.
+              </div>
+            </>
+          ) : (
+            <div
+              style={{
+                flex: 1,
+                minHeight: 190,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 10,
+                background: "#F8FAFC",
+                border: "1px dashed #CBD5E1",
+                color: "#64748B",
+                fontSize: 13,
+                textAlign: "center",
+                padding: 20,
+              }}
+            >
+              Select a lease to view constraint drivers for that operation.
+            </div>
+          )}
         </div>
       </div>
 
@@ -387,6 +433,8 @@ export default function DashboardKPIs({
           </table>
         </div>
       </div>
+
+      <ArchitectureDiagram />
     </div>
   );
 }

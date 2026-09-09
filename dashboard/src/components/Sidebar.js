@@ -171,6 +171,9 @@ export default function Sidebar({
           return (
             <button
               key={item.id}
+              type="button"
+              aria-label={item.label}
+              title={item.label}
               onClick={() => onSelectSection(item.id)}
               style={{
                 width: "100%",

@@ -16,16 +16,8 @@ export default function GlobalKPIBar({
   prediction,
   trend,
 }) {
-  const hasValidInputs = Boolean(
-    inputs && (
-      (inputs.tonnage !== undefined && inputs.tonnage > 0) ||
-      (inputs.ore_grade_pct !== undefined && inputs.ore_grade_pct > 0) ||
-      inputs.equipment_availability_pct !== undefined ||
-      inputs.rainfall_mm !== undefined ||
-      inputs.is_barren !== undefined
-    )
-  );
-  const isSelected = Boolean(selectedMine) || hasValidInputs;
+  // Lease-scoped KPIs only — never treat orphan inputs / Balaghat fallbacks as an active selection.
+  const isSelected = Boolean(selectedMine);
   const isBarren = isSelected && (
     (selectedMine && (selectedMine.waste_flag === 1 || selectedMine.type?.includes("Barren") || selectedMine.type?.includes("Sterilized"))) ||
     inputs?.is_barren === true ||
@@ -45,38 +37,46 @@ export default function GlobalKPIBar({
       riskColor = "#475569";
       riskBg = "#F1F5F9";
       riskSubtitle = "Sterilized Non-Mineralized Ground (UNFC 777)";
-    } else {
-      if (prediction?.risk_level) {
-        currentRisk = prediction.risk_level.toUpperCase();
       } else {
-        const rain = inputs?.rainfall_mm || 38.0;
-        const equip = inputs?.equipment_availability_pct || 88.0;
-        const downtime = inputs?.unscheduled_downtime_hours || 3.0;
-        const delay = inputs?.blast_cycle_delay_hours || 1.5;
+        const rain = inputs?.rainfall_mm ?? selectedMine.inputs?.rainfall_mm;
+        const equip = inputs?.equipment_availability_pct ?? selectedMine.inputs?.equipment_availability_pct;
+        const downtime = inputs?.unscheduled_downtime_hours ?? selectedMine.inputs?.unscheduled_downtime_hours;
+        const delay = inputs?.blast_cycle_delay_hours ?? selectedMine.inputs?.blast_cycle_delay_hours;
 
-        if (rain > 60 || equip < 75 || downtime > 5.0 || delay > 3.0) {
-          currentRisk = "HIGH";
-        } else if (rain > 40 || equip < 85 || downtime > 3.5 || delay > 2.0) {
-          currentRisk = "MEDIUM";
+        if (prediction?.risk_level) {
+          currentRisk = prediction.risk_level.toUpperCase();
+        } else if (rain == null && equip == null) {
+          currentRisk = "--";
+          riskSubtitle = "Run evaluation to compute shortfall risk";
         } else {
-          currentRisk = "LOW";
+          const rainVal = rain ?? 0;
+          const equipVal = equip ?? 100;
+          const downtimeVal = downtime ?? 0;
+          const delayVal = delay ?? 0;
+
+          if (rainVal > 60 || equipVal < 75 || downtimeVal > 5.0 || delayVal > 3.0) {
+            currentRisk = "HIGH";
+          } else if (rainVal > 40 || equipVal < 85 || downtimeVal > 3.5 || delayVal > 2.0) {
+            currentRisk = "MEDIUM";
+          } else {
+            currentRisk = "LOW";
+          }
+        }
+
+        if (currentRisk === "HIGH") {
+          riskColor = "#DC2626";
+          riskBg = "#FEF2F2";
+          riskSubtitle = "Immediate intervention & reallocation required";
+        } else if (currentRisk === "MEDIUM") {
+          riskColor = "#D97706";
+          riskBg = "#FFFBEB";
+          riskSubtitle = "Early constraint mitigation active";
+        } else if (currentRisk === "LOW") {
+          riskColor = "#16A34A";
+          riskBg = "#F0FDF4";
+          riskSubtitle = "Production & haul schedules on track";
         }
       }
-
-      if (currentRisk === "HIGH") {
-        riskColor = "#DC2626";
-        riskBg = "#FEF2F2";
-        riskSubtitle = "Immediate intervention & reallocation required";
-      } else if (currentRisk === "MEDIUM") {
-        riskColor = "#D97706";
-        riskBg = "#FFFBEB";
-        riskSubtitle = "Early constraint mitigation active";
-      } else {
-        riskColor = "#16A34A";
-        riskBg = "#F0FDF4";
-        riskSubtitle = "Production & haul schedules on track";
-      }
-    }
   }
 
   // 2. Weekly Output Gap
@@ -91,27 +91,36 @@ export default function GlobalKPIBar({
       targetDisplay = "0 t Target";
       gapSubtitle = "Excluded from extraction quotas";
     } else {
+      const lastTrend = trend && trend.length ? trend[trend.length - 1] : null;
       const baseTarget = inputs?.tonnage
         ? Math.round(inputs.tonnage / 48)
-        : (trend && trend.length ? trend[trend.length - 1].expected : 1480);
+        : (lastTrend ? lastTrend.expected : null);
 
-      const rain = inputs?.rainfall_mm || 38.0;
-      const equip = inputs?.equipment_availability_pct || 88.0;
-      const downtime = inputs?.unscheduled_downtime_hours || 3.0;
-      const delay = inputs?.blast_cycle_delay_hours || 1.5;
+      if (baseTarget == null) {
+        gapDisplay = "--";
+        targetDisplay = "";
+        gapSubtitle = "Run evaluation to compute output gap";
+      } else {
+        const rain = inputs?.rainfall_mm ?? selectedMine.inputs?.rainfall_mm ?? 0;
+        const equip = inputs?.equipment_availability_pct ?? selectedMine.inputs?.equipment_availability_pct ?? 100;
+        const downtime = inputs?.unscheduled_downtime_hours ?? selectedMine.inputs?.unscheduled_downtime_hours ?? 0;
+        const delay = inputs?.blast_cycle_delay_hours ?? selectedMine.inputs?.blast_cycle_delay_hours ?? 0;
 
-      const rainPenalty = rain > 50 ? Math.round((rain - 50) * 3.5) : 0;
-      const equipPenalty = equip < 88 ? Math.round((88 - equip) * 7.0) : 0;
-      const downtimePenalty = downtime > 3.0 ? Math.round((downtime - 3.0) * 18.0) : 0;
-      const delayPenalty = delay > 1.5 ? Math.round((delay - 1.5) * 22.0) : 0;
+        const rainPenalty = rain > 50 ? Math.round((rain - 50) * 3.5) : 0;
+        const equipPenalty = equip < 88 ? Math.round((88 - equip) * 7.0) : 0;
+        const downtimePenalty = downtime > 3.0 ? Math.round((downtime - 3.0) * 18.0) : 0;
+        const delayPenalty = delay > 1.5 ? Math.round((delay - 1.5) * 22.0) : 0;
 
-      const totalPenalty = rainPenalty + equipPenalty + downtimePenalty + delayPenalty;
-      const actualOutput = Math.max(0, baseTarget - totalPenalty);
-      gapVal = Math.max(0, baseTarget - actualOutput);
+        const totalPenalty = rainPenalty + equipPenalty + downtimePenalty + delayPenalty;
+        const actualOutput = lastTrend?.actual != null
+          ? lastTrend.actual
+          : Math.max(0, baseTarget - totalPenalty);
+        gapVal = Math.max(0, baseTarget - actualOutput);
 
-      gapDisplay = `${gapVal} t`;
-      targetDisplay = `/ ${baseTarget} t Target`;
-      gapSubtitle = `Tracked Output: ${actualOutput.toLocaleString()} tonnes`;
+        gapDisplay = `${gapVal} t`;
+        targetDisplay = `/ ${baseTarget} t Target`;
+        gapSubtitle = `Tracked Output: ${actualOutput.toLocaleString()} tonnes`;
+      }
     }
   }
 
@@ -128,20 +137,31 @@ export default function GlobalKPIBar({
     } else {
       const reservesKt = inputs?.tonnage
         ? Math.round(inputs.tonnage / 1000)
-        : (selectedMine?.predicted_reserves_kt || 1420);
-      const grade = inputs?.ore_grade_pct !== undefined ? inputs.ore_grade_pct : (selectedMine?.avg_grade_pct || 41.5);
-      const annualCapacityMt = selectedMine?.annual_capacity_mt || 0.35;
-      const annualCapacityKt = annualCapacityMt * 1000;
-      const lomYears = (reservesKt / Math.max(10, annualCapacityKt)).toFixed(1);
+        : (selectedMine.predicted_reserves_kt ?? null);
+      if (reservesKt === null) {
+        reservesDisplay = "--";
+        gradeBadge = "--% Mn";
+        lomSubtitle = "Reserves pending evaluation";
+      } else {
+        const grade = inputs?.ore_grade_pct !== undefined ? inputs.ore_grade_pct : (selectedMine.avg_grade_pct ?? null);
+        const annualCapacityMt = selectedMine.annual_capacity_mt || 0.35;
+        const annualCapacityKt = annualCapacityMt * 1000;
+        const lomYears = (reservesKt / Math.max(10, annualCapacityKt)).toFixed(1);
 
-      reservesDisplay = `${reservesKt.toLocaleString()} kt`;
-      const gradeCategory = grade >= 25.0 ? "Marketable" : grade >= 10.0 ? "Beneficiable (MR)" : "Waste";
-      gradeBadge = `${grade}% Mn • ${gradeCategory}`;
-      lomSubtitle = grade >= 25.0
-        ? `Life of Mine (LOM): ${lomYears} Yrs (Direct Saleable Ore)`
-        : grade >= 10.0
-        ? `Beneficiable Ore (10-25% Mn - Mandatory Conservation per IBM MCDR 2017)`
-        : `Mineral Waste / Overburden (<10% Mn Statutory Cutoff)`;
+        reservesDisplay = `${Number(reservesKt).toLocaleString()} kt`;
+        if (grade === null || grade === undefined) {
+          gradeBadge = "--% Mn";
+          lomSubtitle = `Life of Mine (LOM): ${lomYears} Yrs`;
+        } else {
+          const gradeCategory = grade >= 25.0 ? "Marketable" : grade >= 10.0 ? "Beneficiable (MR)" : "Waste";
+          gradeBadge = `${grade}% Mn • ${gradeCategory}`;
+          lomSubtitle = grade >= 25.0
+            ? `Life of Mine (LOM): ${lomYears} Yrs (Direct Saleable Ore)`
+            : grade >= 10.0
+            ? `Beneficiable Ore (10-25% Mn - Mandatory Conservation per IBM MCDR 2017)`
+            : `Mineral Waste / Overburden (<10% Mn Statutory Cutoff)`;
+        }
+      }
     }
   }
 
@@ -158,13 +178,19 @@ export default function GlobalKPIBar({
     } else {
       const equip = inputs?.equipment_availability_pct !== undefined
         ? inputs.equipment_availability_pct
-        : (selectedMine?.inputs?.equipment_availability_pct || 88.0);
-      const fleetSize = selectedMine?.fleet_size || 24;
-      const activeHaulers = Math.round(fleetSize * (equip / 100.0));
+        : (selectedMine.inputs?.equipment_availability_pct ?? null);
+      if (equip === null) {
+        fleetDisplay = "--";
+        fleetBadge = "--";
+        fleetSubtitle = "No fleet telemetry for this lease";
+      } else {
+        const fleetSize = selectedMine.fleet_size || 24;
+        const activeHaulers = Math.round(fleetSize * (equip / 100.0));
 
-      fleetDisplay = `${equip.toFixed(1)}%`;
-      fleetBadge = equip >= 88 ? "+2.1%" : "-3.4%";
-      fleetSubtitle = `${activeHaulers} of ${fleetSize} Shovel-Dumpers active`;
+        fleetDisplay = `${Number(equip).toFixed(1)}%`;
+        fleetBadge = equip >= 88 ? "+2.1%" : "-3.4%";
+        fleetSubtitle = `${activeHaulers} of ${fleetSize} Shovel-Dumpers active`;
+      }
     }
   }
 
@@ -177,16 +203,22 @@ export default function GlobalKPIBar({
   if (isSelected) {
     const rain = inputs?.rainfall_mm !== undefined
       ? inputs.rainfall_mm
-      : (selectedMine?.inputs?.rainfall_mm || 38.0);
-    isMonsoonWarning = rain > 50.0;
+      : (selectedMine.inputs?.rainfall_mm ?? selectedMine.avg_rainfall_mm ?? null);
+    if (rain === null) {
+      climateDisplay = "--";
+      climateBadge = "--";
+      climateSubtitle = "No satellite weather linked";
+    } else {
+      isMonsoonWarning = rain > 50.0;
 
-    climateDisplay = `${rain} mm`;
-    climateBadge = rain > 50 ? "Monsoon Alert" : rain > 35 ? "Elevated Rain" : "Normal";
-    climateSubtitle = rain > 50
-      ? "Dewatering: 3,850 GPM (High Pit Inundation)"
-      : rain > 35
-      ? "Dewatering: 2,100 GPM (Active Monitoring)"
-      : "Dewatering Pumps: 1,200 GPM (Nominal)";
+      climateDisplay = `${rain} mm`;
+      climateBadge = rain > 50 ? "Monsoon Alert" : rain > 35 ? "Elevated Rain" : "Normal";
+      climateSubtitle = rain > 50
+        ? "Dewatering: 3,850 GPM (High Pit Inundation)"
+        : rain > 35
+        ? "Dewatering: 2,100 GPM (Active Monitoring)"
+        : "Dewatering Pumps: 1,200 GPM (Nominal)";
+    }
   }
 
   // 6. AI Value Protected / At Risk
