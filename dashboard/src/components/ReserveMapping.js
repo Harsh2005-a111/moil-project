@@ -48,6 +48,8 @@ export default function ReserveMapping({ selectedMine, inputs, onApplyPredictedG
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         region_name: selectedMine?.name || "Balaghat Formation",
+        latitude: selectedMine?.lat || null,
+        longitude: selectedMine?.lon || null,
         x_range: [0, 500],
         y_range: [0, 500],
         depth_m: depthSlice === "surface" ? 25.0 : depthSlice === "mid" ? 60.0 : depthSlice === "deep" ? 110.0 : 85.0,
