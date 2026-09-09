@@ -56,6 +56,7 @@ from app.geo_validation import (
     INDIA_LONGITUDE_MAX,
     INDIA_LONGITUDE_MIN,
 )
+from app.routers.satellite import get_tectonic_craton_province
 
 MODEL_PATH = Path(__file__).parent / "model" / "shortfall_model.pkl"
 ENCODERS_PATH = Path(__file__).parent / "model" / "encoders.pkl"
@@ -649,6 +650,7 @@ def estimate_reserves(req: ReserveEstimateRequest):
     grid_size = 12
     if req.latitude is not None and req.longitude is not None:
         commodity_context = classify_commodity_context(req.latitude, req.longitude, req.region_name)
+        craton_prov = get_tectonic_craton_province(req.latitude, req.longitude)
         if commodity_context["status"] == "NON_MN_COMMODITY":
             return {
                 "region_name": req.region_name,
@@ -662,7 +664,8 @@ def estimate_reserves(req: ReserveEstimateRequest):
                 "prediction_status": "NON_MN_COMMODITY",
                 "commodity_context": commodity_context,
             }
-        if commodity_context["status"] != "MN_COMPATIBLE":
+        # Allow heatmap generation if location is in a tectonic cratonic province, even if not in commodity reference CSV
+        if commodity_context["status"] != "MN_COMPATIBLE" and craton_prov is None:
             return {
                 "region_name": req.region_name,
                 "grid_size": grid_size,
@@ -674,7 +677,7 @@ def estimate_reserves(req: ReserveEstimateRequest):
                 "depth_slices": [],
                 "prediction_status": "UNKNOWN_LOCATION_CONTEXT",
                 "commodity_context": commodity_context,
-                "message": "Reserve estimation abstained because this India coordinate is not in a verified Mn context.",
+                "message": "Reserve estimation abstained because this India coordinate is not in a verified Mn context or tectonic cratonic province.",
             }
     elif req.expected_grade_pct is None or req.expected_tonnage_kt is None:
         return {
