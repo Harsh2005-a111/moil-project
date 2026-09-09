@@ -559,7 +559,8 @@ def extract_spectral_and_ml_predict(
                 confidence_range = [lower_ci, upper_ci]
 
                 # Out-of-Distribution (OOD) Epistemic Uncertainty Gating
-                if feature_space_ood or uncertainty_pct > 12.0 or (min_dist_km > 120.0 and craton_prov_ref is None):
+                # Skip OOD check if commodity context is MN_COMPATIBLE (known MOIL mine or verified Mn location)
+                if (feature_space_ood or uncertainty_pct > 12.0 or (min_dist_km > 120.0 and craton_prov_ref is None)) and commodity_context["status"] != "MN_COMPATIBLE":
                     is_ood = True
                     ood_warning = (
                         f"Elevated Epistemic Uncertainty (sigma = {uncertainty_pct}%). Target lies {min_dist_km:.1f} km from calibrated "
