@@ -15,10 +15,16 @@ import joblib
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Query
+from fastapi import APIRouter, Header, UploadFile, File, Form, HTTPException, Query
 from pydantic import BaseModel, Field
 from PIL import Image, ImageEnhance, ImageFilter
 from app.commodity_context import classify_commodity_context
+from app.geo_validation import (
+    INDIA_LATITUDE_MAX,
+    INDIA_LATITUDE_MIN,
+    INDIA_LONGITUDE_MAX,
+    INDIA_LONGITUDE_MIN,
+)
 
 router = APIRouter(prefix="/api", tags=["Satellite Intelligence & Regions"])
 
@@ -314,19 +320,19 @@ def is_manganese_mineral_belt(lat: float, lon: float) -> bool:
 
 
 class CopernicusFetchRequest(BaseModel):
-    latitude: float = Field(21.8167, description="Latitude in decimal degrees")
-    longitude: float = Field(80.1833, description="Longitude in decimal degrees")
+    latitude: float = Field(21.8167, ge=INDIA_LATITUDE_MIN, le=INDIA_LATITUDE_MAX, description="India latitude in decimal degrees")
+    longitude: float = Field(80.1833, ge=INDIA_LONGITUDE_MIN, le=INDIA_LONGITUDE_MAX, description="India longitude in decimal degrees")
     client_id: Optional[str] = Field(None, description="Copernicus OAuth Client ID")
     client_secret: Optional[str] = Field(None, description="Copernicus OAuth Client Secret")
     region_name: Optional[str] = Field(None, description="Custom region title")
-    buffer_deg: Optional[float] = Field(0.025, description="Bounding box buffer around point (approx 5km x 5km)")
-    resolution_m: Optional[int] = Field(10, description="Spatial resolution in meters")
+    buffer_deg: Optional[float] = Field(0.025, gt=0.0, le=0.25, description="Bounding box buffer around point (approx 5km x 5km)")
+    resolution_m: Optional[int] = Field(10, ge=10, le=100, description="Spatial resolution in meters")
 
 
 class SaveRegionRequest(BaseModel):
-    region_name: str
-    latitude: float
-    longitude: float
+    region_name: str = Field(..., min_length=2, max_length=120)
+    latitude: float = Field(..., ge=INDIA_LATITUDE_MIN, le=INDIA_LATITUDE_MAX)
+    longitude: float = Field(..., ge=INDIA_LONGITUDE_MIN, le=INDIA_LONGITUDE_MAX)
     host_lithology: Optional[str] = "Gondite / Braunite Series"
     swir_b11_absorption: Optional[float] = 0.81
     swir_b12_absorption: Optional[float] = 0.73
@@ -336,11 +342,11 @@ class SaveRegionRequest(BaseModel):
     soil_moisture: Optional[float] = 0.22
     emag2_anomaly_nt: Optional[float] = 510.0
     elevation_m: Optional[float] = 412.0
-    manganese_probability_pct: Optional[float] = 88.0
-    estimated_grade_pct: Optional[float] = 42.5
-    total_available_reserves_kt: Optional[float] = 1650.0
-    viable_extractable_tonnage_kt: Optional[float] = 1320.0
-    extraction_recovery_pct: Optional[float] = 80.0
+    manganese_probability_pct: Optional[float] = Field(88.0, ge=0.0, le=100.0)
+    estimated_grade_pct: Optional[float] = Field(42.5, ge=0.0, le=100.0)
+    total_available_reserves_kt: Optional[float] = Field(1650.0, ge=0.0)
+    viable_extractable_tonnage_kt: Optional[float] = Field(1320.0, ge=0.0)
+    extraction_recovery_pct: Optional[float] = Field(80.0, ge=0.0, le=100.0)
     unfc_classification: Optional[str] = "Proven Mineral Reserve (UNFC 111)"
     image_preview: Optional[str] = None
     notes: Optional[str] = None
@@ -743,6 +749,7 @@ def extract_spectral_and_ml_predict(
 
     suggested_name = region_name or f"Copernicus-Prospect-{int(latitude*100)}_{int(longitude*100)}"
 
+    is_rgb_proxy = source_type.startswith("Uploaded") and "GeoTIFF" not in source_type
     return {
         "status": "success",
         "data_source": source_type,
@@ -792,8 +799,9 @@ def extract_spectral_and_ml_predict(
                 else "UNKNOWN_OOD" if is_ood and commodity_context["status"] == "UNKNOWN"
                 else "EVALUATED"
             ),
-            "resource_type": "Indicative exploration target; not a certified reserve",
+            "resource_type": "RGB proxy screening; not a spectral reserve estimate" if is_rgb_proxy else "Indicative exploration target; not a certified reserve",
             "statutory_disclaimer": "IBM Statutory MCDR 2017 Compliance: Minimum threshold cutoff is 10% Mn. Ore between 10-25% Mn is classified as Mineral Rejects (MR Ore) requiring conservation/beneficiation. Subsurface drilling is required for UNFC 111 Proven Reserve certification.",
+            "image_analysis_mode": "RGB-derived proxy screening" if is_rgb_proxy else "Multispectral feature analysis",
         },
         "commodity_context": commodity_context,
         "provenance": {
@@ -908,8 +916,8 @@ def fetch_planetary_computer_sentinel2(lat: float, lon: float, buffer_deg: float
 
 @router.get("/satellite/scene-preview")
 def get_satellite_scene_preview(
-    lat: float = Query(21.81, description="Latitude in decimal degrees"),
-    lon: float = Query(80.19, description="Longitude in decimal degrees"),
+    lat: float = Query(21.81, ge=INDIA_LATITUDE_MIN, le=INDIA_LATITUDE_MAX, description="India latitude in decimal degrees"),
+    lon: float = Query(80.19, ge=INDIA_LONGITUDE_MIN, le=INDIA_LONGITUDE_MAX, description="India longitude in decimal degrees"),
     region_name: Optional[str] = Query(None, description="Exploration Region or Mine Name"),
 ):
     """
@@ -1237,6 +1245,8 @@ async def analyze_satellite_image(
 
         lat_val = float(latitude) if latitude is not None else 21.8167
         lon_val = float(longitude) if longitude is not None else 80.1833
+        if not (INDIA_LATITUDE_MIN <= lat_val <= INDIA_LATITUDE_MAX and INDIA_LONGITUDE_MIN <= lon_val <= INDIA_LONGITUDE_MAX):
+            raise HTTPException(status_code=422, detail="Satellite analysis is restricted to Indian mine coordinates.")
 
         # 1. Attempt multi-band GeoTIFF reading via rasterio
         bands_data = None
@@ -1333,10 +1343,17 @@ def get_all_regions():
 
 
 @router.post("/regions")
-def save_new_region(payload: SaveRegionRequest):
+def save_new_region(payload: SaveRegionRequest, x_region_write_key: Optional[str] = Header(None)):
     """
     Permanently saves a new custom mineral prospect / lease region to regions.json.
     """
+    expected_key = os.getenv("MOIL_REGION_WRITE_KEY")
+    if not expected_key or x_region_write_key != expected_key:
+        raise HTTPException(status_code=403, detail="Region writes require the configured MOIL_REGION_WRITE_KEY.")
+
+    if payload.viable_extractable_tonnage_kt > payload.total_available_reserves_kt:
+        raise HTTPException(status_code=422, detail="Viable tonnage cannot exceed total available reserves.")
+
     try:
         REGIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
         regions_list = []
@@ -1349,7 +1366,7 @@ def save_new_region(payload: SaveRegionRequest):
 
         existing_idx = next((i for i, r in enumerate(regions_list) if r.get("region_name") == payload.region_name), -1)
         
-        region_dict = payload.dict()
+        region_dict = payload.model_dump()
         region_dict["saved_at"] = pd.Timestamp.now().isoformat()
         region_dict["source"] = "Satellite AI Prospecting"
 
@@ -1374,10 +1391,14 @@ def save_new_region(payload: SaveRegionRequest):
 
 
 @router.delete("/regions/{region_name}")
-def delete_region(region_name: str):
+def delete_region(region_name: str, x_region_write_key: Optional[str] = Header(None)):
     """
     Removes a custom mining lease region.
     """
+    expected_key = os.getenv("MOIL_REGION_WRITE_KEY")
+    if not expected_key or x_region_write_key != expected_key:
+        raise HTTPException(status_code=403, detail="Region writes require the configured MOIL_REGION_WRITE_KEY.")
+
     try:
         if not REGIONS_FILE.exists():
             return {"status": "success", "message": "No custom regions found."}

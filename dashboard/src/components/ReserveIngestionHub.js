@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Sparkles,
   Truck,
@@ -18,8 +18,7 @@ import { PRESET_SCENARIOS, SAMPLE_CSV_CONTENT } from "../data/moilData";
 import SatelliteScanner from "./SatelliteScanner";
 import BoreholeCoreViewer from "./BoreholeCoreViewer";
 import SectionReportButton from "./SectionReportButton";
-
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
+import { API_BASE, numberOr } from "../config";
 
 
 export default function ReserveIngestionHub({
@@ -37,6 +36,7 @@ export default function ReserveIngestionHub({
   const [depthSlice, setDepthSlice] = useState("all");
   const [cutoffGrade, setCutoffGrade] = useState(30.0);
   const [reservesData, setReservesData] = useState(null);
+  const requestControllers = useRef({ reserves: null, prospect: null });
 
   const safeInputs = inputs || {};
   const isTerrainBarren = Boolean(
@@ -86,13 +86,13 @@ export default function ReserveIngestionHub({
     }
 
     const isBarren = Boolean(params.is_barren);
-    const rain = parseFloat(params.rainfall_mm) || 38.0;
-    const soil = parseFloat(params.soil_moisture) || 0.28;
-    const grade = isBarren ? 0.0 : (parseFloat(params.ore_grade_pct) || 40.0);
-    const tonnageKt = isBarren ? 0.0 : (parseFloat(params.total_available_reserves_kt) || 1200.0);
+    const rain = numberOr(params.rainfall_mm, 38.0);
+    const soil = numberOr(params.soil_moisture, 0.28);
+    const grade = isBarren ? 0.0 : numberOr(params.ore_grade_pct, 40.0);
+    const tonnageKt = isBarren ? 0.0 : numberOr(params.total_available_reserves_kt, 1200.0);
     const tonnage = tonnageKt * 1000.0;
     const rock = params.rock_type || "Braunite";
-    const elev = parseFloat(params.elevation_m) || 120.0;
+    const elev = numberOr(params.elevation_m, 120.0);
 
     // Synchronize operational sliders, blasting delays, and fleet capacity
     if (onChangeInput) {
@@ -222,11 +222,13 @@ export default function ReserveIngestionHub({
 
   // Fetch reserves & run prospector
   useEffect(() => {
-    fetchReserves();
+    const timer = setTimeout(() => fetchReserves(), 300);
+    return () => clearTimeout(timer);
   }, [selectedMine, depthSlice, cutoffGrade]);
 
   useEffect(() => {
-    runProspector();
+    const timer = setTimeout(() => runProspector(), 350);
+    return () => clearTimeout(timer);
   }, [selectedMine, hostLithology, swirAbsorption, emagAnomaly, ndvi, landTemp, rainfallMm, soilMoisture, includeGroundSurvey, ipChargeability, resistivity]);
 
   const fetchReserves = (overrideParams = {}) => {
@@ -243,10 +245,14 @@ export default function ReserveIngestionHub({
       : (selectedMine?.predicted_reserves_kt !== undefined ? selectedMine.predicted_reserves_kt : (isBarren ? 0.0 : null));
 
     const regName = overrideParams.region_name || selectedMine?.name || "MOIL Survey Sector";
-    const rain = overrideParams.rainfall_mm !== undefined ? overrideParams.rainfall_mm : (parseFloat(rainfallMm) || 38.0);
-    const soil = overrideParams.soil_moisture !== undefined ? overrideParams.soil_moisture : (parseFloat(soilMoisture) || 0.28);
-    const curNdvi = overrideParams.ndvi !== undefined ? overrideParams.ndvi : (parseFloat(ndvi) || 0.35);
-    const temp = overrideParams.land_temp_c !== undefined ? overrideParams.land_temp_c : (parseFloat(landTemp) || 33.5);
+    const rain = overrideParams.rainfall_mm !== undefined ? overrideParams.rainfall_mm : numberOr(rainfallMm, 38.0);
+    const soil = overrideParams.soil_moisture !== undefined ? overrideParams.soil_moisture : numberOr(soilMoisture, 0.28);
+    const curNdvi = overrideParams.ndvi !== undefined ? overrideParams.ndvi : numberOr(ndvi, 0.35);
+    const temp = overrideParams.land_temp_c !== undefined ? overrideParams.land_temp_c : numberOr(landTemp, 33.5);
+
+    requestControllers.current.reserves?.abort();
+    const controller = new AbortController();
+    requestControllers.current.reserves = controller;
 
     fetch(`${API_BASE}/api/reserves/estimate`, {
       method: "POST",
@@ -256,7 +262,7 @@ export default function ReserveIngestionHub({
         x_range: [0, 500],
         y_range: [0, 500],
         depth_m: depthSlice === "surface" ? 25.0 : depthSlice === "mid" ? 60.0 : depthSlice === "deep" ? 110.0 : 85.0,
-        ore_grade_cutoff: parseFloat(cutoffGrade) || 30.0,
+        ore_grade_cutoff: numberOr(cutoffGrade, 30.0),
         rainfall_mm: rain,
         soil_moisture: soil,
         ndvi: curNdvi,
@@ -267,14 +273,21 @@ export default function ReserveIngestionHub({
         latitude: selectedMine?.lat,
         longitude: selectedMine?.lon,
       }),
+      signal: controller.signal,
     })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`Reserve request failed: ${r.status}`);
+        return r.json();
+      })
       .then(setReservesData)
       .catch((err) => console.error("Error fetching reserves:", err));
   };
 
   const runProspector = () => {
     setProspectLoading(true);
+    requestControllers.current.prospect?.abort();
+    const controller = new AbortController();
+    requestControllers.current.prospect = controller;
     const payload = {
       region_name: selectedMine?.name || "Central India Sausar Exploration Zone",
       latitude: selectedMine?.lat ?? 21.80,
@@ -294,8 +307,12 @@ export default function ReserveIngestionHub({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`Prospector request failed: ${r.status}`);
+        return r.json();
+      })
       .then((data) => {
         setProspectResults(data);
         if (data?.predicted_ore_grade_pct !== undefined) {
@@ -303,7 +320,9 @@ export default function ReserveIngestionHub({
           setSyncTargetGrade(data.predicted_ore_grade_pct);
         }
       })
-      .catch((err) => console.error("Prospector error:", err))
+      .catch((err) => {
+        if (err.name !== "AbortError") console.error("Prospector error:", err);
+      })
       .finally(() => setProspectLoading(false));
   };
 

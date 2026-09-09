@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Train, Navigation, ShieldCheck } from "lucide-react";
 import SectionReportButton from "./SectionReportButton";
+import { API_BASE as DEFAULT_API_BASE, numberOr } from "../config";
 
 export default function SmelterLogisticsCard({
   selectedMine,
   inputs,
-  API_BASE = "http://127.0.0.1:8000",
+  API_BASE = DEFAULT_API_BASE,
 }) {
   const [logisticsData, setLogisticsData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -16,12 +17,14 @@ export default function SmelterLogisticsCard({
       return;
     }
 
-    const lat = selectedMine.lat || 21.80;
-    const lon = selectedMine.lon || 80.15;
-    const grade = inputs?.ore_grade_pct || selectedMine.avg_grade_pct || 38.5;
-    const tonnage = inputs?.tonnage ? Math.round(inputs.tonnage / 48) : 2500;
-    const miningCost = inputs?.mining_cost || 1200.0;
-    const procCost = inputs?.processing_cost || 650.0;
+    const lat = numberOr(selectedMine.lat, 21.80);
+    const lon = numberOr(selectedMine.lon, 80.15);
+    const grade = numberOr(inputs?.ore_grade_pct, numberOr(selectedMine.avg_grade_pct, 38.5));
+    const tonnage = inputs?.tonnage !== undefined && inputs?.tonnage !== null
+      ? Math.round(numberOr(inputs.tonnage, 0) / 48)
+      : 2500;
+    const miningCost = numberOr(inputs?.mining_cost, 1200.0);
+    const procCost = numberOr(inputs?.processing_cost, 650.0);
 
     setLoading(true);
     fetch(`${API_BASE}/api/logistics/smelter`, {

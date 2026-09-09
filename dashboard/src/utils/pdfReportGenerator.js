@@ -59,6 +59,7 @@ export function generateGovtReportPDF(report, selectedMineName) {
   const slateMuted = [100, 116, 139];    // #64748B
   const bgLight = [248, 250, 252];       // #F8FAFC
   const borderGray = [203, 213, 225];    // #CBD5E1
+  const bodyLineHeight = 4.4;
 
   let cursorY = margin;
 
@@ -157,45 +158,32 @@ export function generateGovtReportPDF(report, selectedMineName) {
   };
 
   const renderSubItem = (itemNumber, label, text) => {
-    checkPageBreak(12);
+    const bodyText = text || "Official survey observation recorded.";
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    const wrapWidth = contentWidth - 8;
+    const splitText = doc.splitTextToSize(bodyText, wrapWidth);
+    const estimatedHeight = 5 + splitText.length * bodyLineHeight + 2;
+    checkPageBreak(estimatedHeight);
+
+    // Render the bold label on its own line
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
-    const bulletPrefix = `${itemNumber} ${label}: `;
-    doc.text(bulletPrefix, margin + 2, cursorY);
+    doc.text(`${itemNumber} ${label}:`, margin + 2, cursorY);
+    cursorY += 4.5;
 
-    const prefixWidth = doc.getTextWidth(bulletPrefix);
+    // Render body text below the label with full content width
     doc.setFont("helvetica", "normal");
     doc.setTextColor(51, 65, 85);
-
-    const availableWidth = contentWidth - 4 - prefixWidth;
-    const splitText = doc.splitTextToSize(text || "Official survey observation recorded.", availableWidth > 40 ? availableWidth : contentWidth - 8);
-
-    if (splitText.length > 0) {
-      if (availableWidth > 40) {
-        doc.text(splitText[0], margin + 2 + prefixWidth, cursorY);
-        if (splitText.length > 1) {
-          cursorY += 4.5;
-          for (let i = 1; i < splitText.length; i++) {
-            checkPageBreak(5);
-            doc.text(splitText[i], margin + 6, cursorY);
-            cursorY += 4.5;
-          }
-        } else {
-          cursorY += 5;
-        }
-      } else {
-        cursorY += 4.5;
-        for (let i = 0; i < splitText.length; i++) {
-          checkPageBreak(5);
-          doc.text(splitText[i], margin + 6, cursorY);
-          cursorY += 4.5;
-        }
-      }
-    } else {
-      cursorY += 5;
+    for (let i = 0; i < splitText.length; i++) {
+      checkPageBreak(bodyLineHeight);
+      doc.text(splitText[i], margin + 6, cursorY);
+      cursorY += bodyLineHeight;
     }
+    cursorY += 1;
   };
+
 
   // -------------------------------------------------------------
   // PAGE 1: OFFICIAL STATUTORY HEADER & EXECUTIVE DOSSIER
@@ -239,44 +227,55 @@ export function generateGovtReportPDF(report, selectedMineName) {
   doc.text(`DOSSIER ID: ${dossierRef}`, pageWidth - margin - doc.getTextWidth(`DOSSIER ID: ${dossierRef}`) - 4, cursorY + 5);
 
   // Metadata Fields Grid
+  const colHalf = (contentWidth - 6) / 2;
   const metaCol1X = margin + 4;
-  const metaCol2X = margin + (contentWidth / 2) + 2;
+  const metaCol2X = margin + colHalf + 4;
+  const valCol1X = metaCol1X + 36;
+  const valCol2X = metaCol2X + 34;
+
+  const safeConcession = (mineContext || "Active Lease").toUpperCase();
+  const conciseDomain = report.category
+    ? (report.category.length > 25 ? report.category.substring(0, 23) + "..." : report.category)
+    : "Mineral Exploration";
+  const conciseBadge = report.badge
+    ? (report.badge.length > 16 ? report.badge.substring(0, 14) + "..." : report.badge)
+    : "IBM GSI";
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.8);
+  doc.setFontSize(7.5);
   doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
-  doc.text("Target Concession / Mining Lease:", metaCol1X, cursorY + 13);
+  doc.text("Concession / Lease:", metaCol1X, cursorY + 13);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(govtNavy[0], govtNavy[1], govtNavy[2]);
-  doc.text(mineContext.toUpperCase(), metaCol1X + 46, cursorY + 13);
+  doc.text(safeConcession.length > 28 ? safeConcession.substring(0, 26) + "..." : safeConcession, valCol1X, cursorY + 13);
 
   doc.setFont("helvetica", "bold");
   doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
-  doc.text("Functional Exploration Domain:", metaCol1X, cursorY + 19);
+  doc.text("Domain & Module:", metaCol1X, cursorY + 19);
   doc.setFont("helvetica", "normal");
-  doc.text(`${report.category || "Mineral Intelligence"} [${report.badge || "IBM"}]`, metaCol1X + 46, cursorY + 19);
+  doc.text(`${conciseDomain} [${conciseBadge}]`, valCol1X, cursorY + 19);
 
   doc.setFont("helvetica", "bold");
-  doc.text("Statutory Framework Protocol:", metaCol1X, cursorY + 25);
+  doc.text("Statutory Standard:", metaCol1X, cursorY + 25);
   doc.setFont("helvetica", "normal");
-  doc.text("UNFC-1997 / UNFC-2009 Standards & MCDR 2017 Form G", metaCol1X + 46, cursorY + 25);
+  doc.text("UNFC 1997/2009 & MCDR 2017 Form G", valCol1X, cursorY + 25);
 
   // Col 2
   doc.setFont("helvetica", "bold");
-  doc.text("Certified Date of Generation:", metaCol2X, cursorY + 13);
+  doc.text("Certified Date:", metaCol2X, cursorY + 13);
   doc.setFont("helvetica", "normal");
-  doc.text(`${dateFormatted} ${timeFormatted} IST`, metaCol2X + 42, cursorY + 13);
+  doc.text(`${dateFormatted} IST`, valCol2X, cursorY + 13);
 
   doc.setFont("helvetica", "bold");
-  doc.text("Statutory Regulatory Authority:", metaCol2X, cursorY + 19);
+  doc.text("Statutory Body:", metaCol2X, cursorY + 19);
   doc.setFont("helvetica", "normal");
-  doc.text("Ministry of Mines & Indian Bureau of Mines", metaCol2X + 42, cursorY + 19);
+  doc.text("Ministry of Mines & IBM (Govt. of India)", valCol2X, cursorY + 19);
 
   doc.setFont("helvetica", "bold");
-  doc.text("Digital Verification Hash:", metaCol2X, cursorY + 25);
+  doc.text("Verification Hash:", metaCol2X, cursorY + 25);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
-  doc.text(`SHA-256: ${Math.random().toString(36).substring(2, 12).toUpperCase()}-MOIL-IBM`, metaCol2X + 42, cursorY + 25);
+  doc.text(`SHA-256: ${Math.random().toString(36).substring(2, 10).toUpperCase()}-MOIL`, valCol2X, cursorY + 25);
 
   cursorY += 36;
 
@@ -293,36 +292,62 @@ export function generateGovtReportPDF(report, selectedMineName) {
   doc.text("Official Technical Appraisal, Explainable AI Audit Trail & UNFC Compliance Dossier", margin, cursorY);
   cursorY += 7;
 
+  const scopeLines = doc.splitTextToSize(
+    "This portal is strictly for India and its constituent mine locations. Outputs are indicative exploration and operational screening results, not certified mineral reserves. Coordinate, image, borehole, assay, and operational inputs must be verified by qualified geological and mine-planning professionals.",
+    contentWidth - 10
+  );
+  const scopeBoxHeight = 8 + scopeLines.length * 3.8 + 3;
+  checkPageBreak(scopeBoxHeight + 2);
+  doc.setFillColor(239, 246, 255);
+  doc.setDrawColor(147, 197, 253);
+  doc.roundedRect(margin, cursorY, contentWidth, scopeBoxHeight, 2, 2, "FD");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(govtNavy[0], govtNavy[1], govtNavy[2]);
+  doc.text("SCOPE & USE LIMITATION", margin + 5, cursorY + 5.5);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.2);
+  doc.setTextColor(30, 64, 175);
+  doc.text(scopeLines, margin + 5, cursorY + 10);
+  cursorY += scopeBoxHeight + 3;
+
+
   // Executive Objective & Explainable AI (XAI) Charter Box
-  checkPageBreak(28);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  const execSummaryLines = doc.splitTextToSize(report.executiveSummary || "", contentWidth - 12);
+  const rationaleText = report.explainableAiRationale || "";
+  const rationaleWrapped = doc.splitTextToSize("Statutory Decision Rationale: " + rationaleText, contentWidth - 12);
+  const xaiBoxHeight = 8 + execSummaryLines.length * bodyLineHeight + 4 + rationaleWrapped.length * bodyLineHeight + 4;
+  checkPageBreak(xaiBoxHeight + 4);
+
   doc.setFillColor(241, 245, 249);
   doc.setDrawColor(148, 163, 184);
   doc.setLineWidth(0.4);
-  doc.roundedRect(margin, cursorY, contentWidth, 25, 2, 2, "FD");
+  doc.roundedRect(margin, cursorY, contentWidth, xaiBoxHeight, 2, 2, "FD");
 
   doc.setFillColor(govtNavy[0], govtNavy[1], govtNavy[2]);
-  doc.rect(margin, cursorY, 3, 25, "F");
+  doc.rect(margin, cursorY, 3, xaiBoxHeight, "F");
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8.5);
   doc.setTextColor(govtNavy[0], govtNavy[1], govtNavy[2]);
   doc.text("EXPLAINABLE AI (XAI) OPERATIONAL MANDATE & AUDIT TRAIL", margin + 6, cursorY + 5.5);
 
+  let xaiTextY = cursorY + 11.5;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(30, 41, 59);
-  const execSummaryLines = doc.splitTextToSize(report.executiveSummary || "", contentWidth - 12);
-  doc.text(execSummaryLines.slice(0, 2), margin + 6, cursorY + 11.5);
+  doc.text(execSummaryLines, margin + 6, xaiTextY);
+  xaiTextY += execSummaryLines.length * bodyLineHeight + 3;
 
   doc.setFont("helvetica", "bold");
   doc.setTextColor(secondaryNavy[0], secondaryNavy[1], secondaryNavy[2]);
-  doc.text("Statutory Decision Rationale: ", margin + 6, cursorY + 20);
-  const rationaleLines = doc.splitTextToSize(report.explainableAiRationale || "", contentWidth - 48);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(51, 65, 85);
-  doc.text(rationaleLines.slice(0, 1), margin + 46, cursorY + 20);
+  doc.setFontSize(8);
+  doc.text(rationaleWrapped, margin + 6, xaiTextY);
 
-  cursorY += 30;
+  cursorY += xaiBoxHeight + 5;
+
 
   // -------------------------------------------------------------
   // THE 5 STATUTORY GOVERNMENT AREAS (GOVERNMENT SPECIFICATION)
@@ -369,6 +394,12 @@ export function generateGovtReportPDF(report, selectedMineName) {
 
   renderSectionHeading("Explainable AI (XAI) Input Parameters & Calibration Dictionary", govtNavy, "6.0");
 
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(7.2);
+  doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
+  doc.text("Model inputs are screening indicators. RGB uploads use derived proxy channels and must not be interpreted as measured Sentinel-2 SWIR data.", margin, cursorY);
+  cursorY += 6;
+
   const parameterRows = (report.parametersTable || []).map((p) => [
     p.name,
     p.unit,
@@ -379,9 +410,16 @@ export function generateGovtReportPDF(report, selectedMineName) {
 
   drawTable(doc, {
     startY: cursorY,
+    pageBreak: "auto",
+    rowPageBreak: "avoid",
     head: [["Parameter Name", "Unit", "Mining Range", "Default", "Operational & Geological Role"]],
     body: parameterRows,
     theme: "striped",
+    styles: {
+      overflow: "linebreak",
+      valign: "top",
+      lineHeightFactor: 1.25,
+    },
     headStyles: {
       fillColor: govtNavy,
       textColor: [255, 255, 255],
@@ -421,9 +459,16 @@ export function generateGovtReportPDF(report, selectedMineName) {
 
   drawTable(doc, {
     startY: cursorY,
+    pageBreak: "auto",
+    rowPageBreak: "avoid",
     head: [["Metric / Visual Output", "Operational & Geological Interpretation", "Statutory Action Threshold / Alert Rule"]],
     body: outputRows,
     theme: "striped",
+    styles: {
+      overflow: "linebreak",
+      valign: "top",
+      lineHeightFactor: 1.25,
+    },
     headStyles: {
       fillColor: secondaryNavy,
       textColor: [255, 255, 255],
@@ -453,18 +498,21 @@ export function generateGovtReportPDF(report, selectedMineName) {
   renderSectionHeading("Cross-Module Scientific Defense & Operational Validation", purpleAccent, "8.0");
 
   (report.judgePitch || []).forEach((pitch, i) => {
-    checkPageBreak(10);
+    const pitchLines = doc.splitTextToSize(pitch, contentWidth - 8);
+    const pitchHeight = 6 + pitchLines.length * 4.2 + 3;
+    checkPageBreak(pitchHeight);
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.8);
     doc.setTextColor(purpleAccent[0], purpleAccent[1], purpleAccent[2]);
     doc.text(`[Statutory Validation ${i + 1}]`, margin + 2, cursorY);
+    cursorY += 4.5;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.8);
     doc.setTextColor(30, 41, 59);
-    const pitchLines = doc.splitTextToSize(pitch, contentWidth - 40);
-    doc.text(pitchLines, margin + 35, cursorY);
-    cursorY += pitchLines.length * 4.2 + 2.5;
+    doc.text(pitchLines, margin + 6, cursorY);
+    cursorY += pitchLines.length * 4.2 + 3;
   });
 
   // -------------------------------------------------------------

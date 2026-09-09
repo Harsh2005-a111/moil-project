@@ -15,9 +15,12 @@ Core Modules:
   • Module D: Multi-Region & Custom Lease Management (/api/mines, /api/simulate)
 """
 
-from fastapi import FastAPI, HTTPException
+import hashlib
+import os
+
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List, Dict, Any
 import numpy as np
 import pandas as pd
@@ -33,7 +36,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[origin.strip() for origin in os.getenv(
+        "MOIL_ALLOWED_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000,https://moil-project.vercel.app",
+    ).split(",") if origin.strip()],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -44,6 +50,12 @@ app.include_router(satellite_router)
 from app.shortfall_engine import predict_production_shortfall, compute_smelter_logistics
 from app.borehole_engine import MOIL_BOREHOLE_PRESETS, analyze_borehole_log, parse_borehole_csv_string
 from app.commodity_context import classify_commodity_context
+from app.geo_validation import (
+    INDIA_LATITUDE_MAX,
+    INDIA_LATITUDE_MIN,
+    INDIA_LONGITUDE_MAX,
+    INDIA_LONGITUDE_MIN,
+)
 
 MODEL_PATH = Path(__file__).parent / "model" / "shortfall_model.pkl"
 ENCODERS_PATH = Path(__file__).parent / "model" / "encoders.pkl"
@@ -161,26 +173,32 @@ class ReserveEstimateRequest(BaseModel):
     region_name: str = "Balaghat Formation"
     x_range: List[float] = [0, 500]
     y_range: List[float] = [0, 500]
-    depth_m: float = 75.0
-    ore_grade_cutoff: float = 28.0
-    rainfall_mm: float = 35.0
-    soil_moisture: float = 0.28
-    ndvi: float = 0.42
-    land_temp_c: float = 32.5
+    depth_m: float = Field(75.0, gt=0.0, le=5000.0)
+    ore_grade_cutoff: float = Field(28.0, ge=0.0, le=100.0)
+    rainfall_mm: float = Field(35.0, ge=0.0, le=5000.0)
+    soil_moisture: float = Field(0.28, ge=0.0, le=1.0)
+    ndvi: float = Field(0.42, ge=-1.0, le=1.0)
+    land_temp_c: float = Field(32.5, ge=-50.0, le=70.0)
     is_barren: Optional[bool] = False
-    expected_grade_pct: Optional[float] = None
-    expected_tonnage_kt: Optional[float] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
+    expected_grade_pct: Optional[float] = Field(None, ge=0.0, le=100.0)
+    expected_tonnage_kt: Optional[float] = Field(None, ge=0.0, le=10_000_000.0)
+    latitude: Optional[float] = Field(None, ge=INDIA_LATITUDE_MIN, le=INDIA_LATITUDE_MAX)
+    longitude: Optional[float] = Field(None, ge=INDIA_LONGITUDE_MIN, le=INDIA_LONGITUDE_MAX)
+
+    @model_validator(mode="after")
+    def validate_coordinate_pair(self):
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("latitude and longitude must be supplied together")
+        return self
 
 
 class ScenarioSimulateRequest(BaseModel):
     region_name: str = "Balaghat Mine"
-    base_tonnage: float = 12000.0
-    rainfall_intensity_pct: float = Field(0.0, description="% Increase in monsoon rainfall")
-    equipment_failure_pct: float = Field(0.0, description="% Drop in fleet availability")
-    blasting_delay_hours: float = Field(0.0, description="Blasting delay in hours")
-    grade_variation_pct: float = Field(0.0, description="% Ore grade deviation")
+    base_tonnage: float = Field(12000.0, ge=0.0, le=10_000_000.0)
+    rainfall_intensity_pct: float = Field(0.0, ge=0.0, le=100.0, description="% Increase in monsoon rainfall")
+    equipment_failure_pct: float = Field(0.0, ge=0.0, le=100.0, description="% Drop in fleet availability")
+    blasting_delay_hours: float = Field(0.0, ge=0.0, le=1000.0, description="Blasting delay in hours")
+    grade_variation_pct: float = Field(0.0, ge=0.0, le=100.0, description="% Ore grade deviation")
 
 
 class SatelliteProspectorInputs(BaseModel):
@@ -190,8 +208,8 @@ class SatelliteProspectorInputs(BaseModel):
     (IP/Resistivity) are OPTIONAL — only used when GSI data exists for the area.
     """
     region_name: str = "Central India Sausar Exploration Zone"
-    latitude: float = 21.80
-    longitude: float = 80.15
+    latitude: float = Field(21.80, ge=INDIA_LATITUDE_MIN, le=INDIA_LATITUDE_MAX)
+    longitude: float = Field(80.15, ge=INDIA_LONGITUDE_MIN, le=INDIA_LONGITUDE_MAX)
 
     # ---- PRIMARY: Freely Available Satellite Inputs ----
     # Source: Sentinel-2 SWIR Band 11 (1610 nm) & Band 12 (2190 nm)
@@ -644,6 +662,33 @@ def estimate_reserves(req: ReserveEstimateRequest):
                 "prediction_status": "NON_MN_COMMODITY",
                 "commodity_context": commodity_context,
             }
+        if commodity_context["status"] != "MN_COMPATIBLE":
+            return {
+                "region_name": req.region_name,
+                "grid_size": grid_size,
+                "probability_grid": np.zeros((grid_size, grid_size)).tolist(),
+                "total_estimated_tonnage_kt": 0.0,
+                "economically_viable_tonnage_kt": 0.0,
+                "viable_block_ratio_pct": 0.0,
+                "top_zones": [],
+                "depth_slices": [],
+                "prediction_status": "UNKNOWN_LOCATION_CONTEXT",
+                "commodity_context": commodity_context,
+                "message": "Reserve estimation abstained because this India coordinate is not in a verified Mn context.",
+            }
+    elif req.expected_grade_pct is None or req.expected_tonnage_kt is None:
+        return {
+            "region_name": req.region_name,
+            "grid_size": grid_size,
+            "probability_grid": np.zeros((grid_size, grid_size)).tolist(),
+            "total_estimated_tonnage_kt": 0.0,
+            "economically_viable_tonnage_kt": 0.0,
+            "viable_block_ratio_pct": 0.0,
+            "top_zones": [],
+            "depth_slices": [],
+            "prediction_status": "UNKNOWN_LOCATION_CONTEXT",
+            "message": "Provide a verified India mine coordinate or explicit survey-backed grade and tonnage.",
+        }
     is_barren_eval = (
         req.is_barren
         or (req.expected_grade_pct is not None and req.expected_grade_pct == 0.0)
@@ -654,7 +699,9 @@ def estimate_reserves(req: ReserveEstimateRequest):
 
     if is_barren_eval:
         # Zero reserve / non-mineralized country rock spatial distribution
-        fused_grid = np.random.uniform(0.01, 0.06, size=(grid_size, grid_size))
+        seed_material = f"barren|{req.region_name}|{req.depth_m}".encode("utf-8")
+        rng = np.random.default_rng(int.from_bytes(hashlib.sha256(seed_material).digest()[:8], "big"))
+        fused_grid = rng.uniform(0.01, 0.06, size=(grid_size, grid_size))
         total_tonnage = 0.0
         viable_tonnage = 0.0
         viable_cells = 0
@@ -672,7 +719,9 @@ def estimate_reserves(req: ReserveEstimateRequest):
         prob_center = min(0.96, max(0.15, exp_grade / 48.0))
         
         # Spatial variogram pattern around predicted grade
-        base_grid = np.random.beta(prob_center * 10, (1.0 - prob_center) * 10, size=(grid_size, grid_size))
+        seed_material = f"expected|{req.region_name}|{req.depth_m}|{exp_grade}|{exp_tonnage}".encode("utf-8")
+        rng = np.random.default_rng(int.from_bytes(hashlib.sha256(seed_material).digest()[:8], "big"))
+        base_grid = rng.beta(prob_center * 10, (1.0 - prob_center) * 10, size=(grid_size, grid_size))
         fused_grid = np.clip(base_grid, 0.02, 0.98)
 
         total_tonnage = round((exp_tonnage / 0.82) * 1000.0, 1)
@@ -706,9 +755,9 @@ def estimate_reserves(req: ReserveEstimateRequest):
         zones.sort(key=lambda x: x["probability"], reverse=True)
     else:
         # Default geological distribution for legacy mines
-        seed_val = int(abs(hash(req.region_name) + req.depth_m * 10 + req.ore_grade_cutoff * 5) % 10000)
-        np.random.seed(seed_val)
-        base_grid = np.random.beta(3, 4, size=(grid_size, grid_size))
+        seed_material = f"default|{req.region_name}|{req.depth_m}|{req.ore_grade_cutoff}|{req.ndvi}|{req.soil_moisture}|{req.land_temp_c}".encode("utf-8")
+        rng = np.random.default_rng(int.from_bytes(hashlib.sha256(seed_material).digest()[:8], "big"))
+        base_grid = rng.beta(3, 4, size=(grid_size, grid_size))
         satellite_weight = (req.ndvi * 0.2 + req.soil_moisture * 0.3 + (req.land_temp_c / 50.0) * 0.1)
         fused_grid = np.clip(base_grid + satellite_weight * 0.2, 0.05, 0.98)
 
@@ -719,7 +768,10 @@ def estimate_reserves(req: ReserveEstimateRequest):
         viable_cells = int(np.sum(fused_grid >= (req.ore_grade_cutoff / 100.0)))
         
         total_tonnage = total_cells * cell_area_m2 * cell_depth_m * rock_density * 0.4
-        viable_tonnage = viable_cells * cell_area_m2 * cell_depth_m * rock_density * 0.82
+        viable_tonnage = min(
+            total_tonnage,
+            viable_cells * cell_area_m2 * cell_depth_m * rock_density * 0.82,
+        )
 
         calc_mean_grade = float(np.mean(20.0 + fused_grid * 30.0))
         depth_slices = [
@@ -744,6 +796,7 @@ def estimate_reserves(req: ReserveEstimateRequest):
                 })
         zones.sort(key=lambda x: x["probability"], reverse=True)
 
+    viable_tonnage = min(max(0.0, total_tonnage), max(0.0, viable_tonnage))
     return {
         "region_name": req.region_name,
         "grid_size": grid_size,
@@ -784,7 +837,7 @@ def simulate_scenario(req: ScenarioSimulateRequest):
 
     predicted_actual = max(0.0, base_ton - (rain_loss + eq_loss + blast_loss + grade_loss))
     shortfall_tonnes = max(0.0, base_ton - predicted_actual)
-    shortfall_pct = round((shortfall_tonnes / base_ton) * 100.0, 1)
+    shortfall_pct = round((shortfall_tonnes / base_ton) * 100.0, 1) if base_ton > 0 else 0.0
 
     mitigated_recovery_tonnes = shortfall_tonnes * 0.68
     residual_shortfall = shortfall_tonnes - mitigated_recovery_tonnes

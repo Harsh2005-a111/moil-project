@@ -7,12 +7,13 @@ import ShortfallPredictor from "./components/ShortfallPredictor";
 import PrescriptiveActions from "./components/PrescriptiveActions";
 import ScenarioSimulator from "./components/ScenarioSimulator";
 import GlobalKPIBar from "./components/GlobalKPIBar";
+import LandingPage from "./components/LandingPage";
 import { MOIL_MINES } from "./data/moilData";
+import { API_BASE, numberOr } from "./config";
 import "./App.css";
 
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
-
 export default function App() {
+  const [showLanding, setShowLanding] = useState(true);
   const [activeSection, setActiveSection] = useState("kpis");
   const [isSidebarPinned, setIsSidebarPinned] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
@@ -77,24 +78,24 @@ export default function App() {
           name: r.region_name,
           state: "Custom / Satellite Prospect",
           district: "Exploration Zone",
-          lat: r.latitude || 21.80,
-          lon: r.longitude || 80.15,
-          lease_area_ha: Math.round((r.estimated_reserves_kt || 1000) * 0.18),
-          annual_capacity_mt: Number(((r.estimated_reserves_kt || 1000) / 4000.0).toFixed(2)),
+          lat: numberOr(r.latitude, 21.80),
+          lon: numberOr(r.longitude, 80.15),
+          lease_area_ha: Math.round(numberOr(r.total_available_reserves_kt, 1000) * 0.18),
+          annual_capacity_mt: Number((numberOr(r.total_available_reserves_kt, 1000) / 4000.0).toFixed(2)),
           primary_rock: r.host_lithology || "Braunite",
-          avg_grade_pct: r.estimated_grade_pct || 40.0,
-          avg_rainfall_mm: (r.rainfall_mm_weekly || 35.0) * 3.0,
+          avg_grade_pct: numberOr(r.estimated_grade_pct, 40.0),
+          avg_rainfall_mm: numberOr(r.rainfall_mm_weekly, 35.0) * 3.0,
           fleet_size: 16,
           type: "Custom Lease",
-          predicted_reserves_kt: r.estimated_reserves_kt || 1200,
+          predicted_reserves_kt: numberOr(r.total_available_reserves_kt, 1200),
           inputs: {
             block_id: `BLK-${r.region_name.slice(0, 3).toUpperCase()}-01`,
             x: 180,
             y: 320,
-            z: r.elevation_m || 75,
+            z: numberOr(r.elevation_m, 75),
             rock_type: r.host_lithology?.includes("Braunite") ? "Braunite" : "Magnetite",
-            ore_grade_pct: r.estimated_grade_pct || 40.0,
-            tonnage: (r.estimated_reserves_kt || 1200) * 1000.0,
+            ore_grade_pct: numberOr(r.estimated_grade_pct, 40.0),
+            tonnage: numberOr(r.total_available_reserves_kt, 1200) * 1000.0,
             ore_value_per_tonne: 280.0,
             mining_cost: 45.0,
             processing_cost: 29.0,
@@ -102,10 +103,10 @@ export default function App() {
             equipment_availability_pct: 88.0,
             unscheduled_downtime_hours: 3.5,
             blast_cycle_delay_hours: 1.5,
-            rainfall_mm: r.rainfall_mm_weekly || 38.0,
-            soil_moisture: r.soil_moisture || 0.28,
-            ndvi: r.ndvi || 0.35,
-            land_temp_c: r.land_surface_temp_c || 33.5,
+            rainfall_mm: numberOr(r.rainfall_mm_weekly, 38.0),
+            soil_moisture: numberOr(r.soil_moisture, 0.28),
+            ndvi: numberOr(r.ndvi, 0.35),
+            land_temp_c: numberOr(r.land_surface_temp_c, 33.5),
           },
         }));
 
@@ -156,12 +157,12 @@ export default function App() {
     const payload = {
       region_name: selectedMine?.name || activeInputs.region_name || "MOIL Exploration Zone",
       block_id: activeInputs.block_id || "BLK-01",
-      x: parseFloat(activeInputs.x) || 150.0,
-      y: parseFloat(activeInputs.y) || 320.0,
-      z: parseFloat(activeInputs.z) || 85.0,
+      x: numberOr(activeInputs.x, 150.0),
+      y: numberOr(activeInputs.y, 320.0),
+      z: numberOr(activeInputs.z, 85.0),
       rock_type: activeInputs.rock_type || "Magnetite",
-      ore_grade_pct: parseFloat(activeInputs.ore_grade_pct) || 38.5,
-      tonnage: parseFloat(activeInputs.tonnage) || 120000.0,
+      ore_grade_pct: numberOr(activeInputs.ore_grade_pct, 38.5),
+      tonnage: numberOr(activeInputs.tonnage, 120000.0),
       ore_value_per_tonne: parseFloat(activeInputs.ore_value_per_tonne) || 260.0,
       mining_cost: parseFloat(activeInputs.mining_cost) || 45.0,
       processing_cost: parseFloat(activeInputs.processing_cost) || 28.0,
@@ -256,6 +257,10 @@ export default function App() {
     if (match) setSelectedMine(match);
   };
 
+  if (showLanding) {
+    return <LandingPage onEnterDashboard={() => setShowLanding(false)} />;
+  }
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#F1F5F9", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
       {/* Expandable / Collapsible Left Vertical Navigation */}
@@ -293,6 +298,29 @@ export default function App() {
 
         {/* Section Viewport Router */}
         <main style={{ padding: "20px 24px", flex: 1, display: "flex", flexDirection: "column", gap: 18 }}>
+          {activeSection === "kpis" && !selectedMine && (
+            <section
+              aria-labelledby="portal-welcome-title"
+              style={{
+                background: "linear-gradient(120deg, #0B2545 0%, #185FA5 62%, #0F766E 100%)",
+                color: "#FFFFFF",
+                borderRadius: 14,
+                padding: "28px 30px",
+                boxShadow: "0 8px 24px rgba(11,37,69,0.18)",
+              }}
+            >
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "#BAE6FD", marginBottom: 8 }}>
+                MOIL India Mine Intelligence Portal
+              </div>
+              <h1 id="portal-welcome-title" style={{ margin: "0 0 10px", fontSize: 28, lineHeight: 1.15, maxWidth: 760 }}>
+                Explore, validate, and plan manganese operations across India.
+              </h1>
+              <p style={{ margin: 0, maxWidth: 780, color: "#E0F2FE", fontSize: 14, lineHeight: 1.65 }}>
+                This portal is strictly for India and its constituent mine locations. Select a MOIL mine or an India-based exploration sector to begin. Satellite and reserve outputs are indicative screening results and require geological and assay confirmation.
+              </p>
+            </section>
+          )}
+
           {/* Universal Real-Time KPI Bar across all modules */}
           <GlobalKPIBar
             selectedMine={selectedMine}

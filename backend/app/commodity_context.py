@@ -16,15 +16,13 @@ REFERENCE_PATH = (
 )
 
 
-def _load_non_mn_locations():
+def _load_locations():
     """Load representative commodity points; lease polygons can replace these later."""
     if not REFERENCE_PATH.exists():
         return []
     with REFERENCE_PATH.open("r", encoding="utf-8", newline="") as file:
         locations = []
         for row in csv.DictReader(file):
-            if row["commodity"] == "manganese":
-                continue
             name_tokens = tuple(token for token in row["name"].lower().replace("-", " ").split() if len(token) > 3)
             locations.append({
                 "name": row["name"],
@@ -39,8 +37,9 @@ def _load_non_mn_locations():
             })
         return locations
 
-
-NON_MN_LOCATIONS = _load_non_mn_locations()
+REFERENCE_LOCATIONS = _load_locations()
+NON_MN_LOCATIONS = [record for record in REFERENCE_LOCATIONS if record["commodity"] != "manganese"]
+MN_LOCATIONS = [record for record in REFERENCE_LOCATIONS if record["commodity"] == "manganese"]
 
 
 def _distance_km(latitude: float, longitude: float, record: Dict[str, Any]) -> float:
@@ -88,6 +87,18 @@ def classify_commodity_context(
             "source": nearest_name_match["source"],
             "reason": "Site name was supplied, but coordinates are outside the registered site radius.",
         }
+
+    for record in MN_LOCATIONS:
+        distance_km = _distance_km(latitude, longitude, record)
+        if distance_km <= record["match_radius_km"]:
+            return {
+                "status": "MN_COMPATIBLE",
+                "commodity": "manganese",
+                "matched_site": record["name"],
+                "distance_km": round(distance_km, 2),
+                "source": record["source"],
+                "reason": "Coordinate falls within the verified manganese site context.",
+            }
 
     return {
         "status": "UNKNOWN",

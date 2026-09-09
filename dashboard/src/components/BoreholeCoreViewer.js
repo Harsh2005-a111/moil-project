@@ -6,12 +6,13 @@ import {
   RefreshCw,
 } from "lucide-react";
 import SectionReportButton from "./SectionReportButton";
+import { API_BASE } from "../config";
 
 export default function BoreholeCoreViewer({
   selectedMine,
   surfacePredictedGrade,
   onApplyBoreholeAssay,
-  API_BASE = "http://127.0.0.1:8000",
+  API_BASE: apiBase = API_BASE,
 }) {
   const [presets, setPresets] = useState(null);
   const [selectedPresetKey, setSelectedPresetKey] = useState("BH-BGT-42");
@@ -23,7 +24,7 @@ export default function BoreholeCoreViewer({
 
   // Fetch presets on mount
   useEffect(() => {
-    fetch(`${API_BASE}/api/reserves/borehole/presets`)
+    fetch(`${apiBase}/api/reserves/borehole/presets`)
       .then((r) => r.json())
       .then((res) => {
         if (res.status === "success" && res.presets) {
@@ -34,13 +35,13 @@ export default function BoreholeCoreViewer({
       .catch((err) => {
         console.error("Error loading borehole presets:", err);
       });
-  }, [API_BASE]);
+  }, [apiBase]);
 
   const analyzePreset = (presetData) => {
     if (!presetData) return;
     setLoading(true);
     setErrorMsg(null);
-    fetch(`${API_BASE}/api/reserves/borehole/analyze`, {
+    fetch(`${apiBase}/api/reserves/borehole/analyze`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -78,7 +79,7 @@ export default function BoreholeCoreViewer({
     }
     setLoading(true);
     setErrorMsg(null);
-    fetch(`${API_BASE}/api/reserves/borehole/upload`, {
+    fetch(`${apiBase}/api/reserves/borehole/upload`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

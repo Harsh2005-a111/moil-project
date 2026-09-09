@@ -19,6 +19,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { PRELOADED_SATELLITE_SCENES } from "../data/demoScenes";
+import { API_BASE as DEFAULT_API_BASE, REGION_WRITE_KEY } from "../config";
 
 // Helper to construct real File from base64 data URL
 function dataUrlToFile(dataUrl, filename) {
@@ -47,7 +48,7 @@ export default function SatelliteScanner({
   onChangeInput,
   onAddNewRegion,
   onApplyExtractedParameters,
-  API_BASE,
+  API_BASE = DEFAULT_API_BASE,
 }) {
   const [activeMode, setActiveMode] = useState("coordinates"); // "coordinates" or "upload"
   const [file, setFile] = useState(null);
@@ -178,10 +179,10 @@ export default function SatelliteScanner({
     }
   }, [selectedMine]);
 
-  // Optional Copernicus Credentials with persistent localStorage
+  // Optional credentials are transient and are never persisted in the browser.
   const [showCreds, setShowCreds] = useState(false);
-  const [clientId, setClientId] = useState(() => localStorage.getItem("MOIL_COPERNICUS_CLIENT_ID") || "");
-  const [clientSecret, setClientSecret] = useState(() => localStorage.getItem("MOIL_COPERNICUS_CLIENT_SECRET") || "");
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
 
   const fileInputRef = useRef(null);
 
@@ -554,11 +555,18 @@ export default function SatelliteScanner({
       };
 
       // 1. Post to backend
-      await fetch(`${API_BASE}/api/regions`, {
+      const saveResponse = await fetch(`${API_BASE}/api/regions`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(REGION_WRITE_KEY ? { "X-Region-Write-Key": REGION_WRITE_KEY } : {}),
+        },
         body: JSON.stringify(payload),
-      }).catch((e) => console.warn("Backend region save note:", e));
+      });
+      if (!saveResponse.ok) {
+        const saveError = await saveResponse.json().catch(() => ({}));
+        throw new Error(saveError.detail || `Region save failed (${saveResponse.status})`);
+      }
 
       // 2. Build new Mine object for frontend state
       const newMineObj = {
@@ -1060,7 +1068,6 @@ export default function SatelliteScanner({
                       value={clientId}
                       onChange={(e) => {
                         setClientId(e.target.value);
-                        localStorage.setItem("MOIL_COPERNICUS_CLIENT_ID", e.target.value);
                       }}
                       style={{ padding: "7px 10px", fontSize: 12, borderRadius: 6, border: "1px solid #CBD5E1", background: "#FFFFFF" }}
                     />
@@ -1070,12 +1077,11 @@ export default function SatelliteScanner({
                       value={clientSecret}
                       onChange={(e) => {
                         setClientSecret(e.target.value);
-                        localStorage.setItem("MOIL_COPERNICUS_CLIENT_SECRET", e.target.value);
                       }}
                       style={{ padding: "7px 10px", fontSize: 12, borderRadius: 6, border: "1px solid #CBD5E1", background: "#FFFFFF" }}
                     />
                     <span style={{ fontSize: 10.5, color: "#64748B" }}>
-                      Keys are securely preserved in your local browser session. If left blank, the platform automatically retrieves verified Sentinel-2 multispectral public imagery.
+                      Credentials are held only in memory for the current request. If left blank, the platform uses public Sentinel-2 access.
                     </span>
                   </div>
                 )}
