@@ -553,12 +553,21 @@ The platform maps any coordinate input to its underlying **Precambrian lithotect
 ## 🔬 150-Tree Ensemble Epistemic Uncertainty
 
 The inference engine interrogates all $B = 150$ individually fitted decision trees:
+$$
+\mu(x) = \frac{1}{B}\sum_{b=1}^{B} p_b(y=1|x)
+$$
 
-$$\mu(\mathbf{x}) = \frac{1}{B} \sum_{b=1}^{B} p_b(y = 1 \mid \mathbf{x})$$
+$$
+\sigma(x) = \sqrt{\frac{1}{B}\sum_{b=1}^{B}(p_b-\mu)^2}
+$$
 
-$$\sigma(\mathbf{x}) = \sqrt{\frac{1}{B} \sum_{b=1}^{B} \left( p_b - \mu \right)^2}$$
-
-$$\text{CI}_{95\%} = \left[ \max \left( 0, \mu - 1.96 \cdot \frac{\sigma}{\sqrt{150}} \right), \min \left( 1, \mu + 1.96 \cdot \frac{\sigma}{\sqrt{150}} \right) \right]$$
+$$
+CI_{95\%} =
+\left[
+\max\left(0,\mu-\frac{1.96\sigma}{\sqrt{150}}\right),
+\min\left(1,\mu+\frac{1.96\sigma}{\sqrt{150}}\right)
+\right]
+$$
 
 
 | Uncertainty Level | $\sigma$ Range | Interpretation |
