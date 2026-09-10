@@ -759,19 +759,15 @@ Distribution:
 
 ## 👤 Author & Acknowledgements
 
-- **Developer & Architect**: Harsh Raj Srivastava ([@Harsh2005-a111](https://github.com/Harsh2005-a111))
+- **Developer & Architect**: Preet Dhama ([@Preetdevloper](https://github.com/Preetdevloper)), Harsh Raj Srivastava ([@Harsh2005-a111](https://github.com/Harsh2005-a111)), Satvik Aggarwal ([@Satvik3009](https://github.com/Satvik3009)), Ansh Chaturvedi ([@Ansh410](https://github.com/Ansh410)), Janya Goel ([@Janya-Goel](https://github.com/Janya-Goel)), Yuvraj Tyagi ([@Yuvraj-Tyagi](https://github.com/Yuvraj-Tyagi))
 - **Project Domain**: Manganese Ore India Limited (MOIL), Ministry of Steel, Government of India
 - **Data Acknowledgements**: European Space Agency (ESA) Copernicus Sentinel-2, Geological Survey of India (GSI), Indian Bureau of Mines (IBM), NOAA NCEI (EMAG2v3), NASA JPL (SRTM v3)
 
 ---
 
-## Important
-
-Before submission, make sure the repository is accessible to reviewers. Do **not** upload passwords, API keys, access tokens, `.env` files containing secrets, or other confidential credentials.
-
 ---
 
 <div align="center">
   <sub>Engineered for precision mining intelligence, operational resilience, and statutory compliance.</sub><br/>
-  <sub>© 2026 MOIL Smart Mining Intelligence Platform. All Rights Reserved.</sub>
+  <sub>© 2026 MineSight AI. All Rights Reserved.</sub>
 </div>
