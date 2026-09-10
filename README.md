@@ -553,6 +553,7 @@ The platform maps any coordinate input to its underlying **Precambrian lithotect
 ## 🔬 150-Tree Ensemble Epistemic Uncertainty
 
 The inference engine interrogates all $B = 150$ individually fitted decision trees:
+
 $$
 \mu(x) = \frac{1}{B}\sum_{b=1}^{B} p_b(y=1|x)
 $$
