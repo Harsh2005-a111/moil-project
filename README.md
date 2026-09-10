@@ -345,7 +345,8 @@ A comprehensive demo video showcasing the platform's capabilities will be availa
 
 ## 10. Screenshots / Prototype Photos
 
-Platform screenshots and interface demonstrations are available Key interface components include:
+Platform screenshots and interface demonstrations are available in ![Project Dashboard](assets/screenshots/).
+Key interface components include:
 
 - Satellite Multi-Spectral Scanner with real-time Sentinel-2 imagery
 - IBM 3-Tier Grade Classification Dashboard
