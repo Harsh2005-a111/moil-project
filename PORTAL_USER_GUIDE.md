@@ -116,9 +116,9 @@ The platform strictly adheres to the **Indian Bureau of Mines (IBM)** thresholds
 
 Point estimates can be misleading. The portal reports the variance across all 150 regularized decision trees:
 
-$$\mu = rac{1}{M}\sum_{i=1}^M \hat{y}_i, \quad \sigma = \sqrt{rac{1}{M}\sum_{i=1}^M (\hat{y}_i - \mu)^2}, \quad 	ext{SE} = rac{\sigma}{\sqrt{M}}$$
+$$\mu = \frac{1}{M}\sum_{i=1}^M \hat{y}_i, \quad \sigma = \sqrt{\frac{1}{M}\sum_{i=1}^M (\hat{y}_i - \mu)^2}, \quad \text{SE} = \frac{\sigma}{\sqrt{M}}$$
 
-- **95% Confidence Interval**: Displayed as $\mu \pm 1.96 \cdot 	ext{SE}$.
+- **95% Confidence Interval**: Displayed as $\mu \pm 1.96 \cdot \text{SE}$.
 - **Confidence Quality Rating**:
   - **High (± < 3.5%)**: Tightly clustered trees; high geophysical and spectral consensus.
   - **Moderate (± 3.5%–7.0%)**: Suitable for reconnaissance; recommend confirmation drillholes.
@@ -161,7 +161,7 @@ $$\mu = rac{1}{M}\sum_{i=1}^M \hat{y}_i, \quad \sigma = \sqrt{rac{1}{M}\sum_{i
      - ⚪ **Schist / Gneiss Country Rock Overburden** (< 5% Mn)
 3. **IDW Block Model Interpolation**:
    - View cross-sectional orebody wireframes generated via Inverse Distance Weighting:
-     $$\hat{Z}(s_0) = rac{\sum_{i=1}^n w_i Z(s_i)}{\sum_{i=1}^n w_i}, \quad w_i = rac{1}{d(s_0, s_i)^p}$$
+     $$\hat{Z}(s_0) = \frac{\sum_{i=1}^n w_i Z(s_i)}{\sum_{i=1}^n w_i}, \quad w_i = \frac{1}{d(s_0, s_i)^p}$$
    - Validate strike continuity and dip direction before issuing drilling tenders.
 
 ---
@@ -183,7 +183,7 @@ $$\mu = rac{1}{M}\sum_{i=1}^M \hat{y}_i, \quad \sigma = \sqrt{rac{1}{M}\sum_{i
 1. **Monitor Destination Smelters**:
    - Real-time demand tracking for Bhilai Steel Plant, Rourkela, Vizag Steel, and Chandrapur Ferro-Alloy Plant.
 2. **Optimize Net Smelter Return (NSR)**:
-   $$	ext{NSR} = 	ext{Ore Price}(	ext{Grade}) - 	ext{Mining Cost} - 	ext{Beneficiation Cost} - 	ext{Rail/Road Freight}$$
+   $$\text{NSR} = \text{Ore Price}(\text{Grade}) - \text{Mining Cost} - \text{Beneficiation Cost} - \text{Rail/Road Freight}$$
 3. **Dispatch Recommendation**:
    - Selects optimal rakes vs. road truck combinations to minimize demurrage penalties and maximize net realization per ton.
 

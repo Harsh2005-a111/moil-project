@@ -119,11 +119,11 @@ The code uses values such as:
 
 This is calculated as:
 
-$Recoverable\_Tonnes = Total\_Reserve\_Tonnes \times Recovery\_Pct$
+$$\text{Recoverable\_Tonnes} = \text{Total\_Reserve\_Tonnes} \times \text{Recovery\_Pct}$$
 
 So if total reserve tonnage is 1000 kt and recovery is 60%, then:
 
-$Recoverable\_Tonnes = 1000 \times 0.60 = 600\;kt$
+$$\text{Recoverable\_Tonnes} = 1000 \times 0.60 = 600\;\text{kt}$$
 
 ---
 
@@ -139,11 +139,11 @@ The scenario engine evaluates:
 
 Then it calculates:
 
-$Predicted\_Actual = Base\_Tonnage - Rain\_Loss - Equipment\_Loss - Blast\_Loss - Grade\_Loss$
+$$\text{Predicted\_Actual} = \text{Base\_Tonnage} - \text{Rain\_Loss} - \text{Equipment\_Loss} - \text{Blast\_Loss} - \text{Grade\_Loss}$$
 
 and
 
-$Shortfall\_Pct = \frac{Base\_Tonnage - Predicted\_Actual}{Base\_Tonnage} \times 100$
+$$\text{Shortfall\_Pct} = \frac{\text{Base\_Tonnage} - \text{Predicted\_Actual}}{\text{Base\_Tonnage}} \times 100$$
 
 So if the sliders are increased:
 - more tonnage is lost to weather, breakdowns, delays, and grade dilution
@@ -164,7 +164,7 @@ The prospecting logic approximates the grade as a function of the Mn-probability
 
 A simplified form is:
 
-$Grade\_{Mn} \approx 16.0 + (Probability \times 34.0)$
+$$\text{Grade}_{Mn} \approx 16.0 + (\text{Probability} \times 34.0)$$
 
 Then it clips the value into realistic ranges.
 
@@ -226,15 +226,15 @@ The earlier issue with coal or iron sites being misclassified as Mn-bearing was 
 
 ## 10) Summary formula set
 
-$P_{Mn} = f(SWIR, NDVI, LST, EMAG2, lithology, climate, coordinates)$
+$$P_{Mn} = f(\text{SWIR}, \text{NDVI}, \text{LST}, \text{EMAG2}, \text{lithology}, \text{climate}, \text{coordinates})$$
 
-$Grade_{Mn} \approx 16 + 34 \times P_{Mn}$
+$$\text{Grade}_{Mn} \approx 16 + 34 \times P_{Mn}$$
 
-$Total\_Reserve\_Tonnage = g(grade, area, depth, context)$
+$$\text{Total\_Reserve\_Tonnage} = g(\text{grade}, \text{area}, \text{depth}, \text{context})$$
 
-$Recoverable\_Tonnage = Total\_Reserve\_Tonnage \times Recovery\_Pct$
+$$\text{Recoverable\_Tonnage} = \text{Total\_Reserve\_Tonnage} \times \text{Recovery\_Pct}$$
 
-$Actual\_Output = Base\_Tonnage - Rain\_Loss - Equipment\_Loss - Blasting\_Loss - Grade\_Loss$
+$$\text{Actual\_Output} = \text{Base\_Tonnage} - \text{Rain\_Loss} - \text{Equipment\_Loss} - \text{Blasting\_Loss} - \text{Grade\_Loss}$$
 
 ---
 
