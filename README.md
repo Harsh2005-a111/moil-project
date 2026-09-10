@@ -761,7 +761,7 @@ Distribution:
 
 - **Developer & Architect**: Preet Dhama ([@Preetdevloper](https://github.com/Preetdevloper)), Harsh Raj Srivastava ([@Harsh2005-a111](https://github.com/Harsh2005-a111)), Satvik Aggarwal ([@Satvik3009](https://github.com/Satvik3009)), Ansh Chaturvedi ([@Ansh410](https://github.com/Ansh410)), Janya Goel ([@Janya-Goel](https://github.com/Janya-Goel)), Yuvraj Tyagi ([@Yuvraj-Tyagi](https://github.com/Yuvraj-Tyagi))
 - **Project Domain**: Manganese Ore India Limited (MOIL), Ministry of Steel, Government of India
-- **Data Acknowledgements**: European Space Agency (ESA) Copernicus Sentinel-2, Geological Survey of India (GSI), Indian Bureau of Mines (IBM), NOAA NCEI (EMAG2v3), NASA JPL (SRTM v3)
+- **Data Acknowledgements**: Copernicus Sentinel-2, Geological Survey of India (GSI), Indian Bureau of Mines (IBM), NOAA NCEI (EMAG2v3), NASA JPL (SRTM v3)
 
 ---
 
