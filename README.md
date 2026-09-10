@@ -339,13 +339,13 @@ The final SIH presentation materials will be available in the repository upon co
 
 ## 9. Demo Video
 
-A comprehensive demo video showcasing the platform's capabilities will be available. The live demo can be accessed at [moil-project.vercel.app](https://moil-project.vercel.app).
+A comprehensive demo video showcasing the platform's capabilities will be available. The live demo can be accessed at https://drive.google.com/file/d/1CRzEO-ikVWHqKwWaPnOvoiJMYkcmGBSZ/view?usp=sharing
 
 ---
 
 ## 10. Screenshots / Prototype Photos
 
-Platform screenshots and interface demonstrations are available in the live deployment. Key interface components include:
+Platform screenshots and interface demonstrations are available Key interface components include:
 
 - Satellite Multi-Spectral Scanner with real-time Sentinel-2 imagery
 - IBM 3-Tier Grade Classification Dashboard
@@ -415,15 +415,12 @@ npm start
 ## 13. Future Scope
 
 ### Planned Enhancements
-- **Real-time Satellite Monitoring**: Integration with live Sentinel-2 data streams for continuous monitoring
-- **Advanced 3D Block Modeling**: Enhanced geostatistical interpolation with kriging and variogram analysis
-- **Mobile Field Applications**: Native mobile apps for field geologists with offline capabilities
-- **Blockchain Mineral Rights**: Smart contract integration for mineral lease management
-- **AI-Powered Drilling Optimization**: Machine learning for optimal drill hole placement and core sampling
-- **Climate Resilience Modeling**: Advanced weather pattern analysis for monsoon impact prediction
-- **Multi-Commodity Expansion**: Extension to iron ore, chromite, and other mineral commodities
-- **IoT Sensor Integration**: Real-time mine equipment telemetry and predictive maintenance
-
+- **Real-time Satellite Monitoring**: Integration with live Sentinel-2 data streams for continuous monitoring.
+- **Advanced 3D Block Modeling**: Enhanced geostatistical interpolation with kriging and variogram analysis.
+- **Mobile Field Applications**: Native mobile apps for field geologists with offline capabilities.
+- **Blockchain Mineral Rights**: Smart contract integration for mineral lease management.
+- **Climate Resilience Modeling**: Advanced weather pattern analysis for monsoon impact prediction.
+- **Multi-Commodity Expansion**: Extension to iron ore, chromite, and other mineral commodities.
 ---
 
 ## 🚀 CI/CD
