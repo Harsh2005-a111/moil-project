@@ -41,6 +41,7 @@ This will help MOIL improve planning, reduce losses, and ensure steady ore suppl
 ![Project Dashboard](assets/screenshots/01-home.png)
 
 MineSight AI URL: https://moil-project.vercel.app/
+
 The **MineSight AI** (a MOIL Smart Mining Intelligence Platform) provides a **comprehensive AI-powered solution** that **unites five operational data streams into a unified ML and statutory governance pipeline**:
 
 **Multi-Sensor Planetary Earth Observation**: Copernicus Sentinel-2 L2A multi-spectral satellite data combined with NOAA EMAG2v3 crustal magnetic anomalies and NASA SRTM v3 digital elevation models for rapid reconnaissance.
