@@ -13,27 +13,27 @@
 
 ## 1. Project Information
 
-- **Project Title:** MOIL Smart Mining Intelligence Platform
-- **PS ID:** SIH2026-MINING-001
-- **PS Title:** AI-based manganese exploration and operational intelligence platform for MOIL
+- **Project Title:** MineSight AI
+- **PS ID:** 26009
+- **PS Title:** Using AI/ML and Space Technology to Identify Manganese Reserves and Overcome Production Shortfalls.
 - **Category:** Software
-- **Theme:** Smart Mining & Mineral Exploration
+- **Theme:** Space Technology
 
 ---
 
 ## 2. Problem Statement
 
-**Manganese Ore India Limited (MOIL)**, operating under the Ministry of Steel (Government of India), produces over 50% of India's manganese ore. The platform addresses critical operational bottlenecks in modern manganese mining:
+**Background:** MOIL Limited is the largest producer of Manganese Ore in India. To meet future demand, it is important to accurately identify available reserves and avoid production shortfalls. At present, reserve estimation and production planning are mainly based on manual surveys, drilling results, and production records. These methods are time-consuming and sometimes lead to a mismatch between expected and actual ore production. 
 
-| Challenge | Traditional Approach | Impact |
-|:---|:---|:---|
-| **Exploration Costs & Latency** | Physical reconnaissance & core drilling cost ₹15K–₹25K/meter with multi-year turnaround | High exploration costs and delayed decision-making |
-| **Geographic Model Clamping** | Traditional ML models fail outside their training coordinates | Limited to known mining regions, no greenfield exploration |
-| **False Binary Cutoff** | Naive 50% probability threshold classified viable 10-25% Mn ore as "barren" | Loss of economically viable beneficiable ore deposits |
-| **No Uncertainty Quantification** | Point-prediction models gave false confidence | Overconfidence in predictions without risk assessment |
-| **UNFC Non-Compliance** | Naive tools claimed "Proven Reserves" from orbit | Regulatory non-compliance and legal risks |
-| **Production Shortfalls** | Monsoon, fleet downtime, and blasting delays cause acute supply deficits | Unpredictable production targets and financial losses |
-| **Urban False Positives** | Models misclassified cities as mineral deposits | Wasted resources on non-viable urban locations |
+**Detailed Description:** The challenge is to develop an AI/ML-based solution that uses geological data, historical production, equipment performance, and satellite/space technology inputs (such as rainfall, soil moisture, vegetation index, and land temperature) to:
+
+• Identify and map manganese reserves more accurately using surface and sub-surface indicators.
+• Predict shortfalls in production by analysing constraints like equipment downtime, weather conditions, or blasting delays.
+• Suggest corrective actions such as adjusting mine schedules, optimizing blasting, or re-deploying equipment to ensure continuous ore availability. 
+
+**Expected Solution:** The expected solution is a user-friendly dashboard that shows predicted reserves, production trends, possible risks of shortfall, and recommended corrective steps.
+
+This will help MOIL improve planning, reduce losses, and ensure steady ore supply to customers.
 
 ---
 
@@ -197,6 +197,9 @@ flowchart TD
 
 ```text
 moil-project/
+├── .github/                                  
+│   ├── workflow/
+|   |   ├── ci.yml                           
 ├── backend/                                  # FastAPI Backend Service
 │   ├── app/
 │   │   ├── data/
@@ -208,21 +211,33 @@ moil-project/
 │   │   │   ├── mn_label_encoder.pkl          # Rock type label encoder
 │   │   │   ├── shortfall_model.pkl           # LightGBM shortfall risk classifier
 │   │   │   ├── encoders.pkl                  # Categorical label transformers
+│   │   │   ├── mn_ood_reference.json
+│   │   │   ├── mn_calibrated_classifier.pkl                  
 │   │   │   └── label_names.pkl               # Target risk class labels
 │   │   ├── routers/
 │   │   │   └── satellite.py                  # Satellite exploration, craton priors, IBM 3-tier grading
 │   │   ├── borehole_engine.py                # Diamond core logging & UNFC geostatistics
+│   │   ├── commodity_context.py
+│   │   ├── geo_validation.py
 │   │   ├── main.py                           # FastAPI app, CORS, route orchestration
 │   │   └── shortfall_engine.py               # LightGBM risk engine & NSR logistics
 │   ├── export_model.py                       # Model export script
-│   └── requirements.txt                      # Python dependencies
+│   ├── test_commodity_context.py
+|   └── requirements.txt                      # Python dependencies
 │
 ├── dashboard/                                # React Command-Center Dashboard
+│   ├── .env
+│   ├── .gitignore
+│   ├── package-lock.json
+│   ├── vercel.json
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── SatelliteScanner.js           # Multi-spectral scanner, IBM banner, auto-fill, dossier export
 │   │   │   ├── GlobalKPIBar.js               # Persistent top KPI strip (grade tier badge, LOM)
 │   │   │   ├── DashboardKPIs.js              # Executive command center metrics
+│   │   │   ├── LandingPage.css
+│   │   │   ├── LandingPage.js
+│   │   │   ├── SectionHomeButton.js              
 │   │   │   ├── BoreholeCoreViewer.js          # Interactive drill core & stratigraphy viewer
 │   │   │   ├── ShortfallPredictor.js          # Risk engine & statutory exclusion card
 │   │   │   ├── ReserveIngestionHub.js         # Reserve mapping & operational tabs
@@ -236,30 +251,81 @@ moil-project/
 │   │   │   ├── SectionReportButton.js         # Modal trigger with animations
 │   │   │   ├── Navbar.js                      # Lease switcher & status telemetry
 │   │   │   └── Sidebar.js                     # Collapsible navigation drawer
+│   │   ├── assets/
+│   │   │   └── minesight-logo.png             # Portal Web page logo
 │   │   ├── data/
 │   │   │   ├── moilData.js                    # 11 MOIL mine profiles with coordinates & parameters
+│   │   │   ├── demoScenes.js                    
 │   │   │   └── sectionReportsData.js          # IBM/GSI/UNFC statutory report content
 │   │   ├── utils/
 │   │   │   └── pdfReportGenerator.js          # Client-side government PDF builder
 │   │   ├── App.js                             # Root layout, routing, global state
+│   │   ├── config.js
+│   │   ├── App.test.js
+│   │   ├── index.css
+│   │   ├── logo.svg
+│   │   ├── reportWebvitals.js
+│   │   ├── setupTests.js
 │   │   ├── App.css                            # Glassmorphism dark theme & animations
 │   │   └── index.js                           # React entrypoint
+│   ├── public/
+│   │   ├── favicon.ico
+│   │   ├── index.html
+│   │   ├── logo192.png
+│   │   ├── logo512.png
+│   │   ├── manifest.json
+│   │   ├── minsight-logo.png
+|   │   └── robots.txt
 │   └── package.json                           # Frontend dependencies
 │
 ├── mn-reserve-predictor/                      # Standalone ML Training Pipeline
 │   ├── data/
+│   │   ├── commodity_reference_location.csv
+│   │   ├── final_dataset_v2.csv
+│   │   ├── manganese_locations.csv
+│   │   ├── real_context_features.csv
+│   │   ├── satellite_features.csv
 │   │   └── final_dataset.csv                  # Training dataset (synced copy)
 │   ├── models/
 │   │   ├── mn_classifier.pkl                  # Trained model (synced copy)
+│   │   ├── mn_calibrated_classifier.pkl
 │   │   └── label_encoder.pkl                  # Label encoder (synced copy)
-│   └── scripts/                               # Dataset generation & training scripts
-│
+│   |── outputs/                               # Dataset generation & training scripts
+│   │   ├── evaluation_report.png
+│   │   ├── feature_importance.csv
+│   │   └── learning_curve.png
+│   ├── 01_prepare_dataset.py
+│   ├── 02_download_sentinel.py
+│   ├── 03_train_classifier.py
+│   ├── 04_predict_new_locations.py
+│   ├── 05_download_context_features.py
+│   └── requirements.txt
+|
 ├── scripts/                                   # Utility scripts
+│   ├── augment_and_train_calibrated_model.py
+│   └── generate_docx_guide.py
+|
+├── submission/                                   
+│   ├── DEMO.md                                # Project video link 
+│   └── PRESENTATION.md                        # Project Proposed Solution PPT
+|
+├── assets/
+│   ├── screenshots/
+│   │   └── README.md
+│   │   └── 01-home.png
+│   │   └── 02-dashboard.png
+│   │   └── 03-reserve-mapping.png
+│   │   └── 04-shortfall-risk.png
+│   │   └── 05-prescriptive-ai.png
+│   │   └── 06-what-if-simulator.png
+├── .gitignore
 ├── render.yaml                                # Render backend deployment config
 ├── vercel.json                                # Vercel frontend deployment config
 ├── MOIL_Portal_Notations_and_Architecture_Guide.docx  # Mathematical notation reference
 ├── MOIL_Statutory_Government_Exploration_Dossier.docx # Ministry exploration report
 ├── PORTAL_USER_GUIDE.md                            # Comprehensive operational user manual
+├── RESERVE_EVALUATION_AND_MODEL_GUIDE.md
+├── generate_comprehensive_report.py
 └── README.md                                       # Architecture & platform overview
 ```
 
