@@ -555,7 +555,8 @@ $$\mu(\mathbf{x}) = \frac{1}{B} \sum_{b=1}^{B} p_b(y = 1 \mid \mathbf{x})$$
 
 $$\sigma(\mathbf{x}) = \sqrt{\frac{1}{B} \sum_{b=1}^{B} \left( p_b - \mu \right)^2}$$
 
-$$\text{CI}_{95\%} = \left[ \max\left(0, \mu - 1.96 \cdot \frac{\sigma}{\sqrt{150}}\right), \min\left(1, \mu + 1.96 \cdot \frac{\sigma}{\sqrt{150}}\right) \right]$$
+$$\text{CI}_{95\%} = \left[ \max \left( 0, \mu - 1.96 \cdot \frac{\sigma}{\sqrt{150}} \right), \min \left( 1, \mu + 1.96 \cdot \frac{\sigma}{\sqrt{150}} \right) \right]$$
+
 
 | Uncertainty Level | $\sigma$ Range | Interpretation |
 |:---|:---|:---|
