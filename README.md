@@ -11,29 +11,128 @@
 
 ---
 
-## 📌 Project Overview & The Engineering Challenge
+## 1. Project Information
 
-### Commodity Context Guard
-
-The Mn exploration model is not a universal mine-commodity classifier. Before Mn scoring, the backend checks the coordinate against the commodity-context registry. Verified non-Mn sites such as Gevra Coal Mine return `NON_MN_COMMODITY`, zero Mn grade, and zero Mn tonnage even when submitted spectral bands look Mn-like. The current point registry is a transitional mechanism; authoritative lease polygons from GSI/IBM/State mining GIS should replace or extend it.
-
-Satellite outputs are reconnaissance indicators, not certified mineral reserves. Reserve certification requires geological mapping, drilling, sampling, assay results, and a compliant resource/reserve estimate.
-
-**Manganese Ore India Limited (MOIL)**, operating under the Ministry of Steel (Government of India), produces over 50% of India's manganese ore. This platform was built to solve critical operational bottlenecks in modern manganese mining:
-
-| Challenge | How This Platform Solves It |
-|:---|:---|
-| **Exploration Costs & Latency** — Physical reconnaissance & core drilling cost ₹15K–₹25K/meter with multi-year turnaround | Multi-spectral satellite scanning (Sentinel-2 + EMAG2 + SRTM) reduces reconnaissance from years to seconds |
-| **Geographic Model Clamping** — Traditional ML models fail outside their training coordinates | 6 Macro Tectonic Cratonic Domain Priors enable nationwide greenfield exploration |
-| **False Binary Cutoff** — Naive 50% probability threshold classified viable 10-25% Mn ore as "barren" | IBM/GSI 3-Tier Statutory Grading (10% Mn cutoff) with continuous grade estimation |
-| **No Uncertainty Quantification** — Point-prediction models gave false confidence | 150-Tree Ensemble Variance with 95% CI bounds and epistemic uncertainty gauge |
-| **UNFC Non-Compliance** — Naive tools claimed "Proven Reserves" from orbit | Strict UNFC G4 Reconnaissance classification with statutory disclaimers |
-| **Production Shortfalls** — Monsoon, fleet downtime, and blasting delays cause acute supply deficits | LightGBM + HistGradientBoosting real-time risk engine with SHAP prescriptive actions |
-| **Urban False Positives** — Models misclassified cities as mineral deposits | Intelligent urban/alluvial exclusion with MMDR Act Section 4(1) lockout |
+- **Project Title:** MOIL Smart Mining Intelligence Platform
+- **PS ID:** SIH2026-MINING-001
+- **PS Title:** AI-based manganese exploration and operational intelligence platform for MOIL
+- **Category:** Software
+- **Theme:** Smart Mining & Mineral Exploration
 
 ---
 
-## 🏛️ System Architecture & Planetary Data Fusion
+## 2. Problem Statement
+
+**Manganese Ore India Limited (MOIL)**, operating under the Ministry of Steel (Government of India), produces over 50% of India's manganese ore. The platform addresses critical operational bottlenecks in modern manganese mining:
+
+| Challenge | Traditional Approach | Impact |
+|:---|:---|:---|
+| **Exploration Costs & Latency** | Physical reconnaissance & core drilling cost ₹15K–₹25K/meter with multi-year turnaround | High exploration costs and delayed decision-making |
+| **Geographic Model Clamping** | Traditional ML models fail outside their training coordinates | Limited to known mining regions, no greenfield exploration |
+| **False Binary Cutoff** | Naive 50% probability threshold classified viable 10-25% Mn ore as "barren" | Loss of economically viable beneficiable ore deposits |
+| **No Uncertainty Quantification** | Point-prediction models gave false confidence | Overconfidence in predictions without risk assessment |
+| **UNFC Non-Compliance** | Naive tools claimed "Proven Reserves" from orbit | Regulatory non-compliance and legal risks |
+| **Production Shortfalls** | Monsoon, fleet downtime, and blasting delays cause acute supply deficits | Unpredictable production targets and financial losses |
+| **Urban False Positives** | Models misclassified cities as mineral deposits | Wasted resources on non-viable urban locations |
+
+---
+
+## 3. Proposed Solution
+
+The MOIL Smart Mining Intelligence Platform provides a comprehensive AI-powered solution that unites five operational data streams into a unified ML and statutory governance pipeline:
+
+**Multi-Sensor Planetary Earth Observation**: Copernicus Sentinel-2 L2A multi-spectral satellite data combined with NOAA EMAG2v3 crustal magnetic anomalies and NASA SRTM v3 digital elevation models for rapid reconnaissance.
+
+**Macro Tectonic Craton Exploration**: Six Precambrian lithotectonic province mapping enables nationwide greenfield exploration beyond traditional coordinate-distance clamping.
+
+**IBM 3-Tier Statutory Mineral Grading**: Implementation of Indian Bureau of Mines (IBM) 10% Mn cutoff grade (MCDR 2017) with continuous grade estimation replacing binary probability thresholds.
+
+**150-Tree Ensemble Epistemic Uncertainty**: Variance-based confidence intervals with 95% CI bounds and epistemic uncertainty quantification for reliable decision-making.
+
+**Production Shortfall Forecasting**: LightGBM + HistGradientBoosting real-time risk engine with SHAP prescriptive actions for operational optimization.
+
+**Statutory Compliance Engine**: UNFC-2009 G4 Reconnaissance classification, MMDR Act Section 4(1) urban exclusion, and automatic IBM statutory PDF dossier generation.
+
+---
+
+## 4. Key Features
+
+### Satellite Multi-Spectral AI Exploration Engine
+- **Copernicus Sentinel-2 Ingestion**: Level-2A surface reflectance — Band 4 (Red 665nm), Band 8 (NIR 842nm), Band 11 (SWIR-1 1610nm), Band 12 (SWIR-2 2190nm)
+- **Macro Tectonic Craton Exploration**: 6 provinces across India's Precambrian shields
+- **Diagnostic Mn Absorption Spectroscopy**: Detects Pyrolusite (MnO₂), Psilomelane, Braunite (3Mn₂O₃·MnSiO₃)
+- **IBM 3-Tier Grade Classification Banner**: Color-coded statutory badges with MCDR 2017 notes
+- **150-Tree Ensemble Uncertainty Gauge**: Lower bound, mean prediction, upper bound visualized
+- **Data Provenance Badges**: Real-time traceability (Sentinel-2, EMAG2, SRTM, Tectonic Domain)
+- **Multi-Spectral Band Composites**: False-Color IR, Mineral Exploration, Iron-Oxide Alteration views
+- **Auto-Fill Sliders**: Predicted grade, reserves, and recovery populate KPI dashboard inputs
+
+### Subsurface Borehole Core Viewer & UNFC Categorization
+- Diamond core assay logging (collar to end-of-hole)
+- RQD (Rock Quality Designation) competence meter
+- UNFC exploration stage progression (G4 → G3 → G2 → G1)
+- Surface vs. subsurface cross-validation to eliminate false exploration leads
+
+### ML Production Shortfall & Constraint Risk Engine
+- **LightGBM Multi-Class Classifier**: Risk levels — `Low`, `Medium`, `High`, `Critical`, `Exempt`
+- **HistGradientBoosting Regressor**: Non-linear interaction modeling (rainfall × fleet × blasting)
+- **Financial Loss Exposure**: Physical tonnage deficits → ₹ loss (based on MOIL benchmark pricing)
+- **12-Week Rolling Trend**: Planned vs. AI-forecasted extraction
+
+### Prescriptive Action Engine (SHAP Root Cause Analysis)
+- SHAP TreeExplainer values isolate the primary bottleneck behind forecasted shortfalls
+- Automated corrective SOPs: pump mobilization, tipper allocation, detonator rescheduling, blend strategies
+
+### Pit-to-Smelter Logistics & Net Smelter Return (NSR)
+- Multi-modal route optimization to smelter hubs (Chandrapur FMP, SAIL Bhilai, Nagpur/Kanhan)
+- Dynamic NSR incorporating gross ore realization, haulage costs, railway freight tariffs, transit losses
+
+### Statutory Non-Mining Exclusion Engine
+- Intelligent urban & sterile land lockout (Delhi, Mumbai, Kolkata, Bengaluru, Indo-Gangetic plains)
+- MMDR Act Section 4(1) and MCDR 2017 Rule 22 compliance
+- Zero extraction targets, suppressed shortfall metrics, deactivated operational sliders
+
+### Official Government Statutory Dossier Generator (PDF)
+- IBM / Ministry of Mines formatted multi-page technical dossiers
+- 5 statutory mineral exploration pillars
+- Data provenance block, 95% confidence bounds, and Competent Person sign-off
+- Pure client-side jsPDF vector document generation
+
+---
+
+## 5. Technology Stack
+
+### Frontend
+| Technology | Purpose |
+|:---|:---|
+| React 19 | Functional component architecture with hooks |
+| Recharts | Multi-axis responsive charts, probability bars, uncertainty tracks |
+| Lucide React | Icon system |
+| jsPDF + jsPDF-AutoTable | Client-side PDF dossier generation |
+| CSS Glassmorphism | Dark-themed glass-effect UI with fluid keyframes |
+
+### Backend
+| Technology | Purpose |
+|:---|:---|
+| FastAPI (Python 3.10+) | Async ASGI API server |
+| Uvicorn | Production ASGI server |
+| Scikit-learn | Random Forest classifier (150 trees) |
+| LightGBM | Gradient boosted shortfall classifier |
+| SHAP | TreeExplainer for prescriptive root cause analysis |
+| Joblib | Model serialization |
+| NumPy / Pandas | Numerical computation & dataset management |
+| Pillow (PIL) | Satellite image processing & overlay compositing |
+| Pydantic v2 | Request/response validation |
+
+### Deployment
+| Service | Platform | URL |
+|:---|:---|:---|
+| Frontend | Vercel | [moil-project.vercel.app](https://moil-project.vercel.app) |
+| Backend | Render | [moil-mining-backend.onrender.com](https://moil-mining-backend.onrender.com) |
+
+---
+
+## 6. Architecture
 
 The platform unites five operational data streams into a unified ML and statutory governance pipeline:
 
@@ -90,6 +189,233 @@ flowchart TD
         URBAN --> UI_LOCKOUT["Non-Mining Exclusion Card"]
         UI_BADGE --> PDF["IBM Statutory PDF Dossier"]
     end
+```
+
+---
+
+## 7. Repository Structure
+
+```text
+moil-project/
+├── backend/                                  # FastAPI Backend Service
+│   ├── app/
+│   │   ├── data/
+│   │   │   ├── final_dataset.csv             # 280-row national Mn dataset (4 provinces, IBM-graded)
+│   │   │   ├── manganese_national_dataset_v3.csv  # Expanded GSI source dataset
+│   │   │   └── regions.json                  # User-saved prospect coordinates registry
+│   │   ├── model/
+│   │   │   ├── mn_classifier.pkl             # 150-tree RF deposit predictor (12 rock types)
+│   │   │   ├── mn_label_encoder.pkl          # Rock type label encoder
+│   │   │   ├── shortfall_model.pkl           # LightGBM shortfall risk classifier
+│   │   │   ├── encoders.pkl                  # Categorical label transformers
+│   │   │   └── label_names.pkl               # Target risk class labels
+│   │   ├── routers/
+│   │   │   └── satellite.py                  # Satellite exploration, craton priors, IBM 3-tier grading
+│   │   ├── borehole_engine.py                # Diamond core logging & UNFC geostatistics
+│   │   ├── main.py                           # FastAPI app, CORS, route orchestration
+│   │   └── shortfall_engine.py               # LightGBM risk engine & NSR logistics
+│   ├── export_model.py                       # Model export script
+│   └── requirements.txt                      # Python dependencies
+│
+├── dashboard/                                # React Command-Center Dashboard
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── SatelliteScanner.js           # Multi-spectral scanner, IBM banner, auto-fill, dossier export
+│   │   │   ├── GlobalKPIBar.js               # Persistent top KPI strip (grade tier badge, LOM)
+│   │   │   ├── DashboardKPIs.js              # Executive command center metrics
+│   │   │   ├── BoreholeCoreViewer.js          # Interactive drill core & stratigraphy viewer
+│   │   │   ├── ShortfallPredictor.js          # Risk engine & statutory exclusion card
+│   │   │   ├── ReserveIngestionHub.js         # Reserve mapping & operational tabs
+│   │   │   ├── ReserveMapping.js              # 2D/3D reserve heatmaps
+│   │   │   ├── PrescriptiveActions.js         # SHAP-driven corrective action cards
+│   │   │   ├── SmelterLogisticsCard.js        # Pit-to-smelter NSR optimizer
+│   │   │   ├── ScenarioSimulator.js           # What-if weather & breakdown simulator
+│   │   │   ├── DataIngestion.js               # Multi-source CSV ingestion
+│   │   │   ├── ProjectDossier.js              # Statutory compliance dossier viewer
+│   │   │   ├── SectionReportModal.js          # 5-Pillar government report dialog
+│   │   │   ├── SectionReportButton.js         # Modal trigger with animations
+│   │   │   ├── Navbar.js                      # Lease switcher & status telemetry
+│   │   │   └── Sidebar.js                     # Collapsible navigation drawer
+│   │   ├── data/
+│   │   │   ├── moilData.js                    # 11 MOIL mine profiles with coordinates & parameters
+│   │   │   └── sectionReportsData.js          # IBM/GSI/UNFC statutory report content
+│   │   ├── utils/
+│   │   │   └── pdfReportGenerator.js          # Client-side government PDF builder
+│   │   ├── App.js                             # Root layout, routing, global state
+│   │   ├── App.css                            # Glassmorphism dark theme & animations
+│   │   └── index.js                           # React entrypoint
+│   └── package.json                           # Frontend dependencies
+│
+├── mn-reserve-predictor/                      # Standalone ML Training Pipeline
+│   ├── data/
+│   │   └── final_dataset.csv                  # Training dataset (synced copy)
+│   ├── models/
+│   │   ├── mn_classifier.pkl                  # Trained model (synced copy)
+│   │   └── label_encoder.pkl                  # Label encoder (synced copy)
+│   └── scripts/                               # Dataset generation & training scripts
+│
+├── scripts/                                   # Utility scripts
+├── render.yaml                                # Render backend deployment config
+├── vercel.json                                # Vercel frontend deployment config
+├── MOIL_Portal_Notations_and_Architecture_Guide.docx  # Mathematical notation reference
+├── MOIL_Statutory_Government_Exploration_Dossier.docx # Ministry exploration report
+├── PORTAL_USER_GUIDE.md                            # Comprehensive operational user manual
+└── README.md                                       # Architecture & platform overview
+```
+
+---
+
+## 8. Final Presentation
+
+The final SIH presentation materials will be available in the repository upon completion. For detailed technical documentation, refer to the [PORTAL_USER_GUIDE.md](PORTAL_USER_GUIDE.md) and [RESERVE_EVALUATION_AND_MODEL_GUIDE.md](RESERVE_EVALUATION_AND_MODEL_GUIDE.md).
+
+---
+
+## 9. Demo Video
+
+A comprehensive demo video showcasing the platform's capabilities will be available. The live demo can be accessed at [moil-project.vercel.app](https://moil-project.vercel.app).
+
+---
+
+## 10. Screenshots / Prototype Photos
+
+Platform screenshots and interface demonstrations are available in the live deployment. Key interface components include:
+
+- Satellite Multi-Spectral Scanner with real-time Sentinel-2 imagery
+- IBM 3-Tier Grade Classification Dashboard
+- Production Shortfall Risk Engine with SHAP explanations
+- Subsurface Borehole Core Viewer with UNFC categorization
+- Pit-to-Smelter Logistics Optimizer with NSR calculations
+
+---
+
+## 11. Installation
+
+### Prerequisites
+- **Python 3.10+**
+- **Node.js 18+** & **npm 9+**
+- **Git**
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Harsh2005-a111/moil-project.git
+cd moil-project
+```
+
+### 2. Backend Setup (FastAPI)
+```bash
+cd backend
+
+# Create virtual environment
+python -m venv venv
+
+# Activate (Windows PowerShell)
+.\venv\Scripts\Activate.ps1
+# Activate (Linux/macOS)
+source venv/bin/activate
+
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 3. Frontend Setup (React)
+```bash
+cd ../dashboard
+npm install
+```
+
+---
+
+## 12. Run
+
+### Start Backend Server
+```bash
+cd backend
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+- Swagger Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+- ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+### Start Frontend Dashboard
+```bash
+cd dashboard
+npm start
+```
+- Dashboard: [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 13. Future Scope
+
+### Planned Enhancements
+- **Real-time Satellite Monitoring**: Integration with live Sentinel-2 data streams for continuous monitoring
+- **Advanced 3D Block Modeling**: Enhanced geostatistical interpolation with kriging and variogram analysis
+- **Mobile Field Applications**: Native mobile apps for field geologists with offline capabilities
+- **Blockchain Mineral Rights**: Smart contract integration for mineral lease management
+- **AI-Powered Drilling Optimization**: Machine learning for optimal drill hole placement and core sampling
+- **Climate Resilience Modeling**: Advanced weather pattern analysis for monsoon impact prediction
+- **Multi-Commodity Expansion**: Extension to iron ore, chromite, and other mineral commodities
+- **IoT Sensor Integration**: Real-time mine equipment telemetry and predictive maintenance
+
+---
+
+## 🚀 CI/CD
+
+GitHub Actions runs the backend import and Python compilation checks plus the production dashboard build on every push to `main` and every pull request. Continuous deployment is handled by the deployment providers: `vercel.json` configures the dashboard deployment on Vercel, while `render.yaml` configures the FastAPI service on Render.
+
+---
+
+## 🌐 API Endpoint Reference
+
+| Method | Endpoint | Description |
+|:---|:---|:---|
+| `POST` | `/api/satellite/fetch-copernicus` | Multi-spectral satellite scan for coordinates with craton priors, IBM grading, ensemble uncertainty |
+| `POST` | `/api/satellite/analyze` | Process uploaded satellite imagery with spectral absorption analysis |
+| `GET` | `/api/mines` | List all active MOIL mine leases & baseline parameters |
+| `POST` | `/api/predict/shortfall` | Evaluate shortfall risk & gradient-boosted deficit forecast |
+| `POST` | `/api/reserves/estimate` | Compute 3D block reserve grade & economic cut-off |
+| `POST` | `/api/boreholes/analyze` | Process diamond drill-core assay logs |
+| `GET` | `/api/regions` | Fetch saved exploration regions & prospect coordinates |
+| `POST` | `/api/regions` | Save a new custom exploration sector |
+| `POST` | `/api/simulate` | Run real-time scenario simulation (stress tests) |
+
+### Example: Satellite Scan Request
+```json
+POST /api/satellite/fetch-copernicus
+{
+  "latitude": 21.05,
+  "longitude": 79.10,
+  "region_name": "Gumgaon Mine"
+}
+```
+
+### Example Response (Truncated)
+```json
+{
+  "status": "success",
+  "data_source": "Sentinel-2 Multi-Spectral Engine",
+  "prediction": {
+    "manganese_probability_pct": 99.7,
+    "uncertainty_pct": 0.3,
+    "confidence_interval": [99.4, 100.0],
+    "decision": "MARKETABLE ORE PROSPECT (Direct Blast Furnace Feed - UNFC G4)",
+    "estimated_grade_pct": 42.0,
+    "ibm_grade_classification": "Marketable / Saleable Ore (>25% Mn)",
+    "ibm_tier": 1,
+    "total_available_reserves_kt": 2260.0,
+    "viable_extractable_tonnage_kt": 1808.0,
+    "extraction_recovery_pct": 80.0,
+    "statutory_disclaimer": "IBM Statutory MCDR 2017 Compliance: Minimum threshold cutoff is 10% Mn..."
+  },
+  "provenance": {
+    "optical_multispectral": "Copernicus Sentinel-2 L2A (10m-20m spatial resolution)",
+    "magnetic_anomaly": "NOAA EMAG2 v3",
+    "elevation_model": "NASA SRTM 30m",
+    "tectonic_domain": "Central Indian Tectonic Zone (Sausar Group / Bastar Craton)",
+    "regulatory_framework": "UNFC-2009 / GSI G4 Mineral Exploration Screening"
+  }
+}
 ```
 
 ---
@@ -191,8 +517,6 @@ The platform utilizes five specialized machine learning and preprocessing artifa
 | **`encoders.pkl`** (519 B) | Dictionary of `LabelEncoder`s | `Rock_Type` (`Hematite`, `Magnetite`, `Waste`) | Preprocessing transformer for 3D block model extraction features | 100% coverage of block lithology classes |
 | **`label_names.pkl`** (38 B) | Serialized String Array | `['High', 'Low', 'Medium']` | Decodes LightGBM multi-class prediction probabilities into operational risk levels | Target risk class labels |
 
----
-
 ### 2. Deep Dive: Why `mn_classifier.pkl` Achieves 100% CV & The Overfitting Diagnostic
 
 #### The Statistical Reality
@@ -207,8 +531,6 @@ Even when injecting synthetic Gaussian sensor noise ($\sigma = 0.08$ and $\sigma
 - **Synthetic Feature Boundary Risk**: The current dataset feature values were statistically synthesized from GSI survey baselines. Because the boundaries between mineralized and barren rock types are sharp, the model has learned clean decision thresholds.
 - **Real-World Satellite Reality**: Actual satellite imagery contains atmospheric haze, mixed-pixel effects (sub-pixel vegetation over rock outcrops), soil moisture damping, cloud shadow artifacts, and seasonal NDVI swings.
 - **Conclusion**: The model does **not underfit** (capacity is ample with 150 trees), but on *unfiltered raw satellite pixels* from completely novel regions, it risks **overfitting to idealized synthetic feature distributions**.
-
----
 
 ### 3. 🔍 How the Portal Handles New Data Points (Lat/Long or Image)
 
@@ -246,8 +568,6 @@ New Input: Coordinates (lat, lon) OR Satellite Image
     └── 7. DOSSIER & UI SYNCHRONIZATION
         Populates Satellite Scanner, Global KPI Bar, Auto-Fill Sliders, and Statutory PDF Dossier
 ```
-
----
 
 ### 4. Comprehensive Roadmap: How to Improve Prediction Accuracy Without Overfitting or Underfitting
 
@@ -329,260 +649,6 @@ $$\text{Ferric Iron Alteration Ratio} = \frac{\text{Red (B04)}}{\text{Blue (B02)
 
 ---
 
----
-
-## 🚀 Key Modules & Capabilities
-
-### 1. Satellite Multi-Spectral AI Exploration Engine
-- **Copernicus Sentinel-2 Ingestion**: Level-2A surface reflectance — Band 4 (Red 665nm), Band 8 (NIR 842nm), Band 11 (SWIR-1 1610nm), Band 12 (SWIR-2 2190nm)
-- **Macro Tectonic Craton Exploration**: 6 provinces across India's Precambrian shields
-- **Diagnostic Mn Absorption Spectroscopy**: Detects Pyrolusite (MnO₂), Psilomelane, Braunite (3Mn₂O₃·MnSiO₃)
-- **IBM 3-Tier Grade Classification Banner**: Color-coded statutory badges with MCDR 2017 notes
-- **150-Tree Ensemble Uncertainty Gauge**: Lower bound, mean prediction, upper bound visualized
-- **Data Provenance Badges**: Real-time traceability (Sentinel-2, EMAG2, SRTM, Tectonic Domain)
-- **Multi-Spectral Band Composites**: False-Color IR, Mineral Exploration, Iron-Oxide Alteration views
-- **Auto-Fill Sliders**: Predicted grade, reserves, and recovery populate KPI dashboard inputs
-
-### 2. Subsurface Borehole Core Viewer & UNFC Categorization
-- Diamond core assay logging (collar to end-of-hole)
-- RQD (Rock Quality Designation) competence meter
-- UNFC exploration stage progression (G4 → G3 → G2 → G1)
-- Surface vs. subsurface cross-validation to eliminate false exploration leads
-
-### 3. ML Production Shortfall & Constraint Risk Engine
-- **LightGBM Multi-Class Classifier**: Risk levels — `Low`, `Medium`, `High`, `Critical`, `Exempt`
-- **HistGradientBoosting Regressor**: Non-linear interaction modeling (rainfall × fleet × blasting)
-- **Financial Loss Exposure**: Physical tonnage deficits → ₹ loss (based on MOIL benchmark pricing)
-- **12-Week Rolling Trend**: Planned vs. AI-forecasted extraction
-
-### 4. Prescriptive Action Engine (SHAP Root Cause Analysis)
-- SHAP TreeExplainer values isolate the primary bottleneck behind forecasted shortfalls
-- Automated corrective SOPs: pump mobilization, tipper allocation, detonator rescheduling, blend strategies
-
-### 5. Pit-to-Smelter Logistics & Net Smelter Return (NSR)
-- Multi-modal route optimization to smelter hubs (Chandrapur FMP, SAIL Bhilai, Nagpur/Kanhan)
-- Dynamic NSR incorporating gross ore realization, haulage costs, railway freight tariffs, transit losses
-
-### 6. Statutory Non-Mining Exclusion Engine
-- Intelligent urban & sterile land lockout (Delhi, Mumbai, Kolkata, Bengaluru, Indo-Gangetic plains)
-- MMDR Act Section 4(1) and MCDR 2017 Rule 22 compliance
-- Zero extraction targets, suppressed shortfall metrics, deactivated operational sliders
-
-### 7. Official Government Statutory Dossier Generator (PDF)
-- IBM / Ministry of Mines formatted multi-page technical dossiers
-- 5 statutory mineral exploration pillars
-- Data provenance block, 95% confidence bounds, and Competent Person sign-off
-- Pure client-side jsPDF vector document generation
-
----
-
-## 🛠️ Tech Stack
-
-### Frontend
-| Technology | Purpose |
-|:---|:---|
-| React 19 | Functional component architecture with hooks |
-| Recharts | Multi-axis responsive charts, probability bars, uncertainty tracks |
-| Lucide React | Icon system |
-| jsPDF + jsPDF-AutoTable | Client-side PDF dossier generation |
-| CSS Glassmorphism | Dark-themed glass-effect UI with fluid keyframes |
-
-### Backend
-| Technology | Purpose |
-|:---|:---|
-| FastAPI (Python 3.10+) | Async ASGI API server |
-| Uvicorn | Production ASGI server |
-| Scikit-learn | Random Forest classifier (150 trees) |
-| LightGBM | Gradient boosted shortfall classifier |
-| SHAP | TreeExplainer for prescriptive root cause analysis |
-| Joblib | Model serialization |
-| NumPy / Pandas | Numerical computation & dataset management |
-| Pillow (PIL) | Satellite image processing & overlay compositing |
-| Pydantic v2 | Request/response validation |
-
-### Deployment
-| Service | Platform | URL |
-|:---|:---|:---|
-| Frontend | Vercel | [moil-project.vercel.app](https://moil-project.vercel.app) |
-| Backend | Render | [moil-mining-backend.onrender.com](https://moil-mining-backend.onrender.com) |
-
----
-
-## 📁 Repository Structure
-
-```text
-moil-project/
-├── backend/                                  # FastAPI Backend Service
-│   ├── app/
-│   │   ├── data/
-│   │   │   ├── final_dataset.csv             # 280-row national Mn dataset (4 provinces, IBM-graded)
-│   │   │   ├── manganese_national_dataset_v3.csv  # Expanded GSI source dataset
-│   │   │   └── regions.json                  # User-saved prospect coordinates registry
-│   │   ├── model/
-│   │   │   ├── mn_classifier.pkl             # 150-tree RF deposit predictor (12 rock types)
-│   │   │   ├── mn_label_encoder.pkl          # Rock type label encoder
-│   │   │   ├── shortfall_model.pkl           # LightGBM shortfall risk classifier
-│   │   │   ├── encoders.pkl                  # Categorical label transformers
-│   │   │   └── label_names.pkl               # Target risk class labels
-│   │   ├── routers/
-│   │   │   └── satellite.py                  # Satellite exploration, craton priors, IBM 3-tier grading
-│   │   ├── borehole_engine.py                # Diamond core logging & UNFC geostatistics
-│   │   ├── main.py                           # FastAPI app, CORS, route orchestration
-│   │   └── shortfall_engine.py               # LightGBM risk engine & NSR logistics
-│   ├── export_model.py                       # Model export script
-│   └── requirements.txt                      # Python dependencies
-│
-├── dashboard/                                # React Command-Center Dashboard
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── SatelliteScanner.js           # Multi-spectral scanner, IBM banner, auto-fill, dossier export
-│   │   │   ├── GlobalKPIBar.js               # Persistent top KPI strip (grade tier badge, LOM)
-│   │   │   ├── DashboardKPIs.js              # Executive command center metrics
-│   │   │   ├── BoreholeCoreViewer.js          # Interactive drill core & stratigraphy viewer
-│   │   │   ├── ShortfallPredictor.js          # Risk engine & statutory exclusion card
-│   │   │   ├── ReserveIngestionHub.js         # Reserve mapping & operational tabs
-│   │   │   ├── ReserveMapping.js              # 2D/3D reserve heatmaps
-│   │   │   ├── PrescriptiveActions.js         # SHAP-driven corrective action cards
-│   │   │   ├── SmelterLogisticsCard.js        # Pit-to-smelter NSR optimizer
-│   │   │   ├── ScenarioSimulator.js           # What-if weather & breakdown simulator
-│   │   │   ├── DataIngestion.js               # Multi-source CSV ingestion
-│   │   │   ├── ProjectDossier.js              # Statutory compliance dossier viewer
-│   │   │   ├── SectionReportModal.js          # 5-Pillar government report dialog
-│   │   │   ├── SectionReportButton.js         # Modal trigger with animations
-│   │   │   ├── Navbar.js                      # Lease switcher & status telemetry
-│   │   │   └── Sidebar.js                     # Collapsible navigation drawer
-│   │   ├── data/
-│   │   │   ├── moilData.js                    # 11 MOIL mine profiles with coordinates & parameters
-│   │   │   └── sectionReportsData.js          # IBM/GSI/UNFC statutory report content
-│   │   ├── utils/
-│   │   │   └── pdfReportGenerator.js          # Client-side government PDF builder
-│   │   ├── App.js                             # Root layout, routing, global state
-│   │   ├── App.css                            # Glassmorphism dark theme & animations
-│   │   └── index.js                           # React entrypoint
-│   └── package.json                           # Frontend dependencies
-│
-├── mn-reserve-predictor/                      # Standalone ML Training Pipeline
-│   ├── data/
-│   │   └── final_dataset.csv                  # Training dataset (synced copy)
-│   ├── models/
-│   │   ├── mn_classifier.pkl                  # Trained model (synced copy)
-│   │   └── label_encoder.pkl                  # Label encoder (synced copy)
-│   └── scripts/                               # Dataset generation & training scripts
-│
-├── scripts/                                   # Utility scripts
-├── render.yaml                                # Render backend deployment config
-├── vercel.json                                # Vercel frontend deployment config
-├── MOIL_Portal_Notations_and_Architecture_Guide.docx  # Mathematical notation reference
-├── MOIL_Statutory_Government_Exploration_Dossier.docx # Ministry exploration report
-├── PORTAL_USER_GUIDE.md                            # Comprehensive operational user manual
-└── README.md                                       # Architecture & platform overview
-```
-
----
-
-## ⚙️ Getting Started
-
-## 🚀 CI/CD
-
-GitHub Actions runs the backend import and Python compilation checks plus the production dashboard build on every push to `main` and every pull request. Continuous deployment is handled by the deployment providers: `vercel.json` configures the dashboard deployment on Vercel, while `render.yaml` configures the FastAPI service on Render.
-
-### Prerequisites
-- **Python 3.10+**
-- **Node.js 18+** & **npm 9+**
-- **Git**
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/Harsh2005-a111/moil-project.git
-cd moil-project
-```
-
-### 2. Backend Setup (FastAPI)
-```bash
-cd backend
-
-# Create virtual environment
-python -m venv venv
-
-# Activate (Windows PowerShell)
-.\venv\Scripts\Activate.ps1
-# Activate (Linux/macOS)
-source venv/bin/activate
-
-# Install dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Start backend server
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-- Swagger Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
-- ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-
-### 3. Frontend Setup (React)
-```bash
-cd ../dashboard
-npm install
-npm start
-```
-- Dashboard: [http://localhost:3000](http://localhost:3000)
-
----
-
-## 🌐 API Endpoint Reference
-
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `POST` | `/api/satellite/fetch-copernicus` | Multi-spectral satellite scan for coordinates with craton priors, IBM grading, ensemble uncertainty |
-| `POST` | `/api/satellite/analyze` | Process uploaded satellite imagery with spectral absorption analysis |
-| `GET` | `/api/mines` | List all active MOIL mine leases & baseline parameters |
-| `POST` | `/api/predict/shortfall` | Evaluate shortfall risk & gradient-boosted deficit forecast |
-| `POST` | `/api/reserves/estimate` | Compute 3D block reserve grade & economic cut-off |
-| `POST` | `/api/boreholes/analyze` | Process diamond drill-core assay logs |
-| `GET` | `/api/regions` | Fetch saved exploration regions & prospect coordinates |
-| `POST` | `/api/regions` | Save a new custom exploration sector |
-| `POST` | `/api/simulate` | Run real-time scenario simulation (stress tests) |
-
-### Example: Satellite Scan Request
-```json
-POST /api/satellite/fetch-copernicus
-{
-  "latitude": 21.05,
-  "longitude": 79.10,
-  "region_name": "Gumgaon Mine"
-}
-```
-
-### Example Response (Truncated)
-```json
-{
-  "status": "success",
-  "data_source": "Sentinel-2 Multi-Spectral Engine",
-  "prediction": {
-    "manganese_probability_pct": 99.7,
-    "uncertainty_pct": 0.3,
-    "confidence_interval": [99.4, 100.0],
-    "decision": "MARKETABLE ORE PROSPECT (Direct Blast Furnace Feed - UNFC G4)",
-    "estimated_grade_pct": 42.0,
-    "ibm_grade_classification": "Marketable / Saleable Ore (>25% Mn)",
-    "ibm_tier": 1,
-    "total_available_reserves_kt": 2260.0,
-    "viable_extractable_tonnage_kt": 1808.0,
-    "extraction_recovery_pct": 80.0,
-    "statutory_disclaimer": "IBM Statutory MCDR 2017 Compliance: Minimum threshold cutoff is 10% Mn..."
-  },
-  "provenance": {
-    "optical_multispectral": "Copernicus Sentinel-2 L2A (10m-20m spatial resolution)",
-    "magnetic_anomaly": "NOAA EMAG2 v3",
-    "elevation_model": "NASA SRTM 30m",
-    "tectonic_domain": "Central Indian Tectonic Zone (Sausar Group / Bastar Craton)",
-    "regulatory_framework": "UNFC-2009 / GSI G4 Mineral Exploration Screening"
-  }
-}
-```
-
----
-
 ## 📑 Statutory Standards & Regulatory Compliance
 
 | Framework | How the Platform Complies |
@@ -632,6 +698,12 @@ Distribution:
 - **Developer & Architect**: Harsh Raj Srivastava ([@Harsh2005-a111](https://github.com/Harsh2005-a111))
 - **Project Domain**: Manganese Ore India Limited (MOIL), Ministry of Steel, Government of India
 - **Data Acknowledgements**: European Space Agency (ESA) Copernicus Sentinel-2, Geological Survey of India (GSI), Indian Bureau of Mines (IBM), NOAA NCEI (EMAG2v3), NASA JPL (SRTM v3)
+
+---
+
+## Important
+
+Before submission, make sure the repository is accessible to reviewers. Do **not** upload passwords, API keys, access tokens, `.env` files containing secrets, or other confidential credentials.
 
 ---
 
